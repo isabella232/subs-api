@@ -1,0 +1,64 @@
+plugins {
+    id "org.asciidoctor.convert" version "1.5.2"
+}
+
+apply plugin: 'java'
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'application'
+mainClassName = "uk.ac.ebi.subs.FrontendApplication"
+
+dependencies {
+    compile project(':subs-repository')
+    compile project(':subs-data-model')
+    compile project(':subs-processing-model')
+    compile project(':subs-messaging')
+
+    compile("org.springframework.boot:spring-boot-starter-data-rest")
+    compile 'org.springframework.data:spring-data-rest-hal-browser'
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+
+    testCompile("junit:junit")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("com.google.code.gson:gson:2.7") //bug in spring boot, see https://github.com/spring-projects/spring-boot/issues/6502
+
+    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
+
+    testCompile("com.mashape.unirest:unirest-java:1.4.9")
+}
+
+ext {
+    snippetsDir = file('build/generated-snippets')
+}
+
+test {
+    outputs.dir snippetsDir
+}
+
+asciidoctor {
+    attributes 'snippets': snippetsDir
+    sourceDir file('src/main/resources/docs')
+    backends 'html5'
+    inputs.dir snippetsDir
+    dependsOn test
+}
+
+jar {
+    dependsOn asciidoctor
+    from ("${asciidoctor.outputDir}/html5") {
+        into 'static/docs'
+    }
+}
+
+publish {
+    dependsOn assemble
+}
+
+springBoot {
+    executable = true
+}
+
+
+
+
+

@@ -1,0 +1,30 @@
+= Submission REST Service API Guide
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+= Submissions REST Service
+
+== Accessing a single submission
+
+=== Request structure
+
+include::{snippets}/submissions/by-id/http-request.adoc[]
+
+=== Response fields
+
+include::{snippets}/submissions/by-id/response-fields.adoc[]
+
+
+== Accessing submissions for a domain
+
+=== Request structure
+
+include::{snippets}/submissions/by-domain/http-request.adoc[]
+
+=== Response fields
+
+include::{snippets}/submissions/by-domain/response-fields.adoc[]
