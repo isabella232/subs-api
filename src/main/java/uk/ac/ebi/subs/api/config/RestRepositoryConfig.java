@@ -1,5 +1,8 @@
 package uk.ac.ebi.subs.api.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -10,7 +13,7 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 
 @Configuration
-@EnableMongoAuditing(auditorAwareRef="auditorProvider")
+@EnableMongoAuditing(auditorAwareRef = "auditorProvider")
 public class RestRepositoryConfig {
 
 
@@ -25,11 +28,17 @@ public class RestRepositoryConfig {
                         RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED
                 );
             }
+
+            @Override
+            public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+                objectMapper.registerModule(new AfterburnerModule()); //MOAR SPEED
+            }
         };
     }
 
     @Bean
-    public AuditorAware<String> auditorProvider(){
+    public AuditorAware<String> auditorProvider() {
         return new AuditorAware<String>() {
             @Override
             public String getCurrentAuditor() {
@@ -37,7 +46,5 @@ public class RestRepositoryConfig {
             }
         };
     }
-
-
 
 }
