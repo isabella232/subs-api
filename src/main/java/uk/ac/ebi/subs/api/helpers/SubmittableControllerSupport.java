@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.helpers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -7,8 +8,9 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.api.resourceAssembly.ProcessorBackedAssembler;
+import uk.ac.ebi.subs.api.resourceAssembly.SimpleResourceAssembler;
 import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
 
 /**
@@ -19,18 +21,15 @@ public class SubmittableControllerSupport<T extends Submittable> {
 
     private SubmittableRepository<T> repository;
     private PagedResourcesAssembler<T> pagedResourcesAssembler;
-    private ResourceProcessor<Resource<T>> resourceProcessor;
-    private ProcessorBackedAssembler<T> processorBackedAssembler;
+    private SimpleResourceAssembler<T> simpleResourceAssembler;
 
     public SubmittableControllerSupport(
             SubmittableRepository<T> repository,
             PagedResourcesAssembler<T> pagedResourcesAssembler,
-            ResourceProcessor<Resource<T>> resourceProcessor,
-            EntityLinks entityLinks) {
+            SimpleResourceAssembler<T> simpleResourceAssembler) {
         this.repository = repository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.resourceProcessor = resourceProcessor;
-        this.processorBackedAssembler = new ProcessorBackedAssembler<T>(resourceProcessor, entityLinks);
+        this.simpleResourceAssembler = simpleResourceAssembler;
     }
 
     public PagedResources<Resource<T>> submittablesInSubmission(String submissionId, Pageable pageable) {
@@ -38,7 +37,7 @@ public class SubmittableControllerSupport<T extends Submittable> {
 
         return pagedResourcesAssembler.toResource(
                 page,
-                processorBackedAssembler
+                simpleResourceAssembler
         );
     }
 
@@ -47,7 +46,7 @@ public class SubmittableControllerSupport<T extends Submittable> {
 
         return pagedResourcesAssembler.toResource(
                 page,
-                processorBackedAssembler
+                simpleResourceAssembler
         );
     }
 }

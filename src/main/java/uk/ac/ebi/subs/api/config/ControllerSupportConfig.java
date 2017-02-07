@@ -3,10 +3,8 @@ package uk.ac.ebi.subs.api.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
 import uk.ac.ebi.subs.api.helpers.SubmittableControllerSupport;
+import uk.ac.ebi.subs.api.resourceAssembly.SimpleResourceAssembler;
 import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.*;
 
@@ -17,15 +15,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Analysis> analysisControllerSupport(
             AnalysisRepository analysisRepository,
             PagedResourcesAssembler<Analysis> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Analysis>> analysisResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Analysis> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Analysis>(
                 analysisRepository,
                 pagedResourcesAssembler,
-                analysisResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -33,15 +29,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Assay> assayControllerSupport(
             AssayRepository assayRepository,
             PagedResourcesAssembler<Assay> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Assay>> assayResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Assay> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Assay>(
                 assayRepository,
                 pagedResourcesAssembler,
-                assayResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -49,15 +43,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<AssayData> assayDataControllerSupport(
             AssayDataRepository assayDataRepository,
             PagedResourcesAssembler<AssayData> pagedResourcesAssembler,
-            ResourceProcessor<Resource<AssayData>> assayDataResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<AssayData> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<AssayData>(
                 assayDataRepository,
                 pagedResourcesAssembler,
-                assayDataResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -65,15 +57,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<EgaDac> egaDacControllerSupport(
             EgaDacRepository egaDacRepository,
             PagedResourcesAssembler<EgaDac> pagedResourcesAssembler,
-            ResourceProcessor<Resource<EgaDac>> egaDacResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<EgaDac> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<EgaDac>(
                 egaDacRepository,
                 pagedResourcesAssembler,
-                egaDacResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -81,15 +71,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<EgaDacPolicy> egaDacPolicyControllerSupport(
             EgaDacPolicyRepository egaDacPolicyRepository,
             PagedResourcesAssembler<EgaDacPolicy> pagedResourcesAssembler,
-            ResourceProcessor<Resource<EgaDacPolicy>> egaDacPolicyResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<EgaDacPolicy> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<EgaDacPolicy>(
                 egaDacPolicyRepository,
                 pagedResourcesAssembler,
-                egaDacPolicyResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -97,15 +85,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<EgaDataset> egaDatasetControllerSupport(
             EgaDatasetRepository egaDatasetRepository,
             PagedResourcesAssembler<EgaDataset> pagedResourcesAssembler,
-            ResourceProcessor<Resource<EgaDataset>> egaDatasetResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<EgaDataset> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<EgaDataset>(
                 egaDatasetRepository,
                 pagedResourcesAssembler,
-                egaDatasetResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -113,15 +99,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Project> projectControllerSupport(
             ProjectRepository projectRepository,
             PagedResourcesAssembler<Project> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Project>> projectResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Project> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Project>(
                 projectRepository,
                 pagedResourcesAssembler,
-                projectResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -129,15 +113,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Protocol> protocolControllerSupport(
             ProtocolRepository protocolRepository,
             PagedResourcesAssembler<Protocol> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Protocol>> protocolResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Protocol> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Protocol>(
                 protocolRepository,
                 pagedResourcesAssembler,
-                protocolResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -145,15 +127,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Sample> sampleControllerSupport(
             SampleRepository sampleRepository,
             PagedResourcesAssembler<Sample> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Sample>> sampleResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Sample> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Sample>(
                 sampleRepository,
                 pagedResourcesAssembler,
-                sampleResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -161,15 +141,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<SampleGroup> sampleGroupControllerSupport(
             SampleGroupRepository sampleGroupRepository,
             PagedResourcesAssembler<SampleGroup> pagedResourcesAssembler,
-            ResourceProcessor<Resource<SampleGroup>> sampleGroupResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<SampleGroup> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<SampleGroup>(
                 sampleGroupRepository,
                 pagedResourcesAssembler,
-                sampleGroupResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
@@ -177,15 +155,13 @@ public class ControllerSupportConfig {
     public SubmittableControllerSupport<Study> studyControllerSupport(
             StudyRepository studyRepository,
             PagedResourcesAssembler<Study> pagedResourcesAssembler,
-            ResourceProcessor<Resource<Study>> studyResourceProcessor,
-            EntityLinks entityLinks
+            SimpleResourceAssembler<Study> simpleResourceAssembler
     ) {
 
         return new SubmittableControllerSupport<Study>(
                 studyRepository,
                 pagedResourcesAssembler,
-                studyResourceProcessor,
-                entityLinks
+                simpleResourceAssembler
         );
     }
 
