@@ -172,6 +172,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).analysisLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
                 return resource;
@@ -199,6 +208,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).assayLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
                 return resource;
@@ -225,6 +243,15 @@ public class SubmittablesResourceProcessors {
                                             defaultPageRequest()
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
+                    );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).assayDataLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
                     );
                 }
 
@@ -254,6 +281,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDacLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
 
@@ -281,6 +317,15 @@ public class SubmittablesResourceProcessors {
                                             defaultPageRequest()
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
+                    );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDacPolicyLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
                     );
                 }
 
@@ -310,6 +355,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDatasetLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
                 return resource;
@@ -336,6 +390,15 @@ public class SubmittablesResourceProcessors {
                                             defaultPageRequest()
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
+                    );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).projectLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
                     );
                 }
 
@@ -364,6 +427,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).protocolLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
                 return resource;
@@ -390,6 +462,15 @@ public class SubmittablesResourceProcessors {
                                             defaultPageRequest()
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
+                    );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).sampleLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
                     );
                 }
 
@@ -419,6 +500,15 @@ public class SubmittablesResourceProcessors {
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
                     );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).sampleGroupLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
+                    );
                 }
 
                 return resource;
@@ -445,6 +535,15 @@ public class SubmittablesResourceProcessors {
                                             defaultPageRequest()
                                     )
                             ).withRel(SubmissionLinks.HISTORY)
+                    );
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).studyLatestVersion(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias()
+                                    )
+                            ).withRel(SubmissionLinks.LATEST_VERSION)
                     );
                 }
 

@@ -2,7 +2,9 @@ package uk.ac.ebi.subs.api.helpers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.PagedResources;
@@ -48,5 +50,18 @@ public class SubmittableControllerSupport<T extends Submittable> {
                 page,
                 simpleResourceAssembler
         );
+    }
+
+    public Resource<T> submittableLatestVersion(String domainName, String alias){
+        Pageable pageable = new PageRequest(0,1);
+        Page<T> page = repository.findByDomainNameAndAliasOrderByCreatedDateDesc(domainName, alias, pageable);
+
+        if (page.getTotalElements() == 0) {
+            throw new ResourceNotFoundException();
+        }
+
+        Resource<T> resource = simpleResourceAssembler.toResource(page.getContent().get(0));
+
+        return resource;
     }
 }
