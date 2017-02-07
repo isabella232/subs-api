@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.helpers.SubmittableControllerSupport;
+import uk.ac.ebi.subs.repository.model.Analysis;
 import uk.ac.ebi.subs.repository.model.*;
 
 @RestController
@@ -18,27 +19,27 @@ import uk.ac.ebi.subs.repository.model.*;
 public class SubmissionContentsController {
 
     @Autowired
-    SubmittableControllerSupport<Analysis> analysisControllerSupport;
+    private SubmittableControllerSupport<Analysis> analysisControllerSupport;
     @Autowired
-    SubmittableControllerSupport<Assay> assayControllerSupport;
+    private SubmittableControllerSupport<Assay> assayControllerSupport;
     @Autowired
-    SubmittableControllerSupport<AssayData> assayDataControllerSupport;
+    private SubmittableControllerSupport<AssayData> assayDataControllerSupport;
     @Autowired
-    SubmittableControllerSupport<EgaDac> egaDacControllerSupport;
+    private SubmittableControllerSupport<EgaDac> egaDacControllerSupport;
     @Autowired
-    SubmittableControllerSupport<EgaDacPolicy> egaDacPolicyControllerSupport;
+    private SubmittableControllerSupport<EgaDacPolicy> egaDacPolicyControllerSupport;
     @Autowired
-    SubmittableControllerSupport<EgaDataset> egaDatasetControllerSupport;
+    private SubmittableControllerSupport<EgaDataset> egaDatasetControllerSupport;
     @Autowired
-    SubmittableControllerSupport<Project> projectControllerSupport;
+    private SubmittableControllerSupport<Project> projectControllerSupport;
     @Autowired
-    SubmittableControllerSupport<Protocol> protocolControllerSupport;
+    private SubmittableControllerSupport<Protocol> protocolControllerSupport;
     @Autowired
-    SubmittableControllerSupport<Sample> sampleControllerSupport;
+    private SubmittableControllerSupport<Sample> sampleControllerSupport;
     @Autowired
-    SubmittableControllerSupport<SampleGroup> sampleGroupControllerSupport;
+    private SubmittableControllerSupport<SampleGroup> sampleGroupControllerSupport;
     @Autowired
-    SubmittableControllerSupport<Study> studyControllerSupport;
+    private SubmittableControllerSupport<Study> studyControllerSupport;
 
     @RequestMapping("/analyses")
     public PagedResources<Resource<Analysis>> submissionAnalyses(

@@ -7,9 +7,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
+import uk.ac.ebi.subs.api.SubmissionContentsController;
+import uk.ac.ebi.subs.api.SubmittedItemsController;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionLinks;
-import uk.ac.ebi.subs.api.SubmissionContentsController;
 import uk.ac.ebi.subs.repository.model.*;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -159,6 +160,19 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<Analysis> process(Resource<Analysis> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).analysisSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }
@@ -173,6 +187,19 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<Assay> process(Resource<Assay> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).assaySubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }
@@ -187,6 +214,21 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<AssayData> process(Resource<AssayData> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).assayDataSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
+
+
                 return resource;
             }
         };
@@ -199,6 +241,21 @@ public class SubmittablesResourceProcessors {
 
             @Override
             public Resource<EgaDac> process(Resource<EgaDac> resource) {
+
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDacSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
+
 
                 return resource;
             }
@@ -213,6 +270,21 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<EgaDacPolicy> process(Resource<EgaDacPolicy> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDacPolicySubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
+
+
                 return resource;
             }
         };
@@ -225,6 +297,20 @@ public class SubmittablesResourceProcessors {
 
             @Override
             public Resource<EgaDataset> process(Resource<EgaDataset> resource) {
+
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).egaDatasetSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }
@@ -239,6 +325,20 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<Project> process(Resource<Project> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).projectSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
+
                 return resource;
             }
         };
@@ -251,6 +351,20 @@ public class SubmittablesResourceProcessors {
 
             @Override
             public Resource<Protocol> process(Resource<Protocol> resource) {
+
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).protocolSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }
@@ -265,6 +379,21 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<Sample> process(Resource<Sample> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).sampleSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
+
+
                 return resource;
             }
         };
@@ -277,6 +406,20 @@ public class SubmittablesResourceProcessors {
 
             @Override
             public Resource<SampleGroup> process(Resource<SampleGroup> resource) {
+
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).sampleGroupSubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }
@@ -291,6 +434,19 @@ public class SubmittablesResourceProcessors {
             @Override
             public Resource<Study> process(Resource<Study> resource) {
 
+                if (resource.getContent().getDomain() != null &&
+                        resource.getContent().getAlias() != null) {
+
+                    resource.add(
+                            linkTo(
+                                    methodOn(SubmittedItemsController.class).studySubmissionHistory(
+                                            resource.getContent().getDomain().getName(),
+                                            resource.getContent().getAlias(),
+                                            defaultPageRequest()
+                                    )
+                            ).withRel(SubmissionLinks.HISTORY)
+                    );
+                }
 
                 return resource;
             }

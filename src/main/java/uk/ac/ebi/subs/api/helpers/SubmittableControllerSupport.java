@@ -41,4 +41,13 @@ public class SubmittableControllerSupport<T extends Submittable> {
                 processorBackedAssembler
         );
     }
+
+    public PagedResources<Resource<T>> submittableSubmissionHistory(String domainName, String alias, Pageable pageable){
+        Page<T> page = repository.findByDomainNameAndAliasOrderByCreatedDateDesc(domainName, alias, pageable);
+
+        return pagedResourcesAssembler.toResource(
+                page,
+                processorBackedAssembler
+        );
+    }
 }

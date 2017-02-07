@@ -147,6 +147,39 @@ public class ApiIntegrationTest {
         assertThat(submissionPatchResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
     }
 
+    @Test
+    public void sampleVersions() throws IOException, UnirestException {
+        Map<String, String> rootRels = rootRels();
+
+        int numberOfSubmissions = 5;
+        for (int i = 0; i < numberOfSubmissions; i++) {
+            HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels);
+
+            String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
+            Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
+
+            assertThat(submissionRels.get("samples"), notNullValue());
+
+            List<Sample> testSamples = Helpers.generateTestSamples();
+            //add samples to the submission
+            for (Sample sample : testSamples) {
+
+                sample.setSubmission(submissionLocation);
+
+                HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples"))
+                        .headers(standardPostHeaders())
+                        .body(sample)
+                        .asJson();
+
+                assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+            }
+        }
+
+
+
+    }
+
+
     private HttpResponse<JsonNode> postSubmission(Map<String, String> rootRels) throws UnirestException {
         //create a new submission
         HttpResponse<JsonNode> submissionResponse = Unirest.post(rootRels.get("submissions"))
@@ -194,7 +227,7 @@ public class ApiIntegrationTest {
                 .body(sample)
                 .asJson();
 
-        logger.info("samplePutResponse: {}",samplePutResponse.getBody());
+        logger.info("samplePutResponse: {}", samplePutResponse.getBody());
         assertThat(samplePutResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
 

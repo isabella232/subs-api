@@ -35,30 +35,29 @@ public class StatusController {
     private PagedResourcesAssembler pagedResourcesAssembler;
 
     @Autowired
-    private ResourceAssembler<Status,Resource<Status>> processingStatusResourceAssembler;
+    private ResourceAssembler<Status, Resource<Status>> processingStatusResourceAssembler;
 
     @Autowired
-    private ResourceAssembler<Status,Resource<Status>> releaseStatusResourceAssembler;
+    private ResourceAssembler<Status, Resource<Status>> releaseStatusResourceAssembler;
 
     @Autowired
-    private ResourceAssembler<Status,Resource<Status>> submissionStatusResourceAssembler;
+    private ResourceAssembler<Status, Resource<Status>> submissionStatusResourceAssembler;
 
     @RequestMapping("processingStatuses")
     public PagedResources<Resource<Status>> allProcessingStatus(Pageable pageable) {
         Page<Status> page = new PageImpl<Status>(processingStatuses, pageable, processingStatuses.size());
 
-        return pagedResourcesAssembler.toResource(page,processingStatusResourceAssembler);
+        return pagedResourcesAssembler.toResource(page, processingStatusResourceAssembler);
     }
 
     @RequestMapping("processingStatuses/{status}")
-    public Resource<Status> processingStatus(@PathVariable String status){
+    public Resource<Status> processingStatus(@PathVariable String status) {
         Optional<Status> optionalStatus = processingStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
-        if (optionalStatus.isPresent()){
+        if (optionalStatus.isPresent()) {
             return processingStatusResourceAssembler.toResource(optionalStatus.get());
-        }
-        else {
+        } else {
             throw new ResourceNotFoundException();
         }
     }
@@ -67,18 +66,17 @@ public class StatusController {
     public PagedResources<Resource<Status>> allReleaseStatus(Pageable pageable) {
         Page<Status> page = new PageImpl<Status>(releaseStatuses, pageable, releaseStatuses.size());
 
-        return pagedResourcesAssembler.toResource(page,releaseStatusResourceAssembler);
+        return pagedResourcesAssembler.toResource(page, releaseStatusResourceAssembler);
     }
 
     @RequestMapping("releaseStatuses/{status}")
-    public Resource<Status> releaseStatus(@PathVariable String status){
+    public Resource<Status> releaseStatus(@PathVariable String status) {
         Optional<Status> optionalStatus = releaseStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
-        if (optionalStatus.isPresent()){
+        if (optionalStatus.isPresent()) {
             return releaseStatusResourceAssembler.toResource(optionalStatus.get());
-        }
-        else {
+        } else {
             throw new ResourceNotFoundException();
         }
     }
@@ -87,18 +85,17 @@ public class StatusController {
     public PagedResources<Resource<Status>> allSubmissionStatus(Pageable pageable) {
         Page<Status> page = new PageImpl<Status>(submissionStatuses, pageable, submissionStatuses.size());
 
-        return pagedResourcesAssembler.toResource(page,submissionStatusResourceAssembler);
+        return pagedResourcesAssembler.toResource(page, submissionStatusResourceAssembler);
     }
 
     @RequestMapping("submissionStatuses/{status}")
-    public Resource<Status> submissionStatus(@PathVariable String status){
+    public Resource<Status> submissionStatus(@PathVariable String status) {
         Optional<Status> optionalStatus = submissionStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
-        if (optionalStatus.isPresent()){
+        if (optionalStatus.isPresent()) {
             return submissionStatusResourceAssembler.toResource(optionalStatus.get());
-        }
-        else {
+        } else {
             throw new ResourceNotFoundException();
         }
     }
