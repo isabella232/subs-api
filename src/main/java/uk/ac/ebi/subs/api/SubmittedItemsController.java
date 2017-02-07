@@ -40,57 +40,57 @@ public class SubmittedItemsController {
     @Autowired
     private SubmittableControllerSupport<Study> studyControllerSupport;
 
-    @RequestMapping("/analysis/{alias}")
+    @RequestMapping("/analysis/{alias}/history")
     public PagedResources<Resource<Analysis>> analysisSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return analysisControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/assays/{alias}")
+    @RequestMapping("/assays/{alias}/history")
     public PagedResources<Resource<Assay>> assaySubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return assayControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/assayData/{alias}")
+    @RequestMapping("/assayData/{alias}/history")
     public PagedResources<Resource<AssayData>> assayDataSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return assayDataControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/egaDacs/{alias}")
+    @RequestMapping("/egaDacs/{alias}/history")
     public PagedResources<Resource<EgaDac>> egaDacSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return egaDacControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/egaDacPolicies/{alias}")
+    @RequestMapping("/egaDacPolicies/{alias}/history")
     public PagedResources<Resource<EgaDacPolicy>> egaDacPolicySubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return egaDacPolicyControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/egaDatasets/{alias}")
+    @RequestMapping("/egaDatasets/{alias}/history")
     public PagedResources<Resource<EgaDataset>> egaDatasetSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return egaDatasetControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/projects/{alias}")
+    @RequestMapping("/projects/{alias}/history")
     public PagedResources<Resource<Project>> projectSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return projectControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/protocols/{alias}")
+    @RequestMapping("/protocols/{alias}/history")
     public PagedResources<Resource<Protocol>> protocolSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return protocolControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/samples/{alias}")
+    @RequestMapping("/samples/{alias}/history")
     public PagedResources<Resource<Sample>> sampleSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return sampleControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/sampleGroups/{alias}")
+    @RequestMapping("/sampleGroups/{alias}/history")
     public PagedResources<Resource<SampleGroup>> sampleGroupSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return sampleGroupControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
-    @RequestMapping("/studies/{alias}")
+    @RequestMapping("/studies/{alias}/history")
     public PagedResources<Resource<Study>> studySubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return studyControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
