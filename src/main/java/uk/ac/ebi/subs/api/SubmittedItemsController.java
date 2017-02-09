@@ -7,10 +7,10 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.helpers.SubmittableControllerSupport;
 import uk.ac.ebi.subs.repository.model.*;
+import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
 @RestController
 @BasePathAwareController
@@ -39,6 +39,9 @@ public class SubmittedItemsController {
     private SubmittableControllerSupport<SampleGroup> sampleGroupControllerSupport;
     @Autowired
     private SubmittableControllerSupport<Study> studyControllerSupport;
+
+    @Autowired
+    private SubmittablesBulkOperations submittablesBulkOperations;
 
     @RequestMapping("/analysis/{alias}")
     public Resource<Analysis> analysisLatestVersion(@PathVariable String domainName, @PathVariable String alias){
@@ -118,6 +121,11 @@ public class SubmittedItemsController {
     @RequestMapping("/protocols/{alias}/history")
     public PagedResources<Resource<Protocol>> protocolSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return protocolControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/samples")
+    public PagedResources<Resource<Sample>> samplesInDomain(@PathVariable String domainName, Pageable pageable){
+        return sampleControllerSupport.pageToPagedResources(submittablesBulkOperations.itemsByDomain(domainName,pageable,Sample.class));
     }
 
     @RequestMapping("/samples/{alias}")
