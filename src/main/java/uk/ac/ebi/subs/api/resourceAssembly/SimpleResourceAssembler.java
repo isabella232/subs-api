@@ -9,7 +9,6 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 public class SimpleResourceAssembler<T extends Identifiable> implements ResourceAssembler<T, Resource<T>> {
 
 
-
     public SimpleResourceAssembler(@Autowired EntityLinks entityLinks) {
 
         this.entityLinks = entityLinks;
@@ -22,14 +21,18 @@ public class SimpleResourceAssembler<T extends Identifiable> implements Resource
     public Resource<T> toResource(T entity) {
         Resource<T> resource = new Resource<T>(entity);
 
-        if (resource.getContent() != null ) {
+        if (resource.getContent() != null) {
             Link link = entityLinks.linkToSingleResource(resource.getContent());
             resource.add(link);
             resource.add(link.withSelfRel());
         }
 
-        if (resource.getContent() != null && resource.getContent() instanceof StoredSubmittable){
-            StoredSubmittable storedSubmittable = (StoredSubmittable)resource.getContent();
+        if (
+                resource.getContent() != null &&
+                        resource.getContent() instanceof StoredSubmittable &&
+                        ((StoredSubmittable) resource.getContent()).getSubmission() != null
+                ) {
+            StoredSubmittable storedSubmittable = (StoredSubmittable) resource.getContent();
             Link link = entityLinks.linkToSingleResource(storedSubmittable.getSubmission());
             resource.add(link);
         }
