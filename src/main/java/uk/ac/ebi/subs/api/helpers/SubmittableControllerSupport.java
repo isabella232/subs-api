@@ -13,13 +13,16 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.api.resourceAssembly.SimpleResourceAssembler;
+import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
+import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
 /**
  * Submittables will have standard controller endpoints available (e.g. find all items within a submission)
  * @param <T>
  */
-public class SubmittableControllerSupport<T extends Submittable> {
+public class SubmittableControllerSupport<T extends StoredSubmittable> {
 
     private SubmittableRepository<T> repository;
     private PagedResourcesAssembler<T> pagedResourcesAssembler;
@@ -34,22 +37,23 @@ public class SubmittableControllerSupport<T extends Submittable> {
         this.simpleResourceAssembler = simpleResourceAssembler;
     }
 
-    public PagedResources<Resource<T>> submittablesInSubmission(String submissionId, Pageable pageable) {
-        Page<T> page = repository.findBySubmissionId(submissionId, pageable);
-
+    public PagedResources<Resource<T>> pageToPagedResources(Page<T> page){
         return pagedResourcesAssembler.toResource(
                 page,
                 simpleResourceAssembler
         );
     }
 
+    public PagedResources<Resource<T>> submittablesInSubmission(String submissionId, Pageable pageable) {
+        Page<T> page = repository.findBySubmissionId(submissionId, pageable);
+
+        return pageToPagedResources(page);
+    }
+
     public PagedResources<Resource<T>> submittableSubmissionHistory(String domainName, String alias, Pageable pageable){
         Page<T> page = repository.findByDomainNameAndAliasOrderByCreatedDateDesc(domainName, alias, pageable);
 
-        return pagedResourcesAssembler.toResource(
-                page,
-                simpleResourceAssembler
-        );
+        return pageToPagedResources(page);
     }
 
     public Resource<T> submittableLatestVersion(String domainName, String alias){
@@ -64,4 +68,5 @@ public class SubmittableControllerSupport<T extends Submittable> {
 
         return resource;
     }
+
 }
