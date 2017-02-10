@@ -1,22 +1,15 @@
 package uk.ac.ebi.subs.api.helpers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.api.resourceAssembly.SimpleResourceAssembler;
-import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
-import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
 /**
  * Submittables will have standard controller endpoints available (e.g. find all items within a submission)
@@ -67,6 +60,12 @@ public class SubmittableControllerSupport<T extends StoredSubmittable> {
         Resource<T> resource = simpleResourceAssembler.toResource(page.getContent().get(0));
 
         return resource;
+    }
+
+    public PagedResources<Resource<T>> submittablesInDomain(String domainName, Pageable pageable){
+        Page<T> page = repository.submittablesInDomain(domainName,pageable);
+
+        return pageToPagedResources(page);
     }
 
 }
