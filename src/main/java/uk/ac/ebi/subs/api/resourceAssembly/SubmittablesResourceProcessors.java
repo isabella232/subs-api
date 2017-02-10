@@ -16,9 +16,6 @@ import uk.ac.ebi.subs.repository.model.*;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-/**
- * Created by davidr on 20/01/2017.
- */
 @Configuration
 public class SubmittablesResourceProcessors {
 
@@ -28,129 +25,6 @@ public class SubmittablesResourceProcessors {
     }
 
     private Class<SubmissionContentsController> submittablesControllerClass = SubmissionContentsController.class;
-
-    @Bean
-    public ResourceProcessor<Resource<Submission>> submissionProcessor() {
-
-        return new ResourceProcessor<Resource<Submission>>() {
-
-            @Override
-            public Resource<Submission> process(Resource<Submission> resource) {
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionAnalyses(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.ANALYSIS)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionAssays(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.ASSAY)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionAssayData(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.ASSAY_DATA)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionEgaDacs(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.EGA_DAC)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionEgaDacPolicies(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.EGA_DAC_POLICY)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionEgaDatasets(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.EGA_DATASET)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionProjects(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.PROJECT)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionProtocols(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.PROTOCOL)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionSamples(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.SAMPLE)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionSampleGroups(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.SAMPLE_GROUP)
-                );
-
-                resource.add(
-                        linkTo(
-                                methodOn(submittablesControllerClass)
-                                        .submissionStudies(
-                                                resource.getContent().getId(),
-                                                defaultPageRequest()
-                                        ))
-                                .withRel(SubmissionLinks.STUDY)
-                );
-
-                return resource;
-            }
-        };
-    }
 
     @Bean
     public ResourceProcessor<Resource<Analysis>> analysisProcessor() {
