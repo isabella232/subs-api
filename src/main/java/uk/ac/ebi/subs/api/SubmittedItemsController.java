@@ -40,8 +40,10 @@ public class SubmittedItemsController {
     @Autowired
     private SubmittableControllerSupport<Study> studyControllerSupport;
 
-    @Autowired
-    private SubmittablesBulkOperations submittablesBulkOperations;
+    @RequestMapping("/analysis")
+    public PagedResources<Resource<Analysis>> analysisInDomain(@PathVariable String domainName, Pageable pageable){
+        return analysisControllerSupport.submittablesInDomain(domainName,pageable);
+    }
 
     @RequestMapping("/analysis/{alias}")
     public Resource<Analysis> analysisLatestVersion(@PathVariable String domainName, @PathVariable String alias){
@@ -51,6 +53,11 @@ public class SubmittedItemsController {
     @RequestMapping("/analysis/{alias}/history")
     public PagedResources<Resource<Analysis>> analysisSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return analysisControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/assays")
+    public PagedResources<Resource<Assay>> assaysInDomain(@PathVariable String domainName, Pageable pageable){
+        return assayControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/assays/{alias}")
@@ -63,6 +70,11 @@ public class SubmittedItemsController {
         return assayControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
+    @RequestMapping("/assayData")
+    public PagedResources<Resource<AssayData>> assayDataInDomain(@PathVariable String domainName, Pageable pageable){
+        return assayDataControllerSupport.submittablesInDomain(domainName,pageable);
+    }
+
     @RequestMapping("/assayData/{alias}")
     public Resource<AssayData> assayDataLatestVersion(@PathVariable String domainName, @PathVariable String alias){
         return assayDataControllerSupport.submittableLatestVersion(domainName,alias);
@@ -71,6 +83,11 @@ public class SubmittedItemsController {
     @RequestMapping("/assayData/{alias}/history")
     public PagedResources<Resource<AssayData>> assayDataSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return assayDataControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/egaDacs")
+    public PagedResources<Resource<EgaDac>> egaDacsInDomain(@PathVariable String domainName, Pageable pageable){
+        return egaDacControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/egaDacs/{alias}")
@@ -83,6 +100,11 @@ public class SubmittedItemsController {
         return egaDacControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
+    @RequestMapping("/egaDacPolicies")
+    public PagedResources<Resource<EgaDacPolicy>> egaDacPoliciesInDomain(@PathVariable String domainName, Pageable pageable){
+        return egaDacPolicyControllerSupport.submittablesInDomain(domainName,pageable);
+    }
+
     @RequestMapping("/egaDacPolicies/{alias}")
     public Resource<EgaDacPolicy> egaDacPolicyLatestVersion(@PathVariable String domainName, @PathVariable String alias){
         return egaDacPolicyControllerSupport.submittableLatestVersion(domainName,alias);
@@ -91,6 +113,11 @@ public class SubmittedItemsController {
     @RequestMapping("/egaDacPolicies/{alias}/history")
     public PagedResources<Resource<EgaDacPolicy>> egaDacPolicySubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return egaDacPolicyControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/egaDatasets")
+    public PagedResources<Resource<EgaDataset>> egaDatasetsInDomain(@PathVariable String domainName, Pageable pageable){
+        return egaDatasetControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/egaDatasets/{alias}")
@@ -103,6 +130,11 @@ public class SubmittedItemsController {
         return egaDatasetControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
+    @RequestMapping("/projects")
+    public PagedResources<Resource<Project>> projectsInDomain(@PathVariable String domainName, Pageable pageable){
+        return projectControllerSupport.submittablesInDomain(domainName,pageable);
+    }
+
     @RequestMapping("/projects/{alias}")
     public Resource<Project> projectLatestVersion(@PathVariable String domainName, @PathVariable String alias){
         return projectControllerSupport.submittableLatestVersion(domainName,alias);
@@ -111,6 +143,11 @@ public class SubmittedItemsController {
     @RequestMapping("/projects/{alias}/history")
     public PagedResources<Resource<Project>> projectSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return projectControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/protocols")
+    public PagedResources<Resource<Protocol>> protocolsInDomain(@PathVariable String domainName, Pageable pageable){
+        return protocolControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/protocols/{alias}")
@@ -125,7 +162,7 @@ public class SubmittedItemsController {
 
     @RequestMapping("/samples")
     public PagedResources<Resource<Sample>> samplesInDomain(@PathVariable String domainName, Pageable pageable){
-        return sampleControllerSupport.pageToPagedResources(submittablesBulkOperations.itemsByDomain(domainName,pageable,Sample.class));
+        return sampleControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/samples/{alias}")
@@ -138,6 +175,11 @@ public class SubmittedItemsController {
         return sampleControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
     }
 
+    @RequestMapping("/sampleGroups")
+    public PagedResources<Resource<SampleGroup>> sampleGroupsInDomain(@PathVariable String domainName, Pageable pageable){
+        return sampleGroupControllerSupport.submittablesInDomain(domainName,pageable);
+    }
+
     @RequestMapping("/sampleGroups/{alias}")
     public Resource<SampleGroup> sampleGroupLatestVersion(@PathVariable String domainName, @PathVariable String alias){
         return sampleGroupControllerSupport.submittableLatestVersion(domainName,alias);
@@ -146,6 +188,11 @@ public class SubmittedItemsController {
     @RequestMapping("/sampleGroups/{alias}/history")
     public PagedResources<Resource<SampleGroup>> sampleGroupSubmissionHistory(@PathVariable String domainName, @PathVariable String alias, Pageable pageable){
         return sampleGroupControllerSupport.submittableSubmissionHistory(domainName,alias,pageable);
+    }
+
+    @RequestMapping("/studies")
+    public PagedResources<Resource<Study>> studiesInDomain(@PathVariable String domainName, Pageable pageable){
+        return studyControllerSupport.submittablesInDomain(domainName,pageable);
     }
 
     @RequestMapping("/studies/{alias}")
