@@ -33,14 +33,12 @@ public class DomainController {
 
 
     @RequestMapping("/domains/{domainName}")
-    public Resource<Domain> getDomain(@PathVariable String domainName) throws UnsupportedEncodingException {
+    public Resource<Domain> getDomain(@PathVariable String domainName) {
         //TODO this is a stub, we should make sure that the domains are real and that the user is authorised
         Domain d = new Domain();
         d.setName(domainName);
 
         Resource<Domain> resource = new Resource<>(d);
-
-        String encodedName = UriUtils.encodePathSegment(d.getName(), StandardCharsets.UTF_8.name());
 
         resource.add(
                 linkTo(
