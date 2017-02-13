@@ -27,6 +27,8 @@ dependencies {
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
 
     testCompile("com.mashape.unirest:unirest-java:1.4.9")
+
+    testCompile project(':subs-test-categories')
 }
 
 ext {
@@ -35,6 +37,7 @@ ext {
 
 test {
     outputs.dir snippetsDir
+
 }
 
 asciidoctor {
