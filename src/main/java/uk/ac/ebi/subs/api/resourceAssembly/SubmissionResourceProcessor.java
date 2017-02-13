@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.api.DomainController;
 import uk.ac.ebi.subs.api.SubmissionContentsController;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionLinks;
@@ -25,6 +26,15 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
+
+        if (resource.getContent().getDomain() != null && resource.getContent().getDomain().getName() != null) {
+            resource.add(
+                    linkTo(
+                            methodOn(DomainController.class)
+                                    .getDomain(resource.getContent().getDomain().getName())
+                    ).withRel("domain")
+            );
+        }
 
         resource.add(
                 linkTo(
