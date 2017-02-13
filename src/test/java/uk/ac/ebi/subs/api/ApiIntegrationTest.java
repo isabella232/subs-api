@@ -42,7 +42,6 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Category(RabbitMQDependentTest.class)
 public class ApiIntegrationTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -101,10 +100,40 @@ public class ApiIntegrationTest {
         assertThat(rootRels.keySet(), hasItems("submissions", "samples"));
     }
 
+    /**
+     * create a submission with some samples and submit it
+     *
+     * @throws IOException
+     * @throws UnirestException
+     */
     @Test
+    @Category(RabbitMQDependentTest.class)
     public void simpleSubmissionWorkflow() throws IOException, UnirestException {
         Map<String, String> rootRels = rootRels();
 
+        String submissionLocation = submissionWithSamples(rootRels);
+
+        //update the submission
+        //create a new submission
+        HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionLocation)
+                .headers(standardPostHeaders())
+                .body("{\"status\": \"Submitted\"}")
+                .asJson();
+
+
+        assertThat(submissionPatchResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+    }
+
+    @Test
+    public void submissionWithSamples() throws IOException, UnirestException {
+        Map<String, String> rootRels = rootRels();
+
+        String submissionLocation = submissionWithSamples(rootRels);
+
+
+    }
+
+    private String submissionWithSamples(Map<String, String> rootRels) throws UnirestException, IOException {
         Submission submission = Helpers.generateSubmission();
         HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels,submission);
 
@@ -140,16 +169,7 @@ public class ApiIntegrationTest {
         JSONArray sampleList = payload.getJSONObject("_embedded").getJSONArray("samples");
 
         assertThat(sampleList.length(), is(equalTo(testSamples.size())));
-
-        //update the submission
-        //create a new submission
-        HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionLocation)
-                .headers(standardPostHeaders())
-                .body("{\"status\": \"Submitted\"}")
-                .asJson();
-
-
-        assertThat(submissionPatchResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        return submissionLocation;
     }
 
     /**
