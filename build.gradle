@@ -37,7 +37,13 @@ ext {
 
 test {
     outputs.dir snippetsDir
+}
 
+task (testsMakesDocs, type: Test) {
+    outputs.dir snippetsDir
+    useJUnit {
+        includeCategories 'uk.ac.ebi.subs.DocumentationProducer'
+    }
 }
 
 asciidoctor {
@@ -45,7 +51,7 @@ asciidoctor {
     sourceDir file('src/main/resources/docs')
     backends 'html5'
     inputs.dir snippetsDir
-    dependsOn test
+    dependsOn testsMakesDocs
 }
 
 jar {
