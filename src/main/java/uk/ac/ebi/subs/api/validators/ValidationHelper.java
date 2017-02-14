@@ -2,7 +2,7 @@ package uk.ac.ebi.subs.api.validators;
 
 
 import org.springframework.validation.Errors;
-import uk.ac.ebi.subs.data.status.Status;
+import uk.ac.ebi.subs.data.status.StatusDescription;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class ValidationHelper {
     public static void validateStatusChange(
             String targetStatusName,
             String currentStatusName,
-            List<Status> statuses,
+            List<StatusDescription> statuses,
             String fieldName,
             Errors errors) {
 
@@ -36,7 +36,7 @@ public class ValidationHelper {
             return; //no change, no need to validate
         }
 
-        Optional<Status> optionalCurrentStatus = statuses
+        Optional<StatusDescription> optionalCurrentStatus = statuses
                 .stream()
                 .filter(s -> s.getStatusName().equals(currentStatusName))
                 .findFirst();
@@ -47,7 +47,7 @@ public class ValidationHelper {
                             + "is not in the processing status list " + statuses);
         }
 
-        Status currentStatus = optionalCurrentStatus.get();
+        StatusDescription currentStatus = optionalCurrentStatus.get();
 
         if (!currentStatus.isUserTransitionPermitted(targetStatusName)) {
             errors.rejectValue(fieldName,

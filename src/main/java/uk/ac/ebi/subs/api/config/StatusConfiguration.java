@@ -2,10 +2,10 @@ package uk.ac.ebi.subs.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.status.ReleaseStatus;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.status.ReleaseStatusEnum;
+import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,18 +15,18 @@ import java.util.List;
 public class StatusConfiguration {
 
     @Bean
-    public List<Status> submissionStatuses() {
-        List<Status> statuses = Arrays.asList(
-                Status.build(SubmissionStatus.Draft, "In preparation")
-                        .addUserTransition(SubmissionStatus.Submitted),
+    public List<StatusDescription> submissionStatuses() {
+        List<StatusDescription> statuses = Arrays.asList(
+                StatusDescription.build(SubmissionStatusEnum.Draft, "In preparation")
+                        .addUserTransition(SubmissionStatusEnum.Submitted),
 
-                Status.build(SubmissionStatus.Submitted, "User has submitted documents for storage by archives")
-                        .addSystemTransition(SubmissionStatus.Processing),
+                StatusDescription.build(SubmissionStatusEnum.Submitted, "User has submitted documents for storage by archives")
+                        .addSystemTransition(SubmissionStatusEnum.Processing),
 
-                Status.build(SubmissionStatus.Processing, "Submission system is processing the submission")
-                        .addSystemTransition(SubmissionStatus.Done),
+                StatusDescription.build(SubmissionStatusEnum.Processing, "Submission system is processing the submission")
+                        .addSystemTransition(SubmissionStatusEnum.Done),
 
-                Status.build(SubmissionStatus.Done, "Submission has been stored in the archives")
+                StatusDescription.build(SubmissionStatusEnum.Done, "Submission has been stored in the archives")
         );
 
         return statuses;
@@ -34,26 +34,26 @@ public class StatusConfiguration {
 
 
     @Bean
-    public List<Status> releaseStatuses() {
-        List<Status> statuses = Arrays.asList(
-                Status.build(ReleaseStatus.Draft, "In preparation")
-                        .addUserTransition(ReleaseStatus.Private),
+    public List<StatusDescription> releaseStatuses() {
+        List<StatusDescription> statuses = Arrays.asList(
+                StatusDescription.build(ReleaseStatusEnum.Draft, "In preparation")
+                        .addUserTransition(ReleaseStatusEnum.Private),
 
-                Status.build(ReleaseStatus.Private, "Stored in an archive but not released yet")
-                        .addUserTransition(ReleaseStatus.Cancelled)
-                        .addSystemTransition(ReleaseStatus.Public),
+                StatusDescription.build(ReleaseStatusEnum.Private, "Stored in an archive but not released yet")
+                        .addUserTransition(ReleaseStatusEnum.Cancelled)
+                        .addSystemTransition(ReleaseStatusEnum.Public),
 
-                Status.build(ReleaseStatus.Cancelled, "Exists in an archive but will not be released")
-                        .addUserTransition(ReleaseStatus.Private),
+                StatusDescription.build(ReleaseStatusEnum.Cancelled, "Exists in an archive but will not be released")
+                        .addUserTransition(ReleaseStatusEnum.Private),
 
-                Status.build(ReleaseStatus.Public, "Available through an archive")
-                        .addSystemTransition(ReleaseStatus.Suppressed)
-                        .addSystemTransition(ReleaseStatus.Killed),
+                StatusDescription.build(ReleaseStatusEnum.Public, "Available through an archive")
+                        .addSystemTransition(ReleaseStatusEnum.Suppressed)
+                        .addSystemTransition(ReleaseStatusEnum.Killed),
 
-                Status.build(ReleaseStatus.Suppressed, "Data available but not findable without the accession")
-                        .addSystemTransition(ReleaseStatus.Public),
+                StatusDescription.build(ReleaseStatusEnum.Suppressed, "Data available but not findable without the accession")
+                        .addSystemTransition(ReleaseStatusEnum.Public),
 
-                Status.build(ReleaseStatus.Killed, "Data not available and metadata not findable without the accession")
+                StatusDescription.build(ReleaseStatusEnum.Killed, "Data not available and metadata not findable without the accession")
 
         );
 
@@ -61,36 +61,36 @@ public class StatusConfiguration {
     }
 
     @Bean
-    public List<Status> processingStatuses() {
-        List<Status> statuses = Arrays.asList(
+    public List<StatusDescription> processingStatuses() {
+        List<StatusDescription> statuses = Arrays.asList(
 
-                Status.build(ProcessingStatus.Draft, "In preparation")
-                        .addUserTransition(ProcessingStatus.Submitted),
+                StatusDescription.build(ProcessingStatusEnum.Draft, "In preparation")
+                        .addUserTransition(ProcessingStatusEnum.Submitted),
 
-                Status.build(ProcessingStatus.Submitted, "User has submitted document for storage by archives")
-                        .addSystemTransition(ProcessingStatus.Dispatched),
+                StatusDescription.build(ProcessingStatusEnum.Submitted, "User has submitted document for storage by archives")
+                        .addSystemTransition(ProcessingStatusEnum.Dispatched),
 
-                Status.build(ProcessingStatus.Dispatched, "Submission system has dispatched document to the archive")
-                        .addSystemTransition(ProcessingStatus.Received),
+                StatusDescription.build(ProcessingStatusEnum.Dispatched, "Submission system has dispatched document to the archive")
+                        .addSystemTransition(ProcessingStatusEnum.Received),
 
-                Status.build(ProcessingStatus.Received, "Archive has received document")
-                        .addSystemTransition(ProcessingStatus.Curation)
-                        .addSystemTransition(ProcessingStatus.Processing),
+                StatusDescription.build(ProcessingStatusEnum.Received, "Archive has received document")
+                        .addSystemTransition(ProcessingStatusEnum.Curation)
+                        .addSystemTransition(ProcessingStatusEnum.Processing),
 
-                Status.build(ProcessingStatus.Curation, "Curation team is reviewing document")
-                        .addSystemTransition(ProcessingStatus.Accepted)
-                        .addSystemTransition(ProcessingStatus.ActionRequired),
+                StatusDescription.build(ProcessingStatusEnum.Curation, "Curation team is reviewing document")
+                        .addSystemTransition(ProcessingStatusEnum.Accepted)
+                        .addSystemTransition(ProcessingStatusEnum.ActionRequired),
 
-                Status.build(ProcessingStatus.Accepted, "Curation team has accepted document")
-                        .addSystemTransition(ProcessingStatus.Processing),
+                StatusDescription.build(ProcessingStatusEnum.Accepted, "Curation team has accepted document")
+                        .addSystemTransition(ProcessingStatusEnum.Processing),
 
-                Status.build(ProcessingStatus.ActionRequired, "Curation team have requested changes or additional information")
-                        .addUserTransition(ProcessingStatus.Submitted),
+                StatusDescription.build(ProcessingStatusEnum.ActionRequired, "Curation team have requested changes or additional information")
+                        .addUserTransition(ProcessingStatusEnum.Submitted),
 
-                Status.build(ProcessingStatus.Processing, "Archive is processing document")
-                        .addSystemTransition(ProcessingStatus.Done),
+                StatusDescription.build(ProcessingStatusEnum.Processing, "Archive is processing document")
+                        .addSystemTransition(ProcessingStatusEnum.Done),
 
-                Status.build(ProcessingStatus.Done, "Archive has stored document")
+                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document")
         );
 
 

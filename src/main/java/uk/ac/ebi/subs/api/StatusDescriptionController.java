@@ -13,46 +13,46 @@ import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.subs.data.status.Status;
+import uk.ac.ebi.subs.data.status.StatusDescription;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @BasePathAwareController
-public class StatusController {
+public class StatusDescriptionController {
 
     @Autowired
-    private List<Status> releaseStatuses;
+    private List<StatusDescription> releaseStatuses;
 
     @Autowired
-    private List<Status> processingStatuses;
+    private List<StatusDescription> processingStatuses;
 
     @Autowired
-    private List<Status> submissionStatuses;
+    private List<StatusDescription> submissionStatuses;
 
     @Autowired
     private PagedResourcesAssembler pagedResourcesAssembler;
 
     @Autowired
-    private ResourceAssembler<Status, Resource<Status>> processingStatusResourceAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler;
 
     @Autowired
-    private ResourceAssembler<Status, Resource<Status>> releaseStatusResourceAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler;
 
     @Autowired
-    private ResourceAssembler<Status, Resource<Status>> submissionStatusResourceAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
 
     @RequestMapping("processingStatuses")
-    public PagedResources<Resource<Status>> allProcessingStatus(Pageable pageable) {
-        Page<Status> page = new PageImpl<Status>(processingStatuses, pageable, processingStatuses.size());
+    public PagedResources<Resource<StatusDescription>> allProcessingStatus(Pageable pageable) {
+        Page<StatusDescription> page = new PageImpl<StatusDescription>(processingStatuses, pageable, processingStatuses.size());
 
         return pagedResourcesAssembler.toResource(page, processingStatusResourceAssembler);
     }
 
     @RequestMapping("processingStatuses/{status}")
-    public Resource<Status> processingStatus(@PathVariable String status) {
-        Optional<Status> optionalStatus = processingStatuses.stream().filter(s -> s.getStatusName().equals(status))
+    public Resource<StatusDescription> processingStatus(@PathVariable String status) {
+        Optional<StatusDescription> optionalStatus = processingStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
         if (optionalStatus.isPresent()) {
@@ -63,15 +63,15 @@ public class StatusController {
     }
 
     @RequestMapping("releaseStatuses")
-    public PagedResources<Resource<Status>> allReleaseStatus(Pageable pageable) {
-        Page<Status> page = new PageImpl<Status>(releaseStatuses, pageable, releaseStatuses.size());
+    public PagedResources<Resource<StatusDescription>> allReleaseStatus(Pageable pageable) {
+        Page<StatusDescription> page = new PageImpl<StatusDescription>(releaseStatuses, pageable, releaseStatuses.size());
 
         return pagedResourcesAssembler.toResource(page, releaseStatusResourceAssembler);
     }
 
     @RequestMapping("releaseStatuses/{status}")
-    public Resource<Status> releaseStatus(@PathVariable String status) {
-        Optional<Status> optionalStatus = releaseStatuses.stream().filter(s -> s.getStatusName().equals(status))
+    public Resource<StatusDescription> releaseStatus(@PathVariable String status) {
+        Optional<StatusDescription> optionalStatus = releaseStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
         if (optionalStatus.isPresent()) {
@@ -82,15 +82,15 @@ public class StatusController {
     }
 
     @RequestMapping("submissionStatuses")
-    public PagedResources<Resource<Status>> allSubmissionStatus(Pageable pageable) {
-        Page<Status> page = new PageImpl<Status>(submissionStatuses, pageable, submissionStatuses.size());
+    public PagedResources<Resource<StatusDescription>> allSubmissionStatus(Pageable pageable) {
+        Page<StatusDescription> page = new PageImpl<StatusDescription>(submissionStatuses, pageable, submissionStatuses.size());
 
         return pagedResourcesAssembler.toResource(page, submissionStatusResourceAssembler);
     }
 
     @RequestMapping("submissionStatuses/{status}")
-    public Resource<Status> submissionStatus(@PathVariable String status) {
-        Optional<Status> optionalStatus = submissionStatuses.stream().filter(s -> s.getStatusName().equals(status))
+    public Resource<StatusDescription> submissionStatus(@PathVariable String status) {
+        Optional<StatusDescription> optionalStatus = submissionStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
 
         if (optionalStatus.isPresent()) {

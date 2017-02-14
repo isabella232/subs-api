@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.api.StatusController;
+import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.api.StatusDescriptionController;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -14,13 +14,13 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class StatusResourceAssemblerConfig {
 
     @Bean
-    public ResourceAssembler<Status, Resource<Status>> submissionStatusResourceAssembler() {
+    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler() {
         return entity -> {
-            Resource<Status> res = new Resource<Status>(entity);
+            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
 
             res.add(
                     linkTo(
-                            methodOn(StatusController.class).submissionStatus(entity.getStatusName())
+                            methodOn(StatusDescriptionController.class).submissionStatus(entity.getStatusName())
                     ).withSelfRel()
             );
 
@@ -29,13 +29,13 @@ public class StatusResourceAssemblerConfig {
     }
 
     @Bean
-    public ResourceAssembler<Status, Resource<Status>> processingStatusResourceAssembler() {
+    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler() {
         return entity -> {
-            Resource<Status> res = new Resource<Status>(entity);
+            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
 
             res.add(
                     linkTo(
-                            methodOn(StatusController.class).processingStatus(entity.getStatusName())
+                            methodOn(StatusDescriptionController.class).processingStatus(entity.getStatusName())
                     ).withSelfRel()
             );
 
@@ -44,13 +44,13 @@ public class StatusResourceAssemblerConfig {
     }
 
     @Bean
-    public ResourceAssembler<Status, Resource<Status>> releaseStatusResourceAssembler() {
+    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler() {
         return entity -> {
-            Resource<Status> res = new Resource<Status>(entity);
+            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
 
             res.add(
                     linkTo(
-                            methodOn(StatusController.class).releaseStatus(entity.getStatusName())
+                            methodOn(StatusDescriptionController.class).releaseStatus(entity.getStatusName())
                     ).withSelfRel()
             );
 

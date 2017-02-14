@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
@@ -29,14 +29,14 @@ public class CoreSubmittableValidationHelper {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     final SubmissionRepository submissionRepository;
-    final List<Status> processingStatuses;
-    final List<Status> releaseStatuses;
+    final List<StatusDescription> processingStatuses;
+    final List<StatusDescription> releaseStatuses;
 
     @Autowired
     public CoreSubmittableValidationHelper(
             SubmissionRepository submissionRepository,
-            List<Status> processingStatuses,
-            List<Status> releaseStatuses) {
+            List<StatusDescription> processingStatuses,
+            List<StatusDescription> releaseStatuses) {
         this.submissionRepository = submissionRepository;
         this.processingStatuses = processingStatuses;
         this.releaseStatuses = releaseStatuses;
@@ -65,9 +65,11 @@ public class CoreSubmittableValidationHelper {
         if (submittable.getSubmission() != null) {
             Submission submission = submittable.getSubmission();
 
-            if (!SubmissionStatus.Draft.name().equals(submission.getStatus())) {
+            /* TODO fix in SUBS-333
+            if (!SubmissionStatusEnum.Draft.name().equals(submission.getStatus())) {
                 errors.reject("submissionLocked","Submission has been submitted, changes are not possible");
             }
+             */
 
         }
 

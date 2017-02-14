@@ -4,7 +4,7 @@ package uk.ac.ebi.subs.api;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.data.component.Submitter;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.client.Sample;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class Helpers {
         sub.setId(UUID.randomUUID().toString());
         d.setName("my-domain");
         sub.setDomain(d);
-        sub.setStatus(SubmissionStatus.Draft.name());
+//TODO fix in SUBS-333        sub.setStatus(SubmissionStatusEnum.Draft.name());
         return sub;
     }
 }

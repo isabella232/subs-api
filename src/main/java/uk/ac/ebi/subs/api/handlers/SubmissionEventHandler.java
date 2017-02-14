@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.api.exceptions.ResourceLockedException;
 import uk.ac.ebi.subs.api.services.SubmissionProcessingService;
 import uk.ac.ebi.subs.api.updateability.OperationControlService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
 import java.util.Date;
 import java.util.UUID;
@@ -38,6 +40,9 @@ public class SubmissionEventHandler {
     @Autowired
     private SubmissionProcessingService submissionProcessingService;
 
+    @Autowired
+    private SubmissionStatusRepository submissionStatusRepository;
+
     /**
      * Give submission an ID and draft status on creation
      * @param submission
@@ -45,8 +50,10 @@ public class SubmissionEventHandler {
     @HandleBeforeCreate
     public void handleBeforeCreate(Submission submission) {
         submission.setId(UUID.randomUUID().toString());
-        submission.setStatus(SubmissionStatus.Draft);
         submission.setCreatedDate(new Date());
+
+        SubmissionStatus submissionStatus = new SubmissionStatus(submission,SubmissionStatusEnum.Draft);
+        submissionStatusRepository.save(submissionStatus);
     }
 
     /**
@@ -66,11 +73,11 @@ public class SubmissionEventHandler {
                 throw new ResourceLockedException();
             }
         }
-
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatus.Submitted.name())){
+/*TODO fix in SUBS-333
+        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatusEnum.Submitted.name())){
             submission.setSubmissionDate(new Date());
         }
-
+*/
     }
 
 
@@ -83,13 +90,15 @@ public class SubmissionEventHandler {
     @HandleAfterSave
     public void handleAfterCreateOrSave(Submission submission) {
         logger.warn("after");
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatus.Submitted.name())) {
+        /* TODO fix in SUBS-333
+        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatusEnum.Submitted.name())) {
             submissionProcessingService.submitSubmissionForProcessing(submission);
         }
+        */
     }
 
-    @HandleAfterDelete
-    public void handleAfterDelete(Submission submission) {
+    @HandleBeforeDelete
+    public void handleBeforeDelete(Submission submission) {
         submissionProcessingService.deleteSubmissionContents(submission);
     }
 

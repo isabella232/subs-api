@@ -9,8 +9,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class SubmissionValidator implements Validator {
     private SubmitterValidator submitterValidator;
 
     @Autowired
-    private List<Status> submissionStatuses;
+    private List<StatusDescription> submissionStatuses;
 
     @Override
     public void validate(Object target, Errors errors) {
@@ -38,7 +38,6 @@ public class SubmissionValidator implements Validator {
         Submission submission = (Submission) target;
 
         ValidationUtils.rejectIfEmpty(errors, "submitter", "required", "submitter is required");
-        ValidationUtils.rejectIfEmpty(errors, "status", "required", "status is required");
         ValidationUtils.rejectIfEmpty(errors, "domain", "required", "domain is required");
 
         try {
@@ -59,11 +58,13 @@ public class SubmissionValidator implements Validator {
             Submission storedVersion = submissionRepository.findOne(submission.getId());
 
             if (storedVersion != null) {
-                if (!storedVersion.getStatus().equals(SubmissionStatus.Draft.name())) {
+                /* TODO fix in SUBS-333
+                if (!storedVersion.getStatus().equals(SubmissionStatusEnum.Draft.name())) {
                     errors.reject("submissionLocked", "Submission has been submitted, changes are not possible");
                 } else {
                     validateAgainstStoredVersion(submission, storedVersion, errors);
                 }
+                */
             }
         }
 
@@ -82,7 +83,7 @@ public class SubmissionValidator implements Validator {
 
         domainCannotChange(target, storedVersion, errors);
 
-        statusChangeMustBePermitted(target, storedVersion, errors);
+        //TODO fix in SUBS-333 statusChangeMustBePermitted(target, storedVersion, errors);
 
         createdDateCannotChange(target, storedVersion, errors);
 
@@ -90,6 +91,8 @@ public class SubmissionValidator implements Validator {
     }
 
     private void statusChangeMustBePermitted(Submission target, Submission storedVersion, Errors errors) {
+        /*
+        TODO fix in SUBS-333
         ValidationHelper.validateStatusChange(
                 target.getStatus(),
                 storedVersion.getStatus(),
@@ -97,6 +100,8 @@ public class SubmissionValidator implements Validator {
                 "status",
                 errors
         );
+
+        */
     }
 
     private void submitterCannotChange(Submission target, Submission storedVersion, Errors errors) {
