@@ -1,7 +1,9 @@
 package uk.ac.ebi.subs.api.resourceAssembly;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
@@ -9,6 +11,8 @@ import uk.ac.ebi.subs.api.DomainController;
 import uk.ac.ebi.subs.api.SubmissionContentsController;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionLinks;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -23,19 +27,21 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         return new PageRequest(0, 1);
     }
 
+    @Autowired private SubmissionStatusRepository submissionStatusRepository;
+
+    @Autowired private RepositoryEntityLinks repositoryEntityLinks;
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
 
-        if (resource.getContent().getDomain() != null && resource.getContent().getDomain().getName() != null) {
-            resource.add(
-                    linkTo(
-                            methodOn(DomainController.class)
-                                    .getDomain(resource.getContent().getDomain().getName())
-                    ).withRel("domain")
-            );
-        }
+        addStatusRel(resource);
+        addDomainRel(resource);
+        addContentsRels(resource);
 
+        return resource;
+    }
+
+    private void addContentsRels(Resource<Submission> resource) {
         resource.add(
                 linkTo(
                         methodOn(submittablesControllerClass)
@@ -145,8 +151,24 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
                                 ))
                         .withRel(SubmissionLinks.STUDY)
         );
+    }
 
-        return resource;
+    private void addDomainRel(Resource<Submission> resource) {
+        if (resource.getContent().getDomain() != null && resource.getContent().getDomain().getName() != null) {
+            resource.add(
+                    linkTo(
+                            methodOn(DomainController.class)
+                                    .getDomain(resource.getContent().getDomain().getName())
+                    ).withRel("domain")
+            );
+        }
+    }
+
+    private void addStatusRel(Resource<Submission> resource) {
+        SubmissionStatus status = submissionStatusRepository.findBySubmission(resource.getContent());
+        resource.add(
+                repositoryEntityLinks.linkToSingleResource(status)
+        );
     }
 
 
