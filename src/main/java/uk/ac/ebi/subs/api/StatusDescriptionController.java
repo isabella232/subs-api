@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @BasePathAwareController
+@RequestMapping("/statusDescriptions")
 public class StatusDescriptionController {
 
     @Autowired
@@ -43,14 +44,14 @@ public class StatusDescriptionController {
     @Autowired
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
 
-    @RequestMapping("processingStatuses")
+    @RequestMapping("/processingStatuses")
     public PagedResources<Resource<StatusDescription>> allProcessingStatus(Pageable pageable) {
         Page<StatusDescription> page = new PageImpl<StatusDescription>(processingStatuses, pageable, processingStatuses.size());
 
         return pagedResourcesAssembler.toResource(page, processingStatusResourceAssembler);
     }
 
-    @RequestMapping("processingStatuses/{status}")
+    @RequestMapping("/processingStatuses/{status}")
     public Resource<StatusDescription> processingStatus(@PathVariable String status) {
         Optional<StatusDescription> optionalStatus = processingStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
@@ -62,14 +63,14 @@ public class StatusDescriptionController {
         }
     }
 
-    @RequestMapping("releaseStatuses")
+    @RequestMapping("/releaseStatuses")
     public PagedResources<Resource<StatusDescription>> allReleaseStatus(Pageable pageable) {
         Page<StatusDescription> page = new PageImpl<StatusDescription>(releaseStatuses, pageable, releaseStatuses.size());
 
         return pagedResourcesAssembler.toResource(page, releaseStatusResourceAssembler);
     }
 
-    @RequestMapping("releaseStatuses/{status}")
+    @RequestMapping("/releaseStatuses/{status}")
     public Resource<StatusDescription> releaseStatus(@PathVariable String status) {
         Optional<StatusDescription> optionalStatus = releaseStatuses.stream().filter(s -> s.getStatusName().equals(status))
                 .findFirst();
@@ -81,7 +82,7 @@ public class StatusDescriptionController {
         }
     }
 
-    @RequestMapping("submissionStatuses")
+    @RequestMapping("/submissionStatuses")
     public PagedResources<Resource<StatusDescription>> allSubmissionStatus(Pageable pageable) {
         Page<StatusDescription> page = new PageImpl<StatusDescription>(submissionStatuses, pageable, submissionStatuses.size());
 
