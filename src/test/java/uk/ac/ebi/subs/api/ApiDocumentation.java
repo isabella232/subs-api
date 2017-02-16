@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -82,7 +83,7 @@ public class ApiDocumentation {
 
         this.submissionRepository.save(sub);
 
-        this.mockMvc.perform(get("/api/submissions/search/findByDomainName?domainName={domainName}",sub.getDomain().getName())
+        this.mockMvc.perform(get("/api/domains/{domainName}/submissions",sub.getDomain().getName())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(
@@ -94,13 +95,29 @@ public class ApiDocumentation {
                                 responseFields(
                                         fieldWithPath("_links").description("Links to other resources"),
                                         fieldWithPath("_embedded.submissions").description("Submissions matching the domain name"),
-                                        fieldWithPath("page.size").description("The number of resources in this page"),
-                                        fieldWithPath("page.totalElements").description("The total number of resources"),
-                                        fieldWithPath("page.totalPages").description("The total number of pages"),
-                                        fieldWithPath("page.number").description("The page number")
+                                        paginationPageSizeDescriptor(),
+                                        paginationTotalElementsDescriptor(),
+                                        paginationTotalPagesDescriptor(),
+                                        paginationPageNumberDescriptor()
                                 )
                         )
                 );
+    }
+
+    private FieldDescriptor paginationPageNumberDescriptor() {
+        return fieldWithPath("page.number").description("The page number");
+    }
+
+    private FieldDescriptor paginationTotalPagesDescriptor() {
+        return fieldWithPath("page.totalPages").description("The total number of pages");
+    }
+
+    private FieldDescriptor paginationTotalElementsDescriptor() {
+        return fieldWithPath("page.totalElements").description("The total number of resources");
+    }
+
+    private FieldDescriptor paginationPageSizeDescriptor() {
+        return fieldWithPath("page.size").description("The number of resources in this page");
     }
 /*
     @Test
