@@ -33,6 +33,8 @@ public class DomainController {
     @Autowired
     private SimpleResourceAssembler<Submission> simpleResourceAssembler;
 
+    @Autowired
+    private PagedResourcesAssembler<Submission> pagedResourcesAssembler;
 
     @RequestMapping("/domains/{domainName}")
     public Resource<Domain> getDomain(@PathVariable String domainName) {
@@ -63,8 +65,7 @@ public class DomainController {
     @RequestMapping("/domains/{domainName}/submissions")
     public PagedResources<Resource<Submission>> domainSubmissions(
             @PathVariable String domainName,
-            Pageable pageable,
-            PagedResourcesAssembler<Submission> pagedResourcesAssembler) {
+            Pageable pageable) {
         Page<Submission> page = submissionRepository.findByDomainName(domainName, pageable);
 
         return pagedResourcesAssembler.toResource(page, simpleResourceAssembler);

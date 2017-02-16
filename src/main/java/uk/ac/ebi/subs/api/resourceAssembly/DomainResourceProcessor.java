@@ -24,7 +24,6 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
     private Pageable defaultPageRequest() {
         return new PageRequest(0, 1);
     }
-    @Autowired private PagedResourcesAssembler<Submission> pagedResourcesAssembler;
 
     @Override
     public Resource<Domain> process(Resource<Domain> resource) {
@@ -35,7 +34,7 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
         /* submissions */
         resource.add(
                 linkTo(
-                        methodOn(DomainController.class).domainSubmissions(domainName,pageable,pagedResourcesAssembler)
+                        methodOn(DomainController.class).domainSubmissions(domainName,pageable)
                 ).withRel(SubmissionLinks.SUBMISSION)
         );
 
