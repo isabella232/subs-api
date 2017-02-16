@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
+import uk.ac.ebi.subs.api.updateability.OperationControlService;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.status.StatusDescription;
-import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 
-import java.util.List;
+import java.util.Map;
 
 @Component
 public class SubmissionValidator implements Validator {
@@ -21,16 +21,24 @@ public class SubmissionValidator implements Validator {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
+    public SubmissionValidator(
+            SubmissionRepository submissionRepository,
+            DomainValidator domainValidator,
+            SubmitterValidator submitterValidator,
+            OperationControlService operationControlService
+    ) {
+        this.submissionRepository = submissionRepository;
+        this.domainValidator = domainValidator;
+        this.submitterValidator = submitterValidator;
+        this.operationControlService = operationControlService;
+    }
+
+
     private SubmissionRepository submissionRepository;
-
-    @Autowired
     private DomainValidator domainValidator;
-
-    @Autowired
     private SubmitterValidator submitterValidator;
+    private OperationControlService operationControlService;
 
-    @Autowired
-    private List<StatusDescription> submissionStatuses;
 
     @Override
     public void validate(Object target, Errors errors) {
@@ -58,20 +66,19 @@ public class SubmissionValidator implements Validator {
             Submission storedVersion = submissionRepository.findOne(submission.getId());
 
             if (storedVersion != null) {
-                /* TODO fix in SUBS-333
-                if (!storedVersion.getStatus().equals(SubmissionStatusEnum.Draft.name())) {
+
+
+                if (!operationControlService.isUpdateable(submission)) {
                     errors.reject("submissionLocked", "Submission has been submitted, changes are not possible");
                 } else {
                     validateAgainstStoredVersion(submission, storedVersion, errors);
                 }
-                */
             }
         }
 
-        if (errors.hasErrors()){
-            logger.error("validation has errors {}",errors.getAllErrors());
-        }
-        else {
+        if (errors.hasErrors()) {
+            logger.error("validation has errors {}", errors.getAllErrors());
+        } else {
             logger.error("no validation errors");
         }
 
@@ -83,25 +90,10 @@ public class SubmissionValidator implements Validator {
 
         domainCannotChange(target, storedVersion, errors);
 
-        //TODO fix in SUBS-333 statusChangeMustBePermitted(target, storedVersion, errors);
 
         createdDateCannotChange(target, storedVersion, errors);
 
         submittedDateCannotChange(target, storedVersion, errors);
-    }
-
-    private void statusChangeMustBePermitted(Submission target, Submission storedVersion, Errors errors) {
-        /*
-        TODO fix in SUBS-333
-        ValidationHelper.validateStatusChange(
-                target.getStatus(),
-                storedVersion.getStatus(),
-                submissionStatuses,
-                "status",
-                errors
-        );
-
-        */
     }
 
     private void submitterCannotChange(Submission target, Submission storedVersion, Errors errors) {

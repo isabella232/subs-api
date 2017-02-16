@@ -7,18 +7,34 @@ import uk.ac.ebi.subs.data.status.ReleaseStatusEnum;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 @Configuration
 public class StatusConfiguration {
 
+
+    @Bean
+    public Map<String, StatusDescription> submissionStatusDescriptionMap() {
+        return statusListToMapKeyedOnName(submissionStatuses());
+    }
+
+    @Bean
+    public Map<String, StatusDescription> processingStatusDescriptionMap() {
+        return statusListToMapKeyedOnName(processingStatuses());
+    }
+
+    @Bean
+    public Map<String, StatusDescription> releaseStatusDescriptionMap() {
+        return statusListToMapKeyedOnName(releaseStatuses());
+    }
+
     @Bean
     public List<StatusDescription> submissionStatuses() {
         List<StatusDescription> statuses = Arrays.asList(
                 StatusDescription.build(SubmissionStatusEnum.Draft, "In preparation")
-                        .addUserTransition(SubmissionStatusEnum.Submitted),
+                        .addUserTransition(SubmissionStatusEnum.Submitted)
+                        .acceptUpdates(),
 
                 StatusDescription.build(SubmissionStatusEnum.Submitted, "User has submitted documents for storage by archives")
                         .addSystemTransition(SubmissionStatusEnum.Processing),
@@ -29,7 +45,7 @@ public class StatusConfiguration {
                 StatusDescription.build(SubmissionStatusEnum.Done, "Submission has been stored in the archives")
         );
 
-        return statuses;
+        return Collections.unmodifiableList(statuses);
     }
 
 
@@ -65,7 +81,8 @@ public class StatusConfiguration {
         List<StatusDescription> statuses = Arrays.asList(
 
                 StatusDescription.build(ProcessingStatusEnum.Draft, "In preparation")
-                        .addUserTransition(ProcessingStatusEnum.Submitted),
+                        .addUserTransition(ProcessingStatusEnum.Submitted)
+                        .acceptUpdates(),
 
                 StatusDescription.build(ProcessingStatusEnum.Submitted, "User has submitted document for storage by archives")
                         .addSystemTransition(ProcessingStatusEnum.Dispatched),
@@ -85,7 +102,8 @@ public class StatusConfiguration {
                         .addSystemTransition(ProcessingStatusEnum.Processing),
 
                 StatusDescription.build(ProcessingStatusEnum.ActionRequired, "Curation team have requested changes or additional information")
-                        .addUserTransition(ProcessingStatusEnum.Submitted),
+                        .addUserTransition(ProcessingStatusEnum.Submitted)
+                        .acceptUpdates(),
 
                 StatusDescription.build(ProcessingStatusEnum.Processing, "Archive is processing document")
                         .addSystemTransition(ProcessingStatusEnum.Done),
@@ -95,6 +113,14 @@ public class StatusConfiguration {
 
 
         return statuses;
+    }
+
+    private Map<String, StatusDescription> statusListToMapKeyedOnName(List<StatusDescription> statusDescriptions) {
+        final Map<String, StatusDescription> stringStatusDescriptionMap = new HashMap<>(statusDescriptions.size());
+
+        statusDescriptions.forEach(sd -> stringStatusDescriptionMap.put(sd.getStatusName(), sd));
+
+        return Collections.unmodifiableMap(stringStatusDescriptionMap);
     }
 
 }

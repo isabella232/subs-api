@@ -5,30 +5,34 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
+import uk.ac.ebi.subs.api.updateability.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 @Component
-public class SubmissionStatusValidator implements Validator{
+public class SubmissionStatusValidator implements Validator {
 
 
     @Autowired
     public SubmissionStatusValidator(
             SubmissionStatusRepository submissionStatusRepository,
-            List<StatusDescription> submissionStatuses
-    ){
+            OperationControlService operationControlService,
+            Map<String, StatusDescription> submissionStatusDescriptionMap
+
+    ) {
         this.submissionStatusRepository = submissionStatusRepository;
-        this.submissionStatuses = submissionStatuses;
+        this.submissionStatusDescriptionMap = submissionStatusDescriptionMap;
     }
 
 
-    private List<StatusDescription> submissionStatuses;
+    private Map<String, StatusDescription> submissionStatusDescriptionMap;
     private SubmissionStatusRepository submissionStatusRepository;
+    private OperationControlService operationControlService;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -44,38 +48,28 @@ public class SubmissionStatusValidator implements Validator{
 
         if (errors.hasErrors()) return;
 
-        String targetStatusName = submissionStatus.getStatus();
-        Optional<StatusDescription> targetStatusDescriptionOptional = submissionStatuses.stream()
-                .filter(s -> s.getStatusName().equals(targetStatusName))
-                .findFirst();
 
-        if (!targetStatusDescriptionOptional.isPresent()){
-            errors.rejectValue("status","invalid status","not a recognised status");
+
+        String targetStatusName = submissionStatus.getStatus();
+
+
+        if (!submissionStatusDescriptionMap.containsKey(targetStatusName)) {
+            errors.rejectValue("status", "invalid status", "not a recognised status");
             return;
         }
 
-        StatusDescription targetStatusDescription = targetStatusDescriptionOptional.get();
+        StatusDescription targetStatusDescription = submissionStatusDescriptionMap.get(targetStatusName);
 
 
         SubmissionStatus currentSubmissionStatus = submissionStatusRepository.findOne(submissionStatus.getId());
-        Optional<StatusDescription> currentStatusDescriptionOptional = submissionStatuses.stream()
-                .filter(s -> s.getStatusName().equals(currentSubmissionStatus.getStatus()))
-                .findFirst();
+        StatusDescription currentStatusDescription = submissionStatusDescriptionMap.get(currentSubmissionStatus.getStatus());
 
-        if (!currentStatusDescriptionOptional.isPresent()){
-            //TODO how to handle this scenario - database entry has invalid status
-            return;
-        }
-
-        StatusDescription currentStatusDescription = currentStatusDescriptionOptional.get();
-
-        if (!currentStatusDescription.isUserTransitionPermitted(targetStatusName)){
-            errors.rejectValue("status","invalid status change","not a permitted status change");
+        if (!currentStatusDescription.isUserTransitionPermitted(targetStatusName)) {
+            errors.rejectValue("status", "invalid status change", "not a permitted status change");
             return;
         }
 
         submissionStatus.setSubmission(currentSubmissionStatus.getSubmission());
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
-
     }
 }
