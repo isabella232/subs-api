@@ -166,9 +166,11 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
     private void addStatusRel(Resource<Submission> resource) {
         SubmissionStatus status = submissionStatusRepository.findBySubmission(resource.getContent());
-        resource.add(
-                repositoryEntityLinks.linkToSingleResource(status)
-        );
+        if (status != null) {
+            resource.add(
+                    repositoryEntityLinks.linkToSingleResource(status)
+            );
+        }
     }
 
 
