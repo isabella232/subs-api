@@ -58,7 +58,9 @@ public class SubmissionEventHandler {
         submission.setCreatedDate(new Date());
 
         SubmissionStatus submissionStatus = new SubmissionStatus(SubmissionStatusEnum.Draft);
+        submissionStatus.setId(UUID.randomUUID().toString());
         submissionStatusRepository.insert(submissionStatus);
+
         submission.setSubmissionStatus(submissionStatus);
 
         submissionEventService.submissionCreated(submission);

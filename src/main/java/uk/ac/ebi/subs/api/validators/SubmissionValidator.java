@@ -116,7 +116,7 @@ public class SubmissionValidator implements Validator {
          * Spring Data Auditing is set for this object, but it doesn't maintain the createdDate on save
          */
 
-//TODO fix in SUBS-333        target.setCreatedDate(storedVersion.getCreatedDate());
+        target.setCreatedDate(storedVersion.getCreatedDate());
     }
 
     private void submittedDateCannotChange(Submission target, Submission storedVersion, Errors errors) {

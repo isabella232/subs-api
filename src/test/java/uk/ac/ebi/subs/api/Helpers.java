@@ -6,6 +6,7 @@ import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.client.Sample;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,9 @@ public class Helpers {
         sub.setId(UUID.randomUUID().toString());
         d.setName("my-domain");
         sub.setDomain(d);
-//TODO fix in SUBS-333        sub.setStatus(SubmissionStatusEnum.Draft.name());
+
+        sub.setSubmissionStatus(new SubmissionStatus(SubmissionStatusEnum.Draft));
+
         return sub;
     }
 }

@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -55,6 +56,9 @@ public class ApiDocumentation {
     SubmissionRepository submissionRepository;
 
     @Autowired
+    SubmissionStatusRepository submissionStatusRepository;
+
+    @Autowired
     private WebApplicationContext context;
 
     private MockMvc mockMvc;
@@ -79,7 +83,9 @@ public class ApiDocumentation {
 
         Submission sub = Helpers.generateTestSubmission();
 
+        this.submissionStatusRepository.save(sub.getSubmissionStatus());
         this.submissionRepository.save(sub);
+
 
         this.mockMvc.perform(get("/api/domains/{domainName}/submissions", sub.getDomain().getName())
                 .accept(MediaType.APPLICATION_JSON))
