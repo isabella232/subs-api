@@ -124,6 +124,7 @@ public class ApiIntegrationTest {
 
     @Test
     @Category(RabbitMQDependentTest.class)
+    //Requires dispatcher to delete the contents
     public void postThenDeleteSubmission() throws UnirestException, IOException {
         Map<String, String> rootRels = rootRels();
 
@@ -132,7 +133,7 @@ public class ApiIntegrationTest {
                 .headers(standardPostHeaders())
                 .asJson();
 
-        assertThat(deleteResponse.getStatus(),equalTo(HttpStatus.NO_CONTENT.value()));
+        assertThat(deleteResponse.getStatus(), equalTo(HttpStatus.NO_CONTENT.value()));
 
         List<uk.ac.ebi.subs.repository.model.Submission> submissions = submissionRepository.findAll();
         assertThat(submissions, empty());
@@ -141,7 +142,7 @@ public class ApiIntegrationTest {
         assertThat(samples, empty());
 
         List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
-        assertThat(submissionStatuses,empty());
+        assertThat(submissionStatuses, empty());
 
 
     }
@@ -159,9 +160,36 @@ public class ApiIntegrationTest {
 
         String submissionLocation = submissionWithSamples(rootRels);
 
+        HttpResponse<JsonNode> submissionGetResponse = Unirest
+                .get(submissionLocation)
+                .headers(standardGetHeaders())
+                .asJson();
+
+        assertThat(submissionGetResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject payload = submissionGetResponse.getBody().getObject();
+
+        Map<String,String> rels = relsFromPayload(payload);
+
+        assertThat(rels.get("submissionStatus"),notNullValue());
+        String submissionStatusLocation = rels.get("submissionStatus");
+
+        HttpResponse<JsonNode> submissionStatusGetResponse = Unirest
+                .get(submissionStatusLocation)
+                .headers(standardGetHeaders())
+                .asJson();
+
+        assertThat(submissionStatusGetResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject statusPayload = submissionStatusGetResponse.getBody().getObject();
+
+        rels = relsFromPayload(statusPayload);
+
+        assertThat(rels.get("self"),notNullValue());
+        submissionStatusLocation = rels.get("self");
+
+
         //update the submission
         //create a new submission
-        HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionLocation)
+        HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionStatusLocation)
                 .headers(standardPostHeaders())
                 .body("{\"status\": \"Submitted\"}")
                 .asJson();

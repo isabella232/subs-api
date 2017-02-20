@@ -67,7 +67,5 @@ public class SubmissionStatusValidator implements Validator {
             errors.rejectValue("status", "invalid status change", "not a permitted status change");
             return;
         }
-
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
     }
 }
