@@ -26,9 +26,11 @@ public class OperationControlServiceImpl implements OperationControlService {
 
     @Autowired
     public OperationControlServiceImpl(
-            Map<String, StatusDescription> submissionStatusDescriptionMap
+            Map<String, StatusDescription> submissionStatusDescriptionMap,
+            Map<String, StatusDescription> processingStatusDescriptionMap
     ) {
         this.submissionStatusDescriptionMap = submissionStatusDescriptionMap;
+        this.processingStatusDescriptionMap = processingStatusDescriptionMap;
     }
 
 
