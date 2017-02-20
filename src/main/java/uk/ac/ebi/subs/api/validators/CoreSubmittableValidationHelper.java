@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
-import uk.ac.ebi.subs.api.updateability.OperationControlService;
+import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;

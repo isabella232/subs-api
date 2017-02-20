@@ -5,13 +5,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.api.updateability.OperationControlService;
+import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
 import java.util.Map;
-import java.util.Optional;
 
 
 @Component
@@ -69,7 +68,6 @@ public class SubmissionStatusValidator implements Validator {
             return;
         }
 
-        submissionStatus.setSubmission(currentSubmissionStatus.getSubmission());
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
     }
 }

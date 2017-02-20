@@ -1,7 +1,7 @@
 package uk.ac.ebi.subs.api;
 
 
-import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;

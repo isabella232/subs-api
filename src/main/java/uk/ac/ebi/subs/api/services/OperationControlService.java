@@ -1,8 +1,9 @@
-package uk.ac.ebi.subs.api.updateability;
+package uk.ac.ebi.subs.api.services;
 
 
-import uk.ac.ebi.subs.data.Submission;
+
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 public interface OperationControlService {

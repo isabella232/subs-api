@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.api.updateability.OperationControlService;
-import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 @Component
 public class SubmissionValidator implements Validator {

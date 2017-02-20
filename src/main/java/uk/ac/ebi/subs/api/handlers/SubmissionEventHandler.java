@@ -3,11 +3,12 @@ package uk.ac.ebi.subs.api.handlers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.annotation.*;
+import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
+import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.core.annotation.HandleBeforeSave;
+import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.exceptions.ResourceLockedException;
-import uk.ac.ebi.subs.api.services.SubmissionProcessingService;
-import uk.ac.ebi.subs.api.updateability.OperationControlService;
+import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -31,15 +32,19 @@ public class SubmissionEventHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private OperationControlService operationControlService;
+    public SubmissionEventHandler(
+            SubmissionRepository submissionRepository,
+            SubmissionEventService submissionEventService,
+            SubmissionStatusRepository submissionStatusRepository
+    ) {
+        this.submissionEventService = submissionEventService;
+        this.submissionStatusRepository = submissionStatusRepository;
+        this.submissionRepository = submissionRepository;
+    }
 
-    @Autowired
+
     private SubmissionRepository submissionRepository;
-
-    @Autowired
-    private SubmissionProcessingService submissionProcessingService;
-
-    @Autowired
+    private SubmissionEventService submissionEventService;
     private SubmissionStatusRepository submissionStatusRepository;
 
     /**
@@ -52,8 +57,11 @@ public class SubmissionEventHandler {
         submission.setId(UUID.randomUUID().toString());
         submission.setCreatedDate(new Date());
 
-        SubmissionStatus submissionStatus = new SubmissionStatus(submission, SubmissionStatusEnum.Draft);
-        submissionStatusRepository.save(submissionStatus);
+        SubmissionStatus submissionStatus = new SubmissionStatus(SubmissionStatusEnum.Draft);
+        submissionStatusRepository.insert(submissionStatus);
+        submission.setSubmissionStatus(submissionStatus);
+
+        submissionEventService.submissionCreated(submission);
     }
 
     /**
@@ -67,39 +75,14 @@ public class SubmissionEventHandler {
     public void handleBeforeSave(Submission submission) {
 
         Submission storedSubmission = submissionRepository.findOne(submission.getId());
+        submission.setSubmissionStatus(storedSubmission.getSubmissionStatus());
 
-        if (storedSubmission != null) {
-            if (!operationControlService.isUpdateable(storedSubmission)) {
-                throw new ResourceLockedException();
-            }
-        }
-/*TODO fix in SUBS-333
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatusEnum.Submitted.name())){
-            submission.setSubmissionDate(new Date());
-        }
-*/
-    }
-
-
-    /**
-     * Once the submission has been stored, if it has a status of submitted, submit it for processing
-     *
-     * @param submission
-     */
-    @HandleAfterCreate
-    @HandleAfterSave
-    public void handleAfterCreateOrSave(Submission submission) {
-        logger.warn("after");
-        /* TODO fix in SUBS-333
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatusEnum.Submitted.name())) {
-            submissionProcessingService.submitSubmissionForProcessing(submission);
-        }
-        */
+        submissionEventService.submissionUpdated(submission);
     }
 
     @HandleBeforeDelete
     public void handleBeforeDelete(Submission submission) {
-        submissionProcessingService.deleteSubmissionContents(submission);
+        submissionEventService.submissionDeleted(submission);
     }
 
 

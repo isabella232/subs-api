@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -34,13 +34,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * using the files in src/resources/docs/ascidocs
  *
  * @see <a href="https://github.com/EBISPOT/OLS/blob/master/ols-web/src/test/java/uk/ac/ebi/spot/ols/api/ApiDocumentation.java">OLS ApiDocumentation.java</a>
- *
+ * <p>
  * gives this
- *
  * @see <a href="http://www.ebi.ac.uk/ols/docs/api">OLS API Docs<</a>
- *
+ * <p>
  * API documentation should learn from the excellent example at @see <a href="https://developer.github.com/v3/">GitHub</a>
- *
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
@@ -83,7 +81,7 @@ public class ApiDocumentation {
 
         this.submissionRepository.save(sub);
 
-        this.mockMvc.perform(get("/api/domains/{domainName}/submissions",sub.getDomain().getName())
+        this.mockMvc.perform(get("/api/domains/{domainName}/submissions", sub.getDomain().getName())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(

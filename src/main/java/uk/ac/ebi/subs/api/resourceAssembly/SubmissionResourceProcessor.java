@@ -11,7 +11,6 @@ import uk.ac.ebi.subs.api.DomainController;
 import uk.ac.ebi.subs.api.SubmissionContentsController;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionLinks;
-import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -21,20 +20,29 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Component
 public class SubmissionResourceProcessor implements ResourceProcessor<Resource<Submission>> {
 
-    private Class<SubmissionContentsController> submittablesControllerClass = SubmissionContentsController.class;
+    @Autowired
+    public SubmissionResourceProcessor(
+            SubmissionStatusRepository submissionStatusRepository,
+            RepositoryEntityLinks repositoryEntityLinks
+    ) {
+        this.submissionStatusRepository = submissionStatusRepository;
+        this.repositoryEntityLinks = repositoryEntityLinks;
+    }
+
+
+    private SubmissionStatusRepository submissionStatusRepository;
+    private RepositoryEntityLinks repositoryEntityLinks;
 
     private Pageable defaultPageRequest() {
         return new PageRequest(0, 1);
     }
 
-    @Autowired private SubmissionStatusRepository submissionStatusRepository;
+    private Class<SubmissionContentsController> submittablesControllerClass = SubmissionContentsController.class;
 
-    @Autowired private RepositoryEntityLinks repositoryEntityLinks;
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
 
-        addStatusRel(resource);
         addDomainRel(resource);
         addContentsRels(resource);
 
@@ -160,15 +168,6 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
                             methodOn(DomainController.class)
                                     .getDomain(resource.getContent().getDomain().getName())
                     ).withRel("domain")
-            );
-        }
-    }
-
-    private void addStatusRel(Resource<Submission> resource) {
-        SubmissionStatus status = submissionStatusRepository.findBySubmission(resource.getContent());
-        if (status != null) {
-            resource.add(
-                    repositoryEntityLinks.linkToSingleResource(status)
             );
         }
     }
