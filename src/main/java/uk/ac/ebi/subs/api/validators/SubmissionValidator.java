@@ -10,10 +10,7 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.api.updateability.OperationControlService;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
-
-import java.util.Map;
 
 @Component
 public class SubmissionValidator implements Validator {
@@ -119,7 +116,7 @@ public class SubmissionValidator implements Validator {
          * Spring Data Auditing is set for this object, but it doesn't maintain the createdDate on save
          */
 
-        target.setCreatedDate(storedVersion.getCreatedDate());
+//TODO fix in SUBS-333        target.setCreatedDate(storedVersion.getCreatedDate());
     }
 
     private void submittedDateCannotChange(Submission target, Submission storedVersion, Errors errors) {

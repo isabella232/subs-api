@@ -1,10 +1,11 @@
-package uk.ac.ebi.subs.api.validators;
+package uk.ac.ebi.subs.api.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.validation.Validator;
+import uk.ac.ebi.subs.api.validators.*;
 
 import java.util.stream.Stream;
 
@@ -99,9 +100,9 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
 
         eventListener.addValidator(BEFORE_SAVE, submissionStatusValidator);
 
-        eventListener.addValidator(BEFORE_DELETE,submissionDeleteValidator);
+        eventListener.addValidator(BEFORE_DELETE, submissionDeleteValidator);
 
-        eventListener.addValidator(BEFORE_DELETE,submittableDeleteValidator);
+        eventListener.addValidator(BEFORE_DELETE, submittableDeleteValidator);
     }
 
 }

@@ -12,14 +12,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriUtils;
 import uk.ac.ebi.subs.api.resourceAssembly.SimpleResourceAssembler;
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -42,9 +38,9 @@ public class DomainController {
         Domain d = new Domain();
         d.setName(domainName);
 
-        Page<Submission> subsPage = submissionRepository.findByDomainName(domainName,new PageRequest(0,1));
+        Page<Submission> subsPage = submissionRepository.findByDomainName(domainName, new PageRequest(0, 1));
 
-        if (subsPage.getTotalElements() == 0){
+        if (subsPage.getTotalElements() == 0) {
             throw new ResourceNotFoundException();
             //TODO temporary check until we have real domain support
         }
@@ -63,7 +59,7 @@ public class DomainController {
     }
 
     @RequestMapping("/domains/{domainName}/submissions")
-    public PagedResources<Resource<Submission>> domainSubmissions(
+    public PagedResources<Resource<uk.ac.ebi.subs.repository.model.Submission>> domainSubmissions(
             @PathVariable String domainName,
             Pageable pageable) {
         Page<Submission> page = submissionRepository.findByDomainName(domainName, pageable);

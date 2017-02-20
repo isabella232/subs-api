@@ -5,13 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.api.exceptions.ResourceLockedException;
 import uk.ac.ebi.subs.api.services.SubmissionProcessingService;
 import uk.ac.ebi.subs.api.updateability.OperationControlService;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 
@@ -45,6 +44,7 @@ public class SubmissionEventHandler {
 
     /**
      * Give submission an ID and draft status on creation
+     *
      * @param submission
      */
     @HandleBeforeCreate
@@ -52,7 +52,7 @@ public class SubmissionEventHandler {
         submission.setId(UUID.randomUUID().toString());
         submission.setCreatedDate(new Date());
 
-        SubmissionStatus submissionStatus = new SubmissionStatus(submission,SubmissionStatusEnum.Draft);
+        SubmissionStatus submissionStatus = new SubmissionStatus(submission, SubmissionStatusEnum.Draft);
         submissionStatusRepository.save(submissionStatus);
     }
 
