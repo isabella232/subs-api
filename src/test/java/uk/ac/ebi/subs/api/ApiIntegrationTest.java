@@ -138,13 +138,6 @@ public class ApiIntegrationTest {
         List<uk.ac.ebi.subs.repository.model.Submission> submissions = submissionRepository.findAll();
         assertThat(submissions, empty());
 
-        List<uk.ac.ebi.subs.repository.model.Sample> samples = sampleRepository.findAll();
-        assertThat(samples, empty());
-
-        List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
-        assertThat(submissionStatuses, empty());
-
-
     }
 
     /**
