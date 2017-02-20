@@ -61,7 +61,6 @@ public class CoreSubmittableValidationHelper {
         StoredSubmittable submittable = (StoredSubmittable) target;
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "status", "required", "status is required");
 
 
         if (submittable.getSubmission() != null && !operationControlService.isUpdateable(submittable.getSubmission())) {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
@@ -47,13 +48,19 @@ public class OperationControlServiceImpl implements OperationControlService {
     public boolean isUpdateable(StoredSubmittable storedSubmittable) {
         Assert.notNull(storedSubmittable);
         Assert.notNull(storedSubmittable.getSubmission());
-        Assert.notNull(storedSubmittable.getStatus());
+        Assert.notNull(storedSubmittable.getProcessingStatus());
 
-        StatusDescription statusDescription = processingStatusDescriptionMap.get(storedSubmittable.getStatus());
 
+        return this.isUpdateable(storedSubmittable.getProcessingStatus()) && this.isUpdateable(storedSubmittable.getSubmission());
+    }
+
+    public boolean isUpdateable(ProcessingStatus processingStatus){
+        Assert.notNull(processingStatus.getStatus());
+
+        StatusDescription statusDescription = processingStatusDescriptionMap.get(processingStatus.getStatus());
         Assert.notNull(statusDescription);
 
-        return statusDescription.isAcceptingUpdates() && this.isUpdateable(storedSubmittable.getSubmission());
+        return statusDescription.isAcceptingUpdates();
     }
 
     @Override
