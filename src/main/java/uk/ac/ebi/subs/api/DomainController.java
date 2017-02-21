@@ -58,13 +58,4 @@ public class DomainController {
         return resource;
     }
 
-    @RequestMapping("/domains/{domainName}/submissions")
-    public PagedResources<Resource<uk.ac.ebi.subs.repository.model.Submission>> domainSubmissions(
-            @PathVariable String domainName,
-            Pageable pageable) {
-        Page<Submission> page = submissionRepository.findByDomainName(domainName, pageable);
-
-        return pagedResourcesAssembler.toResource(page, simpleResourceAssembler);
-    }
-
 }

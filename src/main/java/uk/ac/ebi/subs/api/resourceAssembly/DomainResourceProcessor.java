@@ -1,17 +1,19 @@
 package uk.ac.ebi.subs.api.resourceAssembly;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.DomainController;
 import uk.ac.ebi.subs.api.SubmittedItemsController;
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionLinks;
 import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.repository.model.Submission;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -25,17 +27,30 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
         return new PageRequest(0, 1);
     }
 
+    public DomainResourceProcessor(RepositoryEntityLinks repositoryEntityLinks) {
+        this.repositoryEntityLinks = repositoryEntityLinks;
+    }
+
+    private RepositoryEntityLinks repositoryEntityLinks;
+
     @Override
     public Resource<Domain> process(Resource<Domain> resource) {
 
         String domainName = resource.getContent().getName();
         Pageable pageable = defaultPageRequest();
+        Submission s = new Submission();
 
+        Map<String, String> expansionParams = new HashMap<>();
+        expansionParams.put("domainName", domainName);
+
+        /*
+
+        */
         /* submissions */
+        Link submissionsRel = repositoryEntityLinks.linkToSearchResource(Submission.class, "submissions").expand(expansionParams);
+
         resource.add(
-                linkTo(
-                        methodOn(DomainController.class).domainSubmissions(domainName,pageable)
-                ).withRel(SubmissionLinks.SUBMISSION)
+                submissionsRel
         );
 
         /* submittables */
@@ -115,8 +130,6 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
                                 .studiesInDomain(domainName, pageable)
                 ).withRel(SubmissionLinks.STUDY)
         );
-
-
 
 
         return resource;
