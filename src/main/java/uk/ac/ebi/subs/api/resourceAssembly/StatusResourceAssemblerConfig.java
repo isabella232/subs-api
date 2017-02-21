@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import uk.ac.ebi.subs.data.status.StatusDescription;
-import uk.ac.ebi.subs.api.StatusDescriptionController;
+import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;

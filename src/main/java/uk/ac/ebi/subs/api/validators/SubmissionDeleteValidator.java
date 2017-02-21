@@ -9,7 +9,7 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 @Component

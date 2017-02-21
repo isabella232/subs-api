@@ -9,12 +9,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.api.DomainController;
-import uk.ac.ebi.subs.api.SubmissionContentsController;
+import uk.ac.ebi.subs.api.controllers.DomainController;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionLinks;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,8 +46,6 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
     private Pageable defaultPageRequest;
 
-    private Class<SubmissionContentsController> submittablesControllerClass = SubmissionContentsController.class;
-
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
@@ -61,11 +57,11 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     }
 
     private void addContentsRels(Resource<Submission> resource) {
-        Map<String,String> expansionParams = new HashMap<>();
-        expansionParams.put("submissionId",resource.getContent().getId());
+        Map<String, String> expansionParams = new HashMap<>();
+        expansionParams.put("submissionId", resource.getContent().getId());
 
-        for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList){
-            Link contentsLink = repositoryEntityLinks.linkToSearchResource(submittableClass,"by-submission",defaultPageRequest);
+        for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList) {
+            Link contentsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission", defaultPageRequest);
             Link collectionLink = repositoryEntityLinks.linkToCollectionResource(submittableClass);
 
             Assert.notNull(contentsLink);
@@ -73,7 +69,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
 
             resource.add(
-                contentsLink.expand(expansionParams).withRel( collectionLink.getRel() )
+                    contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
             );
 
         }

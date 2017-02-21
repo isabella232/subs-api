@@ -8,9 +8,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
 

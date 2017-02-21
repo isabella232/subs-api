@@ -3,31 +3,22 @@ package uk.ac.ebi.subs.api.resourceAssembly;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
-import uk.ac.ebi.subs.api.SubmissionContentsController;
-import uk.ac.ebi.subs.api.SubmittedItemsController;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionLinks;
+import org.springframework.util.Assert;
 import uk.ac.ebi.subs.repository.model.*;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class SubmittablesResourceProcessors {
 
 
-    private Pageable defaultPageRequest() {
-        return new PageRequest(0, 1);
-    }
-
-    private Class<SubmissionContentsController> submittablesControllerClass = SubmissionContentsController.class;
-
     @Bean
-    public ResourceProcessor<Resource<Analysis>> analysisProcessor() {
+    public ResourceProcessor<Resource<Analysis>> analysisProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Analysis>>() {
 
@@ -37,24 +28,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).analysisSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).analysisLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
@@ -63,7 +40,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<Assay>> assayProcessor() {
+    public ResourceProcessor<Resource<Assay>> assayProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Assay>>() {
 
@@ -73,24 +50,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).assaySubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).assayLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
@@ -99,7 +62,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<AssayData>> assayDataProcessor() {
+    public ResourceProcessor<Resource<AssayData>> assayDataProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<AssayData>>() {
 
@@ -109,24 +72,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).assayDataSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).assayDataLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
 
@@ -136,7 +85,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<EgaDac>> egaDacProcessor() {
+    public ResourceProcessor<Resource<EgaDac>> egaDacProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<EgaDac>>() {
 
@@ -146,24 +95,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDacSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDacLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
 
@@ -173,7 +108,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<EgaDacPolicy>> egaDacPolicyProcessor() {
+    public ResourceProcessor<Resource<EgaDacPolicy>> egaDacPolicyProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<EgaDacPolicy>>() {
 
@@ -183,24 +118,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDacPolicySubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDacPolicyLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
 
@@ -210,7 +131,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<EgaDataset>> egaDatasetProcessor() {
+    public ResourceProcessor<Resource<EgaDataset>> egaDatasetProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<EgaDataset>>() {
 
@@ -220,24 +141,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDatasetSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).egaDatasetLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
@@ -246,7 +153,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<Project>> projectProcessor() {
+    public ResourceProcessor<Resource<Project>> projectProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Project>>() {
 
@@ -256,24 +163,9 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).projectSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).projectLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
                 }
 
                 return resource;
@@ -282,7 +174,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<Protocol>> protocolProcessor() {
+    public ResourceProcessor<Resource<Protocol>> protocolProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Protocol>>() {
 
@@ -292,24 +184,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).protocolSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).protocolLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
@@ -318,7 +196,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<Sample>> sampleProcessor() {
+    public ResourceProcessor<Resource<Sample>> sampleProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Sample>>() {
 
@@ -328,24 +206,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).sampleSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).sampleLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
 
@@ -355,7 +219,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<SampleGroup>> sampleGroupProcessor() {
+    public ResourceProcessor<Resource<SampleGroup>> sampleGroupProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<SampleGroup>>() {
 
@@ -365,24 +229,10 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).sampleGroupSubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).sampleGroupLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
@@ -391,7 +241,7 @@ public class SubmittablesResourceProcessors {
     }
 
     @Bean
-    public ResourceProcessor<Resource<Study>> studyProcessor() {
+    public ResourceProcessor<Resource<Study>> studyProcessor(RepositoryEntityLinks repositoryEntityLinks) {
 
         return new ResourceProcessor<Resource<Study>>() {
 
@@ -401,28 +251,56 @@ public class SubmittablesResourceProcessors {
                 if (resource.getContent().getDomain() != null &&
                         resource.getContent().getAlias() != null) {
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).studySubmissionHistory(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias(),
-                                            defaultPageRequest()
-                                    )
-                            ).withRel(SubmissionLinks.HISTORY)
-                    );
+                    addHistory(resource, repositoryEntityLinks);
+                    addCurrentVersion(resource, repositoryEntityLinks);
 
-                    resource.add(
-                            linkTo(
-                                    methodOn(SubmittedItemsController.class).studyLatestVersion(
-                                            resource.getContent().getDomain().getName(),
-                                            resource.getContent().getAlias()
-                                    )
-                            ).withRel(SubmissionLinks.LATEST_VERSION)
-                    );
+
                 }
 
                 return resource;
             }
         };
+    }
+
+    private void addHistory(Resource<? extends StoredSubmittable> resource, RepositoryEntityLinks repositoryEntityLinks) {
+        StoredSubmittable item = resource.getContent();
+
+        if (item.getDomain() != null && item.getDomain().getName() != null && item.getAlias() != null) {
+            Map<String, String> expansionParams = new HashMap<>();
+
+            expansionParams.put("domainName", item.getDomain().getName());
+            expansionParams.put("alias", item.getAlias());
+
+            Link contentsLink = repositoryEntityLinks.linkToSearchResource(item.getClass(), "history");
+
+            Assert.notNull(contentsLink);
+
+
+            resource.add(
+                    contentsLink.expand(expansionParams)
+            );
+
+        }
+    }
+
+    private void addCurrentVersion(Resource<? extends StoredSubmittable> resource, RepositoryEntityLinks repositoryEntityLinks) {
+        StoredSubmittable item = resource.getContent();
+
+        if (item.getDomain() != null && item.getDomain().getName() != null && item.getAlias() != null) {
+            Map<String, String> expansionParams = new HashMap<>();
+
+            expansionParams.put("domainName", item.getDomain().getName());
+            expansionParams.put("alias", item.getAlias());
+
+            Link contentsLink = repositoryEntityLinks.linkToSearchResource(item.getClass(), "current-version");
+
+
+            Assert.notNull(contentsLink);
+
+            resource.add(
+                    contentsLink.expand(expansionParams)
+            );
+
+        }
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
-import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.Map;
 

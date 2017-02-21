@@ -2,7 +2,7 @@ package uk.ac.ebi.subs.api.resourceAssembly;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
-import uk.ac.ebi.subs.api.StatusDescriptionController;
+import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
