@@ -7,6 +7,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
@@ -87,8 +88,8 @@ public class ApiDocumentation {
         this.submissionRepository.save(sub);
 
 
-        this.mockMvc.perform(get("/api/domains/{domainName}/submissions", sub.getDomain().getName())
-                .accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/submissions/search/by-domain?domainName={domainName}", sub.getDomain().getName())
+                .accept(RestMediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andDo(
                         document("submissions/by-domain",

@@ -6,7 +6,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.api.controllers.SubmittablesRestController;
 import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -14,8 +13,6 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-//import static uk.ac.ebi.subs.api.resourceAssembly.linkBuilder.TemplatedLinkBuilder.*;
 
 @Component
 public class DomainResourceProcessor implements ResourceProcessor<Resource<Domain>> {
@@ -50,7 +47,7 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("domainName", domainName);
 
-        addRelWithCollectionRelName(resource, expansionParams,Submission.class);
+        addRelWithCollectionRelName(resource, expansionParams, Submission.class);
     }
 
     private void addContentsRels(Resource<Domain> resource) {
