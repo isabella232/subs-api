@@ -34,18 +34,12 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         this.submissionStatusRepository = submissionStatusRepository;
         this.repositoryEntityLinks = repositoryEntityLinks;
         this.submittablesClassList = submittablesClassList;
-
-        this.defaultPageRequest = new PageRequest(0, 1);
-
     }
 
 
     private SubmissionStatusRepository submissionStatusRepository;
     private RepositoryEntityLinks repositoryEntityLinks;
     private List<Class<? extends StoredSubmittable>> submittablesClassList;
-
-    private Pageable defaultPageRequest;
-
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
@@ -61,7 +55,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         expansionParams.put("submissionId", resource.getContent().getId());
 
         for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList) {
-            Link contentsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission", defaultPageRequest);
+            Link contentsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission");
             Link collectionLink = repositoryEntityLinks.linkToCollectionResource(submittableClass);
 
             Assert.notNull(contentsLink);
