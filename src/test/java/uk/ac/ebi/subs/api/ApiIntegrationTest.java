@@ -279,33 +279,50 @@ public class ApiIntegrationTest {
         }
 
         String domainName = submission.getDomain().getName();
+        String domainUrl = this.rootUri + "/domains/" + domainName;
+        HttpResponse<JsonNode> domainQueryResponse = Unirest.get(domainUrl).headers(standardGetHeaders()).asJson();
 
-        for (Sample sample : testSamples) {
+        assertThat(domainQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
-            String sampleVersionsUrl = this.rootUri + "/domains/" + domainName + "/samples/" + sample.getAlias() + "/history"; //TODO this is bad, traverse rels!
+        JSONObject domainPayload = domainQueryResponse.getBody().getObject();
+        Map<String, String> domainRels = relsFromPayload(domainPayload);
 
-            HttpResponse<JsonNode> response = Unirest.get(sampleVersionsUrl).headers(standardGetHeaders()).asJson();
+        String domainSamplesUrl = domainRels.get("samples");
 
-            assertThat(response.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        assertThat(domainSamplesUrl,notNullValue());
 
-            JSONObject payload = response.getBody().getObject();
+        HttpResponse<JsonNode> domainSamplesQueryResponse = Unirest.get(domainSamplesUrl).headers(standardGetHeaders()).asJson();
+        assertThat(domainSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject domainSamplesPayload = domainSamplesQueryResponse.getBody().getObject();
+        JSONArray domainSamples = domainSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-            JSONObject page = payload.getJSONObject("page");
-            assertThat(page, notNullValue());
-            assertThat(page.getInt("totalElements"), is(equalTo(numberOfSubmissions)));
+        assertThat(domainSamples.length(),is(equalTo(testSamples.size())));
 
-            JSONArray jsonSamples = payload.getJSONObject("_embedded").getJSONArray("samples");
-            assertThat(jsonSamples, notNullValue());
-            assertThat(jsonSamples.length(), is(equalTo(numberOfSubmissions)));
+        for (int i = 0; i < domainSamples.length(); i++){
+            JSONObject domainSample = domainSamples.getJSONObject(i);
 
-            for (int i = 0; i < jsonSamples.length(); i++) {
-                JSONObject jsonSample = jsonSamples.getJSONObject(i);
+            Map<String,String> sampleRels = relsFromPayload(domainSample);
+            String selfUrl = sampleRels.get("self");
 
-                String alias = jsonSample.getString("alias");
-                assertThat(alias, is(sample.getAlias()));
-            }
+            HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(standardGetHeaders()).asJson();
+            assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+            JSONObject samplePayload = sampleResponse.getBody().getObject();
+            sampleRels = relsFromPayload(samplePayload);
+
+            String historyUrl = sampleRels.get("history");
+
+            assertThat(historyUrl,notNullValue());
+
+            HttpResponse<JsonNode> historyResponse = Unirest.get(historyUrl).headers(standardGetHeaders()).asJson();
+            assertThat(historyResponse.getStatus(),is(equalTo(HttpStatus.OK.value())));
+            JSONObject historyPayload = historyResponse.getBody().getObject();
+            assertThat(historyPayload.has("_embedded"),is(true));
+            JSONObject embedded = historyPayload.getJSONObject("_embedded");
+            assertThat(embedded.has("samples"),is(true));
+            JSONArray sampleHistory = embedded.getJSONArray("samples");
+            assertThat(sampleHistory.length(),is(equalTo(numberOfSubmissions)));
+
         }
-
 
     }
 
