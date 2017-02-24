@@ -58,7 +58,7 @@ public class ApiIntegrationTestHelper {
 
         assertThat(submissionRels.get("samples"), notNullValue());
 
-        List<Sample> testSamples = Helpers.generateTestSamples();
+        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
         //add samples to the submission
         for (Sample sample : testSamples) {
 

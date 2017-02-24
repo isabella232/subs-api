@@ -151,7 +151,7 @@ public class ApiIntegrationTest {
         int numberOfSubmissions = 5;
 
         Submission submission = Helpers.generateSubmission();
-        List<Sample> testSamples = Helpers.generateTestSamples();
+        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
 
         for (int i = 0; i < numberOfSubmissions; i++) {
             HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
@@ -238,7 +238,7 @@ public class ApiIntegrationTest {
 
         assertThat(submissionRels.get("samples"), notNullValue());
 
-        Sample sample = Helpers.generateTestSamples().get(0);
+        Sample sample = Helpers.generateTestClientSamples(1).get(0);
         //add samples to the submission
 
         sample.setSubmission(submissionLocation);
