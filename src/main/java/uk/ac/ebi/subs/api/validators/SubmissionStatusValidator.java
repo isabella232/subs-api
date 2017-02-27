@@ -43,17 +43,16 @@ public class SubmissionStatusValidator implements Validator {
         /* unchecked */
         SubmissionStatus submissionStatus = (SubmissionStatus) target;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "status", "required", "status is required");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"status");
 
         if (errors.hasErrors()) return;
-
 
 
         String targetStatusName = submissionStatus.getStatus();
 
 
         if (!submissionStatusDescriptionMap.containsKey(targetStatusName)) {
-            errors.rejectValue("status", "invalid status", "not a recognised status");
+            SubsApiErrors.invalid.addError(errors,"status");
             return;
         }
 
@@ -64,7 +63,7 @@ public class SubmissionStatusValidator implements Validator {
         StatusDescription currentStatusDescription = submissionStatusDescriptionMap.get(currentSubmissionStatus.getStatus());
 
         if (!currentStatusDescription.isUserTransitionPermitted(targetStatusName)) {
-            errors.rejectValue("status", "invalid status change", "not a permitted status change");
+            SubsApiErrors.invalid.addError(errors,"status");
             return;
         }
     }

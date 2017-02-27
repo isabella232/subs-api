@@ -42,8 +42,10 @@ public class SubmissionValidator implements Validator {
 
         Submission submission = (Submission) target;
 
-        ValidationUtils.rejectIfEmpty(errors, "submitter", "required", "submitter is required");
-        ValidationUtils.rejectIfEmpty(errors, "domain", "required", "domain is required");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submitter");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"domain");
+
+        if (errors.hasErrors()) return;
 
         try {
             errors.pushNestedPath("domain");
@@ -66,7 +68,7 @@ public class SubmissionValidator implements Validator {
 
 
                 if (!operationControlService.isUpdateable(submission)) {
-                    errors.reject("submissionLocked", "Submission has been submitted, changes are not possible");
+                    SubsApiErrors.resource_locked.addError(errors);
                 } else {
                     validateAgainstStoredVersion(submission, storedVersion, errors);
                 }

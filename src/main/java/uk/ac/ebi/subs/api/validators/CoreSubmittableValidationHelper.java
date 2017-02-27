@@ -8,6 +8,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.repository.projections.SubmittableWithStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -55,7 +56,6 @@ public class CoreSubmittableValidationHelper {
     }
 
 
-    /*TODO review error codes, I just made some up for now */
     public void validate(StoredSubmittable target, StoredSubmittable storedVersion, Errors errors) {
         logger.info("validate {}", target);
         StoredSubmittable submittable = (StoredSubmittable) target;
@@ -64,13 +64,13 @@ public class CoreSubmittableValidationHelper {
 
 
         if (submittable.getSubmission() != null && !operationControlService.isUpdateable(submittable.getSubmission())) {
-            errors.reject("submissionLocked", "Submission has been submitted, changes are not possible");
+            SubsApiErrors.resource_locked.addError(errors);
         }
 
         if (errors.hasErrors()) return;
 
         if (storedVersion != null && !operationControlService.isUpdateable(storedVersion)){
-            errors.reject("itemLocked", "This item has been submitted, changes are not possible");
+            SubsApiErrors.resource_locked.addError(errors);
         }
 
         if (storedVersion != null) {

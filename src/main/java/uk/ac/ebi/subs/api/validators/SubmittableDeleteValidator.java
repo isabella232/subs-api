@@ -18,9 +18,8 @@ public class SubmittableDeleteValidator implements Validator {
         StoredSubmittable submittable = (StoredSubmittable) target;
 
 
-
         if (!ProcessingStatusEnum.Draft.name().equals(submittable.getProcessingStatus().getStatus())) {
-            errors.reject("cannotDeleteAfterSubmission", "Deletion is not possible after submission");
+            SubsApiErrors.resource_locked.addError(errors);
         }
 
     }

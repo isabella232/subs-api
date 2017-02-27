@@ -40,7 +40,7 @@ public class SubmissionDeleteValidator implements Validator {
 
 
         if (!SubmissionStatusEnum.Draft.name().equals(storedSub.getSubmissionStatus().getStatus())) {
-            errors.reject("cannotDeleteAfterSubmission", "Deletion is not possible after submission");
+            SubsApiErrors.resource_locked.addError(errors);
         }
 
 
