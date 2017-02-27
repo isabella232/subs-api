@@ -44,6 +44,14 @@ task (testsMakesDocs, type: Test) {
     useJUnit {
         includeCategories 'uk.ac.ebi.subs.DocumentationProducer'
     }
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+configure(testsMakesDocs) {
+    group = "documentation"
+    description = 'Run tests that generate documentation snippets'
 }
 
 asciidoctor {

@@ -19,15 +19,16 @@ public class Helpers {
     public static Submission generateSubmission() {
         Submission s = new Submission();
 
-        Domain d = new Domain();
-        d.setName("test domain");
-        s.setDomain(d);
-
-        Submitter u = new Submitter();
-        u.setEmail("test@test.org");
-        s.setSubmitter(u);
+        s.setDomain(generateTestDomain());
+        s.setSubmitter(generateTestSubmitter());
 
         return s;
+    }
+
+    private static Submitter generateTestSubmitter() {
+        Submitter u = new Submitter();
+        u.setEmail("test@test.org");
+        return u;
     }
 
     public static List<Sample> generateTestSamples() {

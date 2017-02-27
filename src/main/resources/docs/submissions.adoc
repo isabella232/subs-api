@@ -1,4 +1,4 @@
-= Submission REST Service API Guide
+= Submission API Documentation
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs
@@ -6,17 +6,161 @@
 :toclevels: 4
 :sectlinks:
 
-= Submissions REST Service
+= Overview
 
-== Accessing a single submission
+This describes the resources that make up the EMBL-EBI submissions API.
+If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
 
-=== Request structure
+All API access is over HTTP, and accessed from `http://www.ebi.ac.uk/submissions/api`.
+All data is sent and received as JSON. Blank fields are included as `null` instead of being omitted.
 
-include::{snippets}/submissions/by-id/http-request.adoc[]
 
-=== Response fields
 
-include::{snippets}/submissions/by-id/response-fields.adoc[]
+== Summary representations
+
+When fetching a list of resources, the response includes a subset of the attributes for that resource.
+For performance reasons some attributes are excluded from the summary representation.
+These are available from the detailed representation.
+
+Example: When you get a list of samples, you get the summary representation of each sample.
+
+include::{snippets}/samples/by-submission/curl-request.adoc[]
+include::{snippets}/samples/by-submission/http-response.adoc[]
+
+== Detailed representations
+
+When fetching an individual resource, the response typically includes all attributes for that resource.
+Nested resources are typically not included by default.
+
+Example: When you fetch an individual sample, you get the detailed representation.
+
+include::{snippets}/samples/fetch-one/curl-request.adoc[]
+include::{snippets}/samples/fetch-one/http-response.adoc[]
+
+== Root endpoint
+
+You can issue a `GET` request to the root endpoint to get all the endpoint categories supported  by the API.
+
+include::{snippets}/root-endpoint/curl-request.adoc[]
+include::{snippets}/root-endpoint/http-response.adoc[]
+
+== Client errors
+
+There are several types of client errors on API calls that receive request bodies.
+
+* Sending invalid JSON will result in a `400 Bad Request` response
+include::{snippets}/invalid-json/curl-request.adoc[]
+include::{snippets}/invalid-json/http-response.adoc[]
+* Sending the wrong type of JSON values will result in a `400 Bad Request` response.
+include::{snippets}/json-array-instead-of-object/curl-request.adoc[]
+include::{snippets}/json-array-instead-of-object/http-response.adoc[]
+* Sending invalid fields will result in a `400 Bad Request` response.
+include::{snippets}/invalid-submission/curl-request.adoc[]
+include::{snippets}/invalid-submission/http-response.adoc[]
+
+All error objects have properties so that your client can tell what the problem is. There's also an error code
+so that you know what is wrong with the field.
+
+[cols=2*,options="header"]
+|===
+|Error name
+|Description
+
+|missing_field |This means a required field has not been set
+|invalid |This means the contens of this field are invalid
+|resource_locked |The resource cannot be changed
+|already_exists |Another resource with the same value already exists
+
+|===
+
+== HTTP Verbs
+
+This API aims to use appropriate HTTP verbs for each action
+
+
+[cols=2*,options="header"]
+|===
+|Verb
+|Description
+
+
+|GET|Used for retrieving resources
+|POST|Used for creating resources
+|PATCH|
+|PUT|Used for replacing resources
+|DELETE|Used for deleting resources
+|OPTIONS|Can be ued
+|HEAD|Returns whether a resource is available
+|===
+
+== Authentication
+
+TODO, pending implementation details from AAP. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
+requests to the submissions API.
+
+[source,bash]
+----
+$ curl 'http://www.ebi.ac.uk/submissions/api' -i -H 'Accept: application/hal+json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
+----
+
+== Hypermedia
+
+All resources will have a `_links` block
+
+== Pagination
+
+Requests that return multiple items will be paginated to 20 items by default. You can specify a specific pages with the
+`?page` parameter. Page number is 1-based and in the absence of a `?page` parameter the first page is returned. You can also set a custom page size with the `?size` parameter, up to a maximum of 500.
+
+include::{snippets}/page-example/curl-request.adoc[]
+include::{snippets}/page-example/http-response.adoc[]
+
+=== Response structure
+
+include::{snippets}/page-example/response-fields.adoc[]
+
+=== Links
+
+include::{snippets}/page-example/links.adoc[]
+
+
+== Conditional requests
+
+Most individual resources have entity tags and modification timestamps. This can be used to
+make conditional requests, allowing clients to minimise bandwidth use and avoiding collisions with other
+clients.
+
+The format for conditional headers is specified in https://tools.ietf.org/html/rfc7232#section-3[RFC7232 section 3].
+Note that only `If-Match`, `If-None-Match` and `If-Modified-Since` headers are supported.
+
+=== Entity tags
+
+Where entity tags are available, `ETag` values are included in the response headers. Updates to a resource
+cause the ETag to change. You can make subsequent requests conditional on the resource currently matching or
+not matching the last ETag value you hold.
+
+For example, you can conditionally `GET` a resource if its `ETag` value has changed:
+include::{snippets}/conditional-fetch-etag-get-if-none-match/curl-request.adoc[]
+include::{snippets}/conditional-fetch-etag-get-if-none-match/http-response.adoc[]
+
+You could `PUT`, `PATCH` or `DELETE` a resource if its `ETag` value has not changed:
+include::{snippets}/conditional-delete-if-etag-match/curl-request.adoc[]
+include::{snippets}/conditional-delete-if-etag-match/http-response.adoc[]
+
+
+=== Last modified dates
+
+Where modification timestamps are available, `Last-Modified` values are included in the response headers. You can make
+subsequent requests conditional on the resource currently matching or not matching the last modified value you
+hold.
+
+You can conditionally `GET` a resource if it has changed since a specified time:
+include::{snippets}/conditional-fetch-if-modified-since/curl-request.adoc[]
+include::{snippets}/conditional-fetch-if-modified-since/http-response.adoc[]
+
+The use of `ETag` is preferred over `Last-Modified`, as last modified dates are limited to a resolution of
+one second.
+
 
 
 == Accessing submissions for a domain
