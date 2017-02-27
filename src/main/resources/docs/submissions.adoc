@@ -6,7 +6,7 @@
 :toclevels: 4
 :sectlinks:
 
-= Overview
+== Overview
 
 This describes the resources that make up the EMBL-EBI submissions API.
 If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
@@ -14,37 +14,55 @@ If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[s
 All API access is over HTTP, and accessed from `http://www.ebi.ac.uk/submissions/api`.
 All data is sent and received as JSON. Blank fields are included as `null` instead of being omitted.
 
+=== HTTP Verbs
+
+This API aims to use appropriate HTTP verbs for each action
 
 
-== Summary representations
+[cols=2*,options="header"]
+|===
+|Verb
+|Description
 
-When fetching a list of resources, the response includes a subset of the attributes for that resource.
-For performance reasons some attributes are excluded from the summary representation.
-These are available from the detailed representation.
 
-Example: When you get a list of samples, you get the summary representation of each sample.
+|`GET`|Used for retrieving resources
+|`POST`|Used for creating resources
+|`PATCH`|Used to modify a resource
+|`PUT`|Used for replacing resources
+|`DELETE`|Used for deleting resources
+|`OPTIONS`|Can be used to determine which verbs can be used for a resource
+|`HEAD`|Returns whether a resource is available
+|===
 
-include::{snippets}/samples/by-submission/curl-request.adoc[]
-include::{snippets}/samples/by-submission/http-response.adoc[]
+=== HTTP status codes
 
-== Detailed representations
+[cols=2*,options="header"]
+|===
+|Status code
+|Description
 
-When fetching an individual resource, the response typically includes all attributes for that resource.
-Nested resources are typically not included by default.
 
-Example: When you fetch an individual sample, you get the detailed representation.
+|`200 OK`|The request completed successfully
+|`201 Created`|Returned after successfully creating a new resource with a `POST` request
+|`204 No Content`|Returned after a request successfully deleted a resource.
+|`304 Not Modified`|Returned in response to a conditional `GET` request, when the resource has not been modified
+|`400 Bad Request`|The request was malformed. The response body will include an error providing further information
+|`405 Method Not Allowed`|The request used a method that is not permitted
+|`412 Precondition Failed`|Returned in response to a conditional `PATCH`, `PUT` or `DELETE`, when the condition did not match the resource state
+|===
 
-include::{snippets}/samples/fetch-one/curl-request.adoc[]
-include::{snippets}/samples/fetch-one/http-response.adoc[]
+=== Authentication
 
-== Root endpoint
+TODO, pending implementation details from AAP. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
+requests to the submissions API.
 
-You can issue a `GET` request to the root endpoint to get all the endpoint categories supported  by the API.
+[source,bash]
+----
+$ curl 'http://www.ebi.ac.uk/submissions/api' -i -H 'Accept: application/hal+json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
+----
 
-include::{snippets}/root-endpoint/curl-request.adoc[]
-include::{snippets}/root-endpoint/http-response.adoc[]
 
-== Client errors
+=== Errors
 
 There are several types of client errors on API calls that receive request bodies.
 
@@ -73,41 +91,31 @@ so that you know what is wrong with the field.
 
 |===
 
-== HTTP Verbs
+=== Hypermedia
 
-This API aims to use appropriate HTTP verbs for each action
+All resources will have a `_links` block. TODO
 
+=== Root endpoint
 
-[cols=2*,options="header"]
-|===
-|Verb
-|Description
+You can issue a `GET` request to the root endpoint to get all the endpoint categories supported  by the API.
 
+include::{snippets}/root-endpoint/curl-request.adoc[]
+include::{snippets}/root-endpoint/http-response.adoc[]
 
-|GET|Used for retrieving resources
-|POST|Used for creating resources
-|PATCH|
-|PUT|Used for replacing resources
-|DELETE|Used for deleting resources
-|OPTIONS|Can be ued
-|HEAD|Returns whether a resource is available
-|===
+=== Collection resources
 
-== Authentication
+==== Summary representations
 
-TODO, pending implementation details from AAP. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
-requests to the submissions API.
+When fetching a list of resources, the response includes a subset of the attributes for that resource.
+For performance reasons some attributes are excluded from the summary representation.
+These are available from the detailed representation.
 
-[source,bash]
-----
-$ curl 'http://www.ebi.ac.uk/submissions/api' -i -H 'Accept: application/hal+json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-----
+Example: When you get a list of samples, you get the summary representation of each sample.
 
-== Hypermedia
+include::{snippets}/samples/by-submission/curl-request.adoc[]
+include::{snippets}/samples/by-submission/http-response.adoc[]
 
-All resources will have a `_links` block
-
-== Pagination
+==== Paging
 
 Requests that return multiple items will be paginated to 20 items by default. You can specify a specific pages with the
 `?page` parameter. Page number is 1-based and in the absence of a `?page` parameter the first page is returned. You can also set a custom page size with the `?size` parameter, up to a maximum of 500.
@@ -115,16 +123,27 @@ Requests that return multiple items will be paginated to 20 items by default. Yo
 include::{snippets}/page-example/curl-request.adoc[]
 include::{snippets}/page-example/http-response.adoc[]
 
-=== Response structure
+===== Response structure
 
 include::{snippets}/page-example/response-fields.adoc[]
 
-=== Links
+===== Links
 
 include::{snippets}/page-example/links.adoc[]
 
+=== Individual resources
 
-== Conditional requests
+==== Detailed representations
+
+When fetching an individual resource, the response typically includes all attributes for that resource.
+Nested resources are typically not included by default.
+
+Example: When you fetch an individual sample, you get the detailed representation.
+
+include::{snippets}/samples/fetch-one/curl-request.adoc[]
+include::{snippets}/samples/fetch-one/http-response.adoc[]
+
+==== Conditional requests
 
 Most individual resources have entity tags and modification timestamps. This can be used to
 make conditional requests, allowing clients to minimise bandwidth use and avoiding collisions with other
@@ -133,7 +152,7 @@ clients.
 The format for conditional headers is specified in https://tools.ietf.org/html/rfc7232#section-3[RFC7232 section 3].
 Note that only `If-Match`, `If-None-Match` and `If-Modified-Since` headers are supported.
 
-=== Entity tags
+===== Entity tags
 
 Where entity tags are available, `ETag` values are included in the response headers. Updates to a resource
 cause the ETag to change. You can make subsequent requests conditional on the resource currently matching or
@@ -148,7 +167,7 @@ include::{snippets}/conditional-delete-if-etag-match/curl-request.adoc[]
 include::{snippets}/conditional-delete-if-etag-match/http-response.adoc[]
 
 
-=== Last modified dates
+===== Last modified dates
 
 Where modification timestamps are available, `Last-Modified` values are included in the response headers. You can make
 subsequent requests conditional on the resource currently matching or not matching the last modified value you
@@ -160,6 +179,19 @@ include::{snippets}/conditional-fetch-if-modified-since/http-response.adoc[]
 
 The use of `ETag` is preferred over `Last-Modified`, as last modified dates are limited to a resolution of
 one second.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
