@@ -22,9 +22,16 @@ public class SubmissionStatusEventHandler {
     private SubmissionRepository submissionRepository;
     private SubmissionEventService submissionEventService;
 
-    @Autowired
     public SubmissionStatusEventHandler(SubmissionRepository submissionRepository, SubmissionEventService submissionEventService) {
         this.submissionRepository = submissionRepository;
+        this.submissionEventService = submissionEventService;
+    }
+
+    public void setSubmissionRepository(SubmissionRepository submissionRepository) {
+        this.submissionRepository = submissionRepository;
+    }
+
+    public void setSubmissionEventService(SubmissionEventService submissionEventService) {
         this.submissionEventService = submissionEventService;
     }
 
@@ -33,10 +40,12 @@ public class SubmissionStatusEventHandler {
         if (SubmissionStatusEnum.Submitted.name().equals(submissionStatus.getStatus())) {
             Submission submission = submissionRepository.findBySubmissionStatusId(submissionStatus.getId());
 
-            submissionEventService.submissionSubmitted(submission);
+            if (submission != null) {
+                submissionEventService.submissionSubmitted(submission);
 
-            submission.setSubmissionDate(new Date());
-            submissionRepository.save(submission);
+                submission.setSubmissionDate(new Date());
+                submissionRepository.save(submission);
+            }
         }
     }
 }

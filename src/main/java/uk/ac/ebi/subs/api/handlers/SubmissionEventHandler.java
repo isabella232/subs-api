@@ -31,7 +31,6 @@ public class SubmissionEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
     public SubmissionEventHandler(
             SubmissionRepository submissionRepository,
             SubmissionEventService submissionEventService,
@@ -42,6 +41,17 @@ public class SubmissionEventHandler {
         this.submissionRepository = submissionRepository;
     }
 
+    public void setSubmissionRepository(SubmissionRepository submissionRepository) {
+        this.submissionRepository = submissionRepository;
+    }
+
+    public void setSubmissionEventService(SubmissionEventService submissionEventService) {
+        this.submissionEventService = submissionEventService;
+    }
+
+    public void setSubmissionStatusRepository(SubmissionStatusRepository submissionStatusRepository) {
+        this.submissionStatusRepository = submissionStatusRepository;
+    }
 
     private SubmissionRepository submissionRepository;
     private SubmissionEventService submissionEventService;
