@@ -105,7 +105,7 @@ public class ApiIntegrationTest {
     public void checkRootRels() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("submissions", "samples"));
+        assertThat(rootRels.keySet(), hasItems("submissions:create", "samples:create"));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ApiIntegrationTest {
 
                 sample.setSubmission(submissionLocation);
 
-                HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples"))
+                HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
                         .headers(standardPostHeaders())
                         .body(sample)
                         .asJson();
@@ -243,7 +243,7 @@ public class ApiIntegrationTest {
 
         sample.setSubmission(submissionLocation);
 
-        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples"))
+        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
                 .headers(standardPostHeaders())
                 .body(sample)
                 .asJson();

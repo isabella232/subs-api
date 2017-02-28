@@ -88,7 +88,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     }
 
     private void addStandardLinks(List<Link> links, Class clazz, boolean create) {
-        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(clazz);
+        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(clazz).expand();
 
         String relBase = collectionLink.getRel();
 
