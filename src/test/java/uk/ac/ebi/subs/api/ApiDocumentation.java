@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
@@ -24,13 +23,18 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
+import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
+import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
+import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Domain;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -38,16 +42,13 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
@@ -70,20 +71,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ApiDocumentation {
 
 
+
+
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
 
     @Autowired
-    SubmissionRepository submissionRepository;
+    private SubmissionRepository submissionRepository;
 
     @Autowired
-    SubmissionStatusRepository submissionStatusRepository;
+    private SubmissionStatusRepository submissionStatusRepository;
 
     @Autowired
-    SampleRepository sampleRepository;
+    private SampleRepository sampleRepository;
 
     @Autowired
-    ProcessingStatusRepository processingStatusRepository;
+    private ProcessingStatusRepository processingStatusRepository;
+
+    @Autowired
+    private SubmissionEventHandler submissionEventHandler;
+
+    @Autowired
+    private SubmissionStatusEventHandler submissionStatusEventHandler;
+
+
+
 
     private ObjectMapper objectMapper;
 
@@ -94,10 +106,15 @@ public class ApiDocumentation {
     private MockMvc mockMvc;
 
 
+
+
     @Before
     public void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        submissionEventHandler.setSubmissionEventService(fakeSubmissionEventService);
+        submissionStatusEventHandler.setSubmissionEventService(fakeSubmissionEventService);
 
         clearDatabases();
 
@@ -116,6 +133,7 @@ public class ApiDocumentation {
     private void clearDatabases() {
         this.submissionRepository.deleteAll();
         this.sampleRepository.deleteAll();
+        this.submissionStatusRepository.deleteAll();
     }
 
     @After
@@ -215,16 +233,107 @@ public class ApiDocumentation {
 
     }
 
+    @Test
+    public void validSubmission() throws Exception {
+        uk.ac.ebi.subs.data.Submission submission = goodClientSubmission();
+
+        String jsonRepresentation = objectMapper.writeValueAsString(submission);
+
+
+        this.mockMvc.perform(
+                post("/api/submissions").content(jsonRepresentation)
+                        .contentType(RestMediaTypes.HAL_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-submission",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("submitter").description("Submitter who is responsible for this submission"),
+                                        fieldWithPath("domain").description("Domain this submission belongs to"),
+
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("submission").description("This submission"),
+                                        linkWithRel("domain").description("The domain this submission belongs to"),
+                                        linkWithRel("analyses").description("Analyses within this submission"),
+                                        linkWithRel("assays").description("Assays within this submission"),
+                                        linkWithRel("assayData").description("Assay data within this submission"),
+                                        linkWithRel("egaDacs").description("DACs within this submission"),
+                                        linkWithRel("egaDacPolicies").description("DAC policies within this submission"),
+                                        linkWithRel("egaDatasets").description("EGA datasets within this submission"),
+                                        linkWithRel("projects").description("Projects within this submission"),
+                                        linkWithRel("protocols").description("Protocols within this submission"),
+                                        linkWithRel("samples").description("Samples within this submission"),
+                                        linkWithRel("sampleGroups").description("Sample groups within this submission"),
+                                        linkWithRel("studies").description("Studies within this submission"),
+                                        linkWithRel("submissionStatus").description("Status of this submission")
+                                )
+                        )
+                );
+
+        SubmissionStatus status = submissionStatusRepository.findAll().get(0);
+        Assert.notNull(status);
+
+        this.mockMvc.perform(
+                patch("/api/submissionStatuses/{id}",status.getId()).content("{\"status\": \"Submitted\"}")
+                        .contentType(RestMediaTypes.HAL_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("patch-submission-status",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("status").description("Current status value"),
+
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("submissionStatus").description("This resource"),
+                                        linkWithRel("statusDescription").description("Description of this status")
+                                )
+                        )
+                );
+
+    }
+
     private uk.ac.ebi.subs.data.Submission badClientSubmission() {
         return new uk.ac.ebi.subs.data.Submission();
     }
 
-    private ContentModifyingOperationPreprocessor removeEmbedded() {
-        return new ContentModifyingOperationPreprocessor(new RemoveEmbedded());
+    private ContentModifyingOperationPreprocessor maskEmbedded() {
+        return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
+    }
+
+    private ContentModifyingOperationPreprocessor maskLinks() {
+        return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
     }
 
 
-    private class RemoveEmbedded implements ContentModifier {
+    private class MaskElement implements ContentModifier {
+
+        public MaskElement(String keyToRemove) {
+            this.keyToRemove = keyToRemove;
+        }
+
+        private String keyToRemove;
 
         @Override
         public byte[] modifyContent(byte[] originalContent, MediaType contentType) {
@@ -265,7 +374,7 @@ public class ApiDocumentation {
                 .andDo(document(
                         "page-example",
                         preprocessRequest(prettyPrint()),
-                        preprocessResponse(removeEmbedded(), prettyPrint()),
+                        preprocessResponse(maskEmbedded(), prettyPrint()),
 
                         links(halLinks(),
                                 linkWithRel("self").description("This resource list"),
@@ -293,7 +402,7 @@ public class ApiDocumentation {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM YYYY H:m:s zzz");
 
-        String etagValueString = String.format("ETag: \"%d\"",s.getVersion());
+        String etagValueString = String.format("ETag: \"%d\"", s.getVersion());
         String lastModifiedString = dateFormat.format(s.getLastModifiedDate());
 
         this.mockMvc.perform(
@@ -418,6 +527,69 @@ public class ApiDocumentation {
     }
 
     @Test
+    public void samplesSearchResource() throws Exception {
+        this.mockMvc.perform(
+                get("/api/samples/search")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("samples-search-resource",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("history").description("Search for all versions of a sample by domain and alias "),
+                                        linkWithRel("by-submission").description("Search for all samples within a submission"),
+                                        linkWithRel("by-domain").description("Search for samples within a domain"),
+                                        linkWithRel("current-version").description("Find the current version of a sample by domain and alias")
+                                ),
+                                responseFields(
+                                        linksResponseField()
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void domain() throws Exception {
+
+        Submission s = storeSubmission();
+        Domain d = s.getDomain();
+
+        this.mockMvc.perform(
+                get("/api/domains/{domainName}", d.getName())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("get-domain",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("submissions").description("Collection of submissions within this domain"),
+                                        linkWithRel("analyses").description("Collection of analyses within this domain"),
+                                        linkWithRel("assays").description("Collection of assays within this domain"),
+                                        linkWithRel("assayData").description("Collection of assay data within this domain"),
+                                        linkWithRel("egaDacs").description("Collection of DACs within this domain"),
+                                        linkWithRel("egaDacPolicies").description("Collection of DAC policies within this domain"),
+                                        linkWithRel("egaDatasets").description("Collection of EGA Datasets within this domain"),
+                                        linkWithRel("projects").description("Collection of projects within this domain"),
+                                        linkWithRel("protocols").description("Collection of protocols within this domain"),
+                                        linkWithRel("samples").description("Collection of samples within this domain"),
+                                        linkWithRel("sampleGroups").description("Collection of sample groups within this domain"),
+                                        linkWithRel("studies").description("Collection of studies within this domain")
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("name").description("Name of this domain")
+                                )
+                        )
+                );
+    }
+
+    @Test
     public void rootEndpoint() throws Exception {
 
         this.mockMvc.perform(
@@ -429,26 +601,42 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
-                                        halLinks(),
-                                        linkWithRel("processingStatuses").description(""),
-                                        linkWithRel("projects").description(""),
-                                        linkWithRel("egaDacs").description(""),
-                                        linkWithRel("profile").description(""),
-                                        linkWithRel("assays").description(""),
-                                        linkWithRel("processingStatusDescriptions").description(""),
-                                        linkWithRel("samples").description(""),
-                                        linkWithRel("analyses").description(""),
-                                        linkWithRel("assayData").description(""),
-                                        linkWithRel("egaDacPolicies").description(""),
-                                        linkWithRel("releaseStatusDescriptions").description(""),
-                                        linkWithRel("submissions").description(""),
-                                        linkWithRel("studies").description(""),
-                                        linkWithRel("egaDatasets").description(""),
-                                        linkWithRel("submissionStatuses").description(""),
-                                        linkWithRel("protocols").description(""),
-                                        linkWithRel("submissionStatusDescriptions").description(""),
-                                        linkWithRel("sampleGroups").description("")
 
+                                        halLinks(),
+                                        //domain
+                                        linkWithRel("domain").description("Domain "),
+                                        //submissions
+                                        linkWithRel("submissions:search").description("Search resource for submissions"),
+                                        linkWithRel("submissions:create").description("Create a new submission resource"),
+                                        //submittables
+                                        linkWithRel("analyses:create").description("Create a new analysis resource"),
+                                        linkWithRel("analyses:search").description("Search resource for analyses"),
+                                        linkWithRel("assayData:create").description("Create a new assay data resource"),
+                                        linkWithRel("assayData:search").description("Search resource for assay data"),
+                                        linkWithRel("assays:create").description("Create a new assay resource"),
+                                        linkWithRel("assays:search").description("Search resource for assays"),
+                                        linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
+                                        linkWithRel("egaDacPolicies:search").description("Search resource for policies"),
+                                        linkWithRel("egaDacs:create").description("Create a new DAC resource"),
+                                        linkWithRel("egaDacs:search").description("Search resource for DACs"),
+                                        linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                        linkWithRel("egaDatasets:search").description("Search resource for EGA datasets"),
+                                        linkWithRel("projects:create").description("Create a new project resource"),
+                                        linkWithRel("projects:search").description("Search resource for projects"),
+                                        linkWithRel("protocols:create").description("Create a new protocol resource"),
+                                        linkWithRel("protocols:search").description("Search resource for protocols"),
+                                        linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                        linkWithRel("sampleGroups:search").description("Search resource for sample groups"),
+                                        linkWithRel("samples:create").description("Create a new sample resource"),
+                                        linkWithRel("samples:search").description("Search resource for samples"),
+                                        linkWithRel("studies:create").description("Create a new study resource"),
+                                        linkWithRel("studies:search").description("Search resource for studies"),
+                                        //status descriptions
+                                        linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
+                                        linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
+                                        linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
+                                        //profile
+                                        linkWithRel("profile").description("Application level details")
                                 ),
                                 responseFields(
                                         linksResponseField()
@@ -545,46 +733,26 @@ public class ApiDocumentation {
 
 
 
-/*
-    @Test
-    public void submissionById() throws Exception {
-        this.submissionRepository.deleteAll();
+    private SubmissionEventService fakeSubmissionEventService = new SubmissionEventService() {
+        @Override
+        public void submissionCreated(Submission submission) {
 
-        Submission sub = Helpers.generateTestFullSubmission();
+        }
 
-        this.submissionRepository.save(sub);
+        @Override
+        public void submissionUpdated(Submission submission) {
 
-        this.mockMvc.perform(get("/api/submissions/{id}",sub.getId())
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(
-                        document("submissions/by-id",
-                                links(
-                                        halLinks(),
-                                        linkWithRel("self").description("Canonical link for this resource"), //TODO
-                                        linkWithRel("submission").description("Canonical link for this resource") //TODO
-                                ),
-                                responseFields(
-                                        fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                        fieldWithPath("submitter").description("User who created this submission"),
-                                        fieldWithPath("domain").description("Domain this submission belongs to"),
-                                        fieldWithPath("submissionDate").description("Date that this submission was submitted"),
-                                        fieldWithPath("status").description("Submission status"),
-                                        fieldWithPath("analyses").description("Analyses in this submission"),
-                                        fieldWithPath("assays").description("Assays in this submission"),
-                                        fieldWithPath("assayData").description("Assay data in this submission"),
-                                        fieldWithPath("egaDacs").description("EGA DACs in this submission"),
-                                        fieldWithPath("egaDacPolicies").description("EGA DAC Policies in this submission"),
-                                        fieldWithPath("egaDatasets").description("EGA Datasets in this submission"),
-                                        fieldWithPath("projects").description("Projects in this submission"),
-                                        fieldWithPath("samples").description("Samples in this submission"),
-                                        fieldWithPath("sampleGroups").description("Sample Groups in this submission"),
-                                        fieldWithPath("studies").description("Studies in this submission"),
-                                        fieldWithPath("protocols").description("Protocols in this submission")
-                                )
-                        )
-                );
-    }
-*/
+        }
+
+        @Override
+        public void submissionDeleted(Submission submission) {
+
+        }
+
+        @Override
+        public void submissionSubmitted(Submission submission) {
+
+        }
+    };
 
 }
