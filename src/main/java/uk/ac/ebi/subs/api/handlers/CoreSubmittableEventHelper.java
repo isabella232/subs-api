@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.handlers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
+import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -44,7 +45,7 @@ public class CoreSubmittableEventHelper {
         }
     }
 
-    @HandleBeforeCreate
+    @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
         setDomainFromSubmission(storedSubmittable);
     }

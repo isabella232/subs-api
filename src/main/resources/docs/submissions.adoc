@@ -12,7 +12,7 @@ This describes the resources that make up the EMBL-EBI submissions API.
 If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
 
 All API access is over HTTP, and accessed from `http://www.ebi.ac.uk/submissions/api`.
-All data is sent and received as JSON. Blank fields are included as `null` instead of being omitted.
+All data is sent and received as JSON.
 
 === HTTP Verbs
 
@@ -283,6 +283,7 @@ include::{snippets}/get-domain/links.adoc[]
 `DELETE`-ing a submission will delete the submission and all resources within it e.g. studies, samples.
 
 ==== Create a submission
+
 ===== Request
 
 include::{snippets}/create-submission/curl-request.adoc[]
@@ -297,7 +298,7 @@ include::{snippets}/create-submission/links.adoc[]
 
 === Submission status
 
-==== Patch a submission
+==== Patch a submission status
 
 ===== Request
 
@@ -311,11 +312,68 @@ include::{snippets}/patch-submission-status/http-response.adoc[]
 
 include::{snippets}/patch-submission-status/links.adoc[]
 
+=== Submittable resources
+
+Resources of these types are submittable resources:
+
+* Analysis
+* Assay
+* AssayData
+* BaseSubmittable
+* EgaDac
+* EgaDacPolicy
+* EgaDataset
+* Project
+* Protocol
+* Sample
+* SampleGroup
+* Study
+
+The methods to create and update them are common between all of these types.
+We will use sample as an example.
+
+==== Create a sample
+
+===== Request
+
+include::{snippets}/create-sample/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/create-sample/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/create-sample/links.adoc[]
 
 
-=== Submission contents
+==== Update a sample
+===== Request
 
-=== Domain contents
+include::{snippets}/update-sample/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/update-sample/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/update-sample/links.adoc[]
+
+==== Patch a sample
+===== Request
+
+include::{snippets}/patch-sample/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/patch-sample/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/patch-sample/links.adoc[]
+
+
 
 === Status descriptions
 

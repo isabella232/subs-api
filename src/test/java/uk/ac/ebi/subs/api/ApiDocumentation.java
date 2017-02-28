@@ -30,7 +30,9 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
 import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
+import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -70,9 +72,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Category(DocumentationProducer.class)
 public class ApiDocumentation {
 
-
-
-
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
 
@@ -94,19 +93,33 @@ public class ApiDocumentation {
     @Autowired
     private SubmissionStatusEventHandler submissionStatusEventHandler;
 
-
-
-
     private ObjectMapper objectMapper;
-
 
     @Autowired
     private WebApplicationContext context;
 
     private MockMvc mockMvc;
+    private SubmissionEventService fakeSubmissionEventService = new SubmissionEventService() {
+        @Override
+        public void submissionCreated(Submission submission) {
 
+        }
 
+        @Override
+        public void submissionUpdated(Submission submission) {
 
+        }
+
+        @Override
+        public void submissionDeleted(Submission submission) {
+
+        }
+
+        @Override
+        public void submissionSubmitted(Submission submission) {
+
+        }
+    };
 
     @Before
     public void setUp() {
@@ -314,6 +327,151 @@ public class ApiDocumentation {
 
     }
 
+    @Test
+    public void createSample() throws Exception {
+        Submission sub = storeSubmission();
+        uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
+
+        sample.setSubmission("http://www.ebi.ac.uk/api/submissions/"+sub.getId());
+
+        String jsonRepresentation = objectMapper.writeValueAsString(sample);
+
+
+        this.mockMvc.perform(
+                post("/api/samples").content(jsonRepresentation)
+                        .contentType(RestMediaTypes.HAL_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-sample",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("description").description("Description for the sample"),
+                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
+                                        fieldWithPath("taxon").description("Scientific name for this taxon"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("domain").description("Domain this sample belongs to"),
+
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("sample").description("This resource"),
+                                        linkWithRel("submission").description("Submission that this sample is part of"),
+                                        linkWithRel("processingStatus").description("Processing status for this sample"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+
+                                )
+                        )
+                );
+
+
+        String sampleId = sampleRepository.findAll().get(0).getId();
+        SampleRelationship sampleRelationship = new SampleRelationship();
+        sampleRelationship.setAlias("D0");
+        sampleRelationship.setDomain(sub.getDomain().getName());
+        sampleRelationship.setRelationshipNature("Child of");
+
+        sample.getSampleRelationships().add(sampleRelationship);
+
+        jsonRepresentation = objectMapper.writeValueAsString(sample);
+
+        this.mockMvc.perform(
+                put("/api/samples/{id}",sampleId).content(jsonRepresentation)
+                        .contentType(RestMediaTypes.HAL_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("update-sample",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("description").description("Description for the sample"),
+                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
+                                        fieldWithPath("taxon").description("Scientific name for this taxon"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("domain").description("Domain this sample belongs to"),
+
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("sample").description("This resource"),
+                                        linkWithRel("submission").description("Submission that this sample is part of"),
+                                        linkWithRel("processingStatus").description("Processing status for this sample"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+
+                                )
+                        )
+                );
+
+        this.mockMvc.perform(
+                patch("/api/samples/{id}",sampleId).content("{\"archive\":\"BioSamples\"}")
+                        .contentType(RestMediaTypes.HAL_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("patch-sample",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("description").description("Description for the sample"),
+                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
+                                        fieldWithPath("taxon").description("Scientific name for this taxon"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("domain").description("Domain this sample belongs to"),
+                                        fieldWithPath("archive").description("Domain this sample belongs to"),
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("sample").description("This resource"),
+                                        linkWithRel("submission").description("Submission that this sample is part of"),
+                                        linkWithRel("processingStatus").description("Processing status for this sample"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+
+                                )
+                        )
+                );
+
+    }
+
+
+
     private uk.ac.ebi.subs.data.Submission badClientSubmission() {
         return new uk.ac.ebi.subs.data.Submission();
     }
@@ -324,38 +482,6 @@ public class ApiDocumentation {
 
     private ContentModifyingOperationPreprocessor maskLinks() {
         return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
-    }
-
-
-    private class MaskElement implements ContentModifier {
-
-        public MaskElement(String keyToRemove) {
-            this.keyToRemove = keyToRemove;
-        }
-
-        private String keyToRemove;
-
-        @Override
-        public byte[] modifyContent(byte[] originalContent, MediaType contentType) {
-            TypeReference<HashMap<String, Object>> typeRef
-                    = new TypeReference<HashMap<String, Object>>() {
-            };
-
-            Map<String, Object> o = null;
-            try {
-                o = objectMapper.readValue(originalContent, typeRef);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-            o.put("_embedded", "...");
-            try {
-                return objectMapper.writeValueAsBytes(o);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
     }
 
     @Test
@@ -731,28 +857,35 @@ public class ApiDocumentation {
         return linkWithRel("processingStatus").description("Current status of this record");
     }
 
+    private class MaskElement implements ContentModifier {
 
+        private String keyToRemove;
 
-    private SubmissionEventService fakeSubmissionEventService = new SubmissionEventService() {
-        @Override
-        public void submissionCreated(Submission submission) {
-
+        public MaskElement(String keyToRemove) {
+            this.keyToRemove = keyToRemove;
         }
 
         @Override
-        public void submissionUpdated(Submission submission) {
+        public byte[] modifyContent(byte[] originalContent, MediaType contentType) {
+            TypeReference<HashMap<String, Object>> typeRef
+                    = new TypeReference<HashMap<String, Object>>() {
+            };
+
+            Map<String, Object> o = null;
+            try {
+                o = objectMapper.readValue(originalContent, typeRef);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+
+            o.put("_embedded", "...");
+            try {
+                return objectMapper.writeValueAsBytes(o);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
         }
-
-        @Override
-        public void submissionDeleted(Submission submission) {
-
-        }
-
-        @Override
-        public void submissionSubmitted(Submission submission) {
-
-        }
-    };
+    }
 
 }

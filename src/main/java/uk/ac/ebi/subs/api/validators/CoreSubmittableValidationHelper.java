@@ -48,6 +48,8 @@ public class CoreSubmittableValidationHelper {
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
         StoredSubmittable storedVersion = null;
 
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
+
         if (target.getId() != null) {
             storedVersion = (StoredSubmittable) repository.findOne(target.getId());
         }
@@ -60,7 +62,6 @@ public class CoreSubmittableValidationHelper {
         logger.info("validate {}", target);
         StoredSubmittable submittable = (StoredSubmittable) target;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
 
 
         if (submittable.getSubmission() != null && !operationControlService.isUpdateable(submittable.getSubmission())) {
@@ -93,5 +94,6 @@ public class CoreSubmittableValidationHelper {
          */
 
         submittable.setCreatedDate(storedVersion.getCreatedDate());
+        submittable.setCreatedBy(storedVersion.getCreatedBy());
     }
 }
