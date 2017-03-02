@@ -27,8 +27,8 @@ This API aims to use appropriate HTTP verbs for each action
 
 |`GET`|Used for retrieving resources
 |`POST`|Used for creating resources
-|`PATCH`|Used to modify a resource
-|`PUT`|Used for replacing resources
+|`PUT`|Used to entirely replace resources
+|`PATCH`|Used to partially modify a resource
 |`DELETE`|Used for deleting resources
 |`OPTIONS`|Can be used to determine which verbs can be used for a resource
 |`HEAD`|Returns whether a resource is available
@@ -111,7 +111,9 @@ Link naming follows a consistent pattern.
 * Collection resources are named with the plural of the type name in camel case, e.g. `submissions`, `assayData`
 * Search resources are named with the plural of the type name in camel case, with a `:search` suffix, e.g. `submissions:search`
 * Where a collection resource accepts `POST` requests to create a new resource, a link will have the `:create` suffix, e.g. `submissions:create`
-* Where an individual resource accepts `PUT`, `PATCH` or `DELETE` requests, a link will have the `:update` suffix, e.g. `self:update`
+* Please note that you may not be able to `GET` or `HEAD` a collection resource, even if you can `POST` to it.
+* Where an individual resource accepts `PUT` or `PATCH` requests, a link will have the `:update` suffix, e.g. `self:update`
+* Where an individual resource accepts `DELETE` requests, a link will have the `:delete` suffix, e.g. `self:delete`
 
 === Collection resources
 

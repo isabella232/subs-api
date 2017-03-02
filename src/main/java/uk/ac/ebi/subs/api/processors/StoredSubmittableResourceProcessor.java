@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class StoredSubmittableResourceProcessor implements ResourceProcessor<Resource<? extends StoredSubmittable>> {
+public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> implements ResourceProcessor<Resource<T>> {
 
     private static final Logger logger = LoggerFactory.getLogger(StoredSubmittableResourceProcessor.class);
 
@@ -30,7 +30,7 @@ public class StoredSubmittableResourceProcessor implements ResourceProcessor<Res
     }
 
     @Override
-    public Resource<? extends StoredSubmittable> process(Resource<? extends StoredSubmittable> resource) {
+    public Resource<T> process(Resource<T> resource) {
 
         logger.info("processing resource {}",resource);
 
@@ -38,7 +38,7 @@ public class StoredSubmittableResourceProcessor implements ResourceProcessor<Res
         addCurrentVersion(resource);
 
         if (operationControlService.isUpdateable(resource.getContent())){
-            linkHelper.addUpdateLink(resource.getLinks(),resource.getContent());
+            linkHelper.addSelfUpdateLink(resource.getLinks(),resource.getContent());
         }
 
 

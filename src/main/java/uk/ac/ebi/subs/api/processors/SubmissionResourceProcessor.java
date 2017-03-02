@@ -54,7 +54,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
             linkHelper.addSubmittablesCreateLinks(submissionResource.getLinks());
 
-            linkHelper.addUpdateLink(submissionResource.getLinks(), submissionResource.getContent());
+            linkHelper.addSelfUpdateLink(submissionResource.getLinks(), submissionResource.getContent());
         }
     }
 

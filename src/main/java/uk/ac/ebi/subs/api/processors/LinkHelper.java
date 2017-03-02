@@ -22,6 +22,7 @@ public class LinkHelper {
     private static final String CREATE_REL_SUFFIX = ":create";
     private static final String SEARCH_REL_SUFFIX = ":search";
     private static final String UPDATE_REL_SUFFIX = ":update";
+    private static final String DELETE_REL_SUFFIX = ":delete";
 
     private RepositoryEntityLinks repositoryEntityLinks;
 
@@ -46,15 +47,18 @@ public class LinkHelper {
         }
     }
 
-    public void addUpdateLink(Collection<Link> links, Identifiable<?> identifiable){
-        Link singleResourceLink = repositoryEntityLinks.linkToSingleResource(identifiable);
+    public void addSelfUpdateLink(Collection<Link> links, Identifiable<?> identifiable){
+        Link singleResourceLink = repositoryEntityLinks.linkToSingleResource(identifiable).expand();
 
         Assert.notNull(singleResourceLink);
 
-        Link updateLink = singleResourceLink.withRel( singleResourceLink.getRel() + UPDATE_REL_SUFFIX );
+        Link updateLink = singleResourceLink.withRel( "self" + UPDATE_REL_SUFFIX );
 
         links.add(updateLink);
 
+        Link deleteLink = singleResourceLink.withRel( "self" + DELETE_REL_SUFFIX );
+
+        links.add(deleteLink);
     }
 
 
