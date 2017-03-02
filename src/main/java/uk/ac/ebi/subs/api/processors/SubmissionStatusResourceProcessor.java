@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.api.resourceAssembly;
+package uk.ac.ebi.subs.api.processors;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;

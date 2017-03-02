@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.api.resourceAssembly;
+package uk.ac.ebi.subs.api.processors;
 
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;

@@ -277,6 +277,7 @@ public class ApiDocumentation {
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
                                         linkWithRel("submission").description("This submission"),
+                                        linkWithRel("submission:update").description("This submission can be updated"),
                                         linkWithRel("domain").description("The domain this submission belongs to"),
                                         linkWithRel("analyses").description("Analyses within this submission"),
                                         linkWithRel("assays").description("Assays within this submission"),
@@ -289,7 +290,18 @@ public class ApiDocumentation {
                                         linkWithRel("samples").description("Samples within this submission"),
                                         linkWithRel("sampleGroups").description("Sample groups within this submission"),
                                         linkWithRel("studies").description("Studies within this submission"),
-                                        linkWithRel("submissionStatus").description("Status of this submission")
+                                        linkWithRel("submissionStatus").description("Status of this submission"),
+                                        linkWithRel("sampleGroups:create").description("This submission can accept new sample groups"),
+                                        linkWithRel("analyses:create").description("This submission can accept new analyses"),
+                                        linkWithRel("egaDatasets:create").description("This submission can accept new EGA datasets"),
+                                        linkWithRel("projects:create").description("This submission can accept new projects"),
+                                        linkWithRel("assays:create").description("This submission can accept new assays"),
+                                        linkWithRel("protocols:create").description("This submission can accept new protocols"),
+                                        linkWithRel("assayData:create").description("This submission can accept new assay data"),
+                                        linkWithRel("egaDacs:create").description("This submission can accept new DACs"),
+                                        linkWithRel("samples:create").description("This submission can accept new samples"),
+                                        linkWithRel("egaDacPolicies:create").description("This submission can accept new DAC policies"),
+                                        linkWithRel("studies:create").description("This submission can accept new studies")
                                 )
                         )
                 );
@@ -368,6 +380,7 @@ public class ApiDocumentation {
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
                                         linkWithRel("sample").description("This resource"),
+                                        linkWithRel("sample:update").description("This resource can be updated"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
                                         linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
@@ -419,6 +432,7 @@ public class ApiDocumentation {
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
                                         linkWithRel("sample").description("This resource"),
+                                        linkWithRel("sample:update").description("This resource can be updated"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
                                         linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
@@ -459,6 +473,7 @@ public class ApiDocumentation {
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
                                         linkWithRel("sample").description("This resource"),
+                                        linkWithRel("sample:update").description("This resource can be updated"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
                                         linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
@@ -618,7 +633,8 @@ public class ApiDocumentation {
                                         selfRelLink(),
                                         processingStatusLink(),
                                         submissionLink(),
-                                        linkWithRel("sample").description("Link to this sample")
+                                        linkWithRel("sample").description("Link to this sample"),
+                                        linkWithRel("sample:update").description("This sample can be updated")
                                 ),
                                 responseFields( //TODO fill out the descriptions
                                         linksResponseField(),
@@ -761,6 +777,8 @@ public class ApiDocumentation {
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
+                                        //statuses
+                                        linkWithRel("processingStatuses:search").description("Search resource for processing statuses"),
                                         //profile
                                         linkWithRel("profile").description("Application level details")
                                 ),
