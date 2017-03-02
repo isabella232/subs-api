@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.config;
 
+import com.sun.xml.internal.ws.api.message.Packet;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
@@ -108,7 +110,9 @@ public class StatusConfiguration {
                 StatusDescription.build(ProcessingStatusEnum.Processing, "Archive is processing document")
                         .addSystemTransition(ProcessingStatusEnum.Done),
 
-                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document")
+                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document"),
+
+                StatusDescription.build(ProcessingStatusEnum.Error, "Archive agent has rejected a document")
         );
 
 
