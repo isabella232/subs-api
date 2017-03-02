@@ -16,14 +16,12 @@ import uk.ac.ebi.subs.repository.model.Submission;
 public class SubmissionDeleteValidator implements Validator {
 
     @Autowired
-    public SubmissionDeleteValidator(SubmissionRepository submissionRepository, OperationControlService operationControlService) {
-        this.submissionRepository = submissionRepository;
+    public SubmissionDeleteValidator(OperationControlService operationControlService) {
         this.operationControlService = operationControlService;
     }
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(SubmissionDeleteValidator.class);
 
-    private SubmissionRepository submissionRepository;
     private OperationControlService operationControlService;
 
     @Override
@@ -36,10 +34,8 @@ public class SubmissionDeleteValidator implements Validator {
 
         Submission submission = (Submission) target;
 
-        Submission storedSub = submissionRepository.findOne(submission.getId());
 
-
-        if (!SubmissionStatusEnum.Draft.name().equals(storedSub.getSubmissionStatus().getStatus())) {
+        if (!operationControlService.isUpdateable(submission)) {
             SubsApiErrors.resource_locked.addError(errors);
         }
 
