@@ -108,7 +108,9 @@ public class StatusConfiguration {
                 StatusDescription.build(ProcessingStatusEnum.Processing, "Archive is processing document")
                         .addSystemTransition(ProcessingStatusEnum.Done),
 
-                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document")
+                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document"),
+
+                StatusDescription.build(ProcessingStatusEnum.Error, "Archive agent has rejected a document")
         );
 
 
