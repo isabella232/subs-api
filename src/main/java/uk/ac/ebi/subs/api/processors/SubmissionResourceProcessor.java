@@ -7,6 +7,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.DomainController;
+import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -45,8 +46,28 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         ifUpdateableAddLinks(resource);
 
+        addStatusReport(resource);
 
         return resource;
+    }
+
+    private void addStatusReport(Resource<Submission> resource) {
+        Link statusSummary = linkTo(
+                methodOn(ProcessingStatusController.class)
+                        .summariseProcessingStatusForSubmission(resource.getContent().getId())
+        ).withRel("processingStatusSummary");
+
+
+        resource.add(statusSummary);
+
+        Link typeStatusSummary = linkTo(
+                methodOn(ProcessingStatusController.class)
+                        .summariseTypeProcessingStatusForSubmission(resource.getContent().getId())
+        ).withRel("typeProcessingStatusSummary");
+
+
+        resource.add(typeStatusSummary);
+
     }
 
     private void ifUpdateableAddLinks(Resource<Submission> submissionResource) {

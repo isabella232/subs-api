@@ -62,6 +62,9 @@ public class SubmissionStatusValidator implements Validator {
         SubmissionStatus currentSubmissionStatus = submissionStatusRepository.findOne(submissionStatus.getId());
         StatusDescription currentStatusDescription = submissionStatusDescriptionMap.get(currentSubmissionStatus.getStatus());
 
+        submissionStatus.setCreatedDate(currentSubmissionStatus.getCreatedDate());
+        submissionStatus.setCreatedBy(currentSubmissionStatus.getCreatedBy());
+
         if (!currentStatusDescription.isUserTransitionPermitted(targetStatusName)) {
             SubsApiErrors.invalid.addError(errors,"status");
             return;

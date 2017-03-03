@@ -23,25 +23,23 @@ import java.util.Optional;
 @RequestMapping("/statusDescriptions")
 public class StatusDescriptionController {
 
-    @Autowired
+
+    public StatusDescriptionController(List<StatusDescription> releaseStatuses, List<StatusDescription> processingStatuses, List<StatusDescription> submissionStatuses, PagedResourcesAssembler pagedResourcesAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler) {
+        this.releaseStatuses = releaseStatuses;
+        this.processingStatuses = processingStatuses;
+        this.submissionStatuses = submissionStatuses;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.processingStatusResourceAssembler = processingStatusResourceAssembler;
+        this.releaseStatusResourceAssembler = releaseStatusResourceAssembler;
+        this.submissionStatusResourceAssembler = submissionStatusResourceAssembler;
+    }
+
     private List<StatusDescription> releaseStatuses;
-
-    @Autowired
     private List<StatusDescription> processingStatuses;
-
-    @Autowired
     private List<StatusDescription> submissionStatuses;
-
-    @Autowired
     private PagedResourcesAssembler pagedResourcesAssembler;
-
-    @Autowired
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler;
-
-    @Autowired
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler;
-
-    @Autowired
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
 
     @RequestMapping("/processingStatuses")
