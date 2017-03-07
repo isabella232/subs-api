@@ -227,7 +227,7 @@ include::{snippets}/samples-search-resource/links.adoc[]
 == Usage
 
 When submitting data to EMBL-EBI archives, you should start by `GET`-ing the root endpoint. From here, you should follow
-links to find a list of domains you can use. Choose one and create a new submission for it, by `POST`-ing to the
+links to find a list of teams you can use. Choose one and create a new submission for it, by `POST`-ing to the
 submissions collection.
 
 Once you have a submission, create new resources for samples, assays, etc, by `POST`-ing to the appropriate collection
@@ -261,23 +261,23 @@ include::{snippets}/root-endpoint/http-response.adoc[]
 
 include::{snippets}/root-endpoint/links.adoc[]
 
-=== Domains
+=== Teams
 
-TODO there isn't a proper entry point for domains yet. If you know the domain name, you can access it
-through this endpoint. Domains cannot be created or deleted through this API, they are controlled
+TODO there isn't a proper entry point for teams yet. If you know the team name, you can access it
+through this endpoint. Teams cannot be created or deleted through this API, they are controlled
 through the AAP.
 
 ==== Request
 
-include::{snippets}/get-domain/curl-request.adoc[]
+include::{snippets}/get-team/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/get-domain/http-response.adoc[]
+include::{snippets}/get-team/http-response.adoc[]
 
 ==== Links
 
-include::{snippets}/get-domain/links.adoc[]
+include::{snippets}/get-team/links.adoc[]
 
 
 === Submissions

@@ -20,19 +20,19 @@ public class SubmissionValidator implements Validator {
     @Autowired
     public SubmissionValidator(
             SubmissionRepository submissionRepository,
-            DomainValidator domainValidator,
+            TeamValidator teamValidator,
             SubmitterValidator submitterValidator,
             OperationControlService operationControlService
     ) {
         this.submissionRepository = submissionRepository;
-        this.domainValidator = domainValidator;
+        this.teamValidator = teamValidator;
         this.submitterValidator = submitterValidator;
         this.operationControlService = operationControlService;
     }
 
 
     private SubmissionRepository submissionRepository;
-    private DomainValidator domainValidator;
+    private TeamValidator teamValidator;
     private SubmitterValidator submitterValidator;
     private OperationControlService operationControlService;
 
@@ -43,13 +43,13 @@ public class SubmissionValidator implements Validator {
         Submission submission = (Submission) target;
 
         SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submitter");
-        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"domain");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"team");
 
         if (errors.hasErrors()) return;
 
         try {
-            errors.pushNestedPath("domain");
-            ValidationUtils.invokeValidator(this.domainValidator, submission.getDomain(), errors);
+            errors.pushNestedPath("team");
+            ValidationUtils.invokeValidator(this.teamValidator, submission.getTeam(), errors);
         } finally {
             errors.popNestedPath();
         }
@@ -87,8 +87,7 @@ public class SubmissionValidator implements Validator {
 
         submitterCannotChange(target, storedVersion, errors);
 
-        domainCannotChange(target, storedVersion, errors);
-
+        teamCannotChange(target, storedVersion, errors);
 
         createdDateCannotChange(target, storedVersion, errors);
 
@@ -104,11 +103,11 @@ public class SubmissionValidator implements Validator {
         );
     }
 
-    private void domainCannotChange(Submission target, Submission storedVersion, Errors errors) {
+    private void teamCannotChange(Submission target, Submission storedVersion, Errors errors) {
         ValidationHelper.thingCannotChange(
-                target.getDomain(),
-                storedVersion.getDomain(),
-                "domain",
+                target.getTeam(),
+                storedVersion.getTeam(),
+                "team",
                 errors
         );
     }

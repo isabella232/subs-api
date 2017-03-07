@@ -36,17 +36,17 @@ public class CoreSubmittableEventHelper {
         processingStatus.setId(UUID.randomUUID().toString());
         processingStatusRepository.insert(processingStatus);
 
-        setDomainFromSubmission(submittable);
+        setTeamFromSubmission(submittable);
     }
 
-    private void setDomainFromSubmission(StoredSubmittable submittable) {
+    private void setTeamFromSubmission(StoredSubmittable submittable) {
         if (submittable.getSubmission() != null) {
-            submittable.setDomain(submittable.getSubmission().getDomain());
+            submittable.setTeam(submittable.getSubmission().getTeam());
         }
     }
 
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
-        setDomainFromSubmission(storedSubmittable);
+        setTeamFromSubmission(storedSubmittable);
     }
 }

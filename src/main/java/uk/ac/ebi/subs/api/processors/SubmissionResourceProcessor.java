@@ -6,8 +6,12 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+<<<<<<< HEAD
 import uk.ac.ebi.subs.api.controllers.DomainController;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
+=======
+import uk.ac.ebi.subs.api.controllers.TeamController;
+>>>>>>> master
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -42,7 +46,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
 
-        addDomainRel(resource);
+        addTeamRel(resource);
         addContentsRels(resource);
 
         ifUpdateableAddLinks(resource);
@@ -118,13 +122,13 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
     }
 
-    private void addDomainRel(Resource<Submission> resource) {
-        if (resource.getContent().getDomain() != null && resource.getContent().getDomain().getName() != null) {
+    private void addTeamRel(Resource<Submission> resource) {
+        if (resource.getContent().getTeam() != null && resource.getContent().getTeam().getName() != null) {
             resource.add(
                     linkTo(
-                            methodOn(DomainController.class)
-                                    .getDomain(resource.getContent().getDomain().getName())
-                    ).withRel("domain")
+                            methodOn(TeamController.class)
+                                    .getTeam(resource.getContent().getTeam().getName())
+                    ).withRel("team")
             );
         }
     }

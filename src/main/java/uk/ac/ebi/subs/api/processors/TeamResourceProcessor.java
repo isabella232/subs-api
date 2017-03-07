@@ -6,7 +6,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 
@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class DomainResourceProcessor implements ResourceProcessor<Resource<Domain>> {
+public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> {
 
 
-    public DomainResourceProcessor(
+    public TeamResourceProcessor(
             RepositoryEntityLinks repositoryEntityLinks,
             List<Class<? extends StoredSubmittable>> submittablesClassList
     ) {
@@ -31,7 +31,7 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
 
 
     @Override
-    public Resource<Domain> process(Resource<Domain> resource) {
+    public Resource<Team> process(Resource<Team> resource) {
 
 
         addSubmissionsRel(resource);
@@ -42,18 +42,17 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
         return resource;
     }
 
-    private void addSubmissionsRel(Resource<Domain> resource) {
-        String domainName = resource.getContent().getName();
+    private void addSubmissionsRel(Resource<Team> resource) {
         Map<String, String> expansionParams = new HashMap<>();
-        expansionParams.put("domainName", domainName);
+        expansionParams.put("teamName", resource.getContent().getName());
 
         addRelWithCollectionRelName(resource, expansionParams, Submission.class);
     }
 
-    private void addContentsRels(Resource<Domain> resource) {
-        String domainName = resource.getContent().getName();
+    private void addContentsRels(Resource<Team> resource) {
+        String teamName = resource.getContent().getName();
         Map<String, String> expansionParams = new HashMap<>();
-        expansionParams.put("domainName", domainName);
+        expansionParams.put("teamName", teamName);
 
 
         for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList) {
@@ -62,9 +61,9 @@ public class DomainResourceProcessor implements ResourceProcessor<Resource<Domai
 
     }
 
-    private void addRelWithCollectionRelName(Resource<Domain> resource, Map<String, String> expansionParams, Class<?> classWithByDomainRel) {
-        Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByDomainRel, "by-domain");
-        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(classWithByDomainRel);
+    private void addRelWithCollectionRelName(Resource<Team> resource, Map<String, String> expansionParams, Class<?> classWithByTeamRel) {
+        Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByTeamRel, "by-team");
+        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(classWithByTeamRel);
 
         Assert.notNull(contentsLink);
         Assert.notNull(collectionLink);
