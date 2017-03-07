@@ -1,7 +1,7 @@
 package uk.ac.ebi.subs.api;
 
 
-import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
@@ -19,7 +19,7 @@ public class Helpers {
     public static Submission generateSubmission() {
         Submission s = new Submission();
 
-        s.setDomain(generateTestDomain());
+        s.setTeam(generateTestTeam());
         s.setSubmitter(generateTestSubmitter());
 
         return s;
@@ -76,19 +76,19 @@ public class Helpers {
         return samples;
     }
 
-    public static Domain generateTestDomain() {
-        Domain d = new Domain();
-        d.setName("my-domain");
+    public static Team generateTestTeam() {
+        Team d = new Team();
+        d.setName("my-team");
         return d;
     }
 
 
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
-        Domain d = new Domain();
+        Team d = new Team();
         sub.setId(createId());
 
-        sub.setDomain(generateTestDomain());
+        sub.setTeam(generateTestTeam());
 
         sub.setSubmissionStatus(new SubmissionStatus(SubmissionStatusEnum.Draft));
 

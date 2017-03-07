@@ -48,10 +48,10 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
     private void addHistory(Resource<? extends StoredSubmittable> resource) {
         StoredSubmittable item = resource.getContent();
 
-        if (item.getDomain() != null && item.getDomain().getName() != null && item.getAlias() != null) {
+        if (item.getTeam() != null && item.getTeam().getName() != null && item.getAlias() != null) {
             Map<String, String> expansionParams = new HashMap<>();
 
-            expansionParams.put("domainName", item.getDomain().getName());
+            expansionParams.put("teamName", item.getTeam().getName());
             expansionParams.put("alias", item.getAlias());
 
             Link contentsLink = repositoryEntityLinks.linkToSearchResource(item.getClass(), "history");
@@ -69,10 +69,10 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
     private void addCurrentVersion(Resource<? extends StoredSubmittable> resource) {
         StoredSubmittable item = resource.getContent();
 
-        if (item.getDomain() != null && item.getDomain().getName() != null && item.getAlias() != null) {
+        if (item.getTeam() != null && item.getTeam().getName() != null && item.getAlias() != null) {
             Map<String, String> expansionParams = new HashMap<>();
 
-            expansionParams.put("domainName", item.getDomain().getName());
+            expansionParams.put("teamName", item.getTeam().getName());
             expansionParams.put("alias", item.getAlias());
 
             Link contentsLink = repositoryEntityLinks.linkToSearchResource(item.getClass(), "current-version");

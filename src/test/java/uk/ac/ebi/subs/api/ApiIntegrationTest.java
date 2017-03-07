@@ -175,30 +175,30 @@ public class ApiIntegrationTest {
             }
         }
 
-        String domainName = submission.getDomain().getName();
-        String domainUrl = this.rootUri + "/domains/" + domainName;
-        HttpResponse<JsonNode> domainQueryResponse = Unirest.get(domainUrl).headers(standardGetHeaders()).asJson();
+        String teamName = submission.getTeam().getName();
+        String teamUrl = this.rootUri + "/teams/" + teamName;
+        HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(standardGetHeaders()).asJson();
 
-        assertThat(domainQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        assertThat(teamQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
-        JSONObject domainPayload = domainQueryResponse.getBody().getObject();
-        Map<String, String> domainRels = testHelper.relsFromPayload(domainPayload);
+        JSONObject teamPayload = teamQueryResponse.getBody().getObject();
+        Map<String, String> teamRels = testHelper.relsFromPayload(teamPayload);
 
-        String domainSamplesUrl = domainRels.get("samples");
+        String teamSamplesUrl = teamRels.get("samples");
 
-        assertThat(domainSamplesUrl,notNullValue());
+        assertThat(teamSamplesUrl,notNullValue());
 
-        HttpResponse<JsonNode> domainSamplesQueryResponse = Unirest.get(domainSamplesUrl).headers(standardGetHeaders()).asJson();
-        assertThat(domainSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
-        JSONObject domainSamplesPayload = domainSamplesQueryResponse.getBody().getObject();
-        JSONArray domainSamples = domainSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
+        HttpResponse<JsonNode> teamSamplesQueryResponse = Unirest.get(teamSamplesUrl).headers(standardGetHeaders()).asJson();
+        assertThat(teamSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
+        JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(domainSamples.length(),is(equalTo(testSamples.size())));
+        assertThat(teamSamples.length(),is(equalTo(testSamples.size())));
 
-        for (int i = 0; i < domainSamples.length(); i++){
-            JSONObject domainSample = domainSamples.getJSONObject(i);
+        for (int i = 0; i < teamSamples.length(); i++){
+            JSONObject teamSample = teamSamples.getJSONObject(i);
 
-            Map<String,String> sampleRels = testHelper.relsFromPayload(domainSample);
+            Map<String,String> sampleRels = testHelper.relsFromPayload(teamSample);
             String selfUrl = sampleRels.get("self");
 
             HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(standardGetHeaders()).asJson();

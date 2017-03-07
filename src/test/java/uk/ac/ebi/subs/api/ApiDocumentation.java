@@ -30,8 +30,7 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
 import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
-import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -209,8 +208,8 @@ public class ApiDocumentation {
 
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
-        submission.setDomain(new Domain());
-        submission.getDomain().setName("my-team");
+        submission.setTeam(new Team());
+        submission.getTeam().setName("my-team");
         submission.setSubmitter(new Submitter());
         submission.getSubmitter().setEmail("alice@test.org");
         return submission;
@@ -266,7 +265,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("submitter").description("Submitter who is responsible for this submission"),
-                                        fieldWithPath("domain").description("Domain this submission belongs to"),
+                                        fieldWithPath("team").description("Team this submission belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -279,7 +278,7 @@ public class ApiDocumentation {
                                         linkWithRel("submission").description("This submission"),
                                         linkWithRel("self:update").description("This submission can be updated"),
                                         linkWithRel("self:delete").description("This submission can be deleted"),
-                                        linkWithRel("domain").description("The domain this submission belongs to"),
+                                        linkWithRel("team").description("The team this submission belongs to"),
                                         linkWithRel("analyses").description("Analyses within this submission"),
                                         linkWithRel("assays").description("Assays within this submission"),
                                         linkWithRel("assayData").description("Assay data within this submission"),
@@ -362,7 +361,7 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
@@ -370,7 +369,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("domain").description("Domain this sample belongs to"),
+                                        fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -385,8 +384,8 @@ public class ApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
-                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
 
                                 )
                         )
@@ -396,7 +395,7 @@ public class ApiDocumentation {
         String sampleId = sampleRepository.findAll().get(0).getId();
         SampleRelationship sampleRelationship = new SampleRelationship();
         sampleRelationship.setAlias("D0");
-        sampleRelationship.setDomain(sub.getDomain().getName());
+        sampleRelationship.setTeam(sub.getTeam().getName());
         sampleRelationship.setRelationshipNature("Child of");
 
         sample.getSampleRelationships().add(sampleRelationship);
@@ -415,7 +414,7 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
@@ -423,7 +422,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("domain").description("Domain this sample belongs to"),
+                                        fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -438,8 +437,8 @@ public class ApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
-                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
 
                                 )
                         )
@@ -457,7 +456,7 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("alias").description("Unique name for the sample within the domain"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
@@ -465,8 +464,8 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("domain").description("Domain this sample belongs to"),
-                                        fieldWithPath("archive").description("Domain this sample belongs to"),
+                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        fieldWithPath("archive").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -480,8 +479,8 @@ public class ApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("submission").description("Submission that this sample is part of"),
                                         linkWithRel("processingStatus").description("Processing status for this sample"),
-                                        linkWithRel("history").description("Collection of resources for samples with the same domain and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by domain and alias")
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
 
                                 )
                         )
@@ -506,15 +505,15 @@ public class ApiDocumentation {
     @Test
     public void pageExample() throws Exception {
 
-        String domainName = null;
+        String teamName = null;
         for (int i = 0; i < 50; i++) {
             Submission s = Helpers.generateTestSubmission();
             submissionStatusRepository.insert(s.getSubmissionStatus());
             submissionRepository.insert(s);
-            domainName = s.getDomain().getName();
+            teamName = s.getTeam().getName();
         }
 
-        this.mockMvc.perform(get("/api/submissions/search/by-domain?domainName={domainName}&page=1&size=10", domainName))
+        this.mockMvc.perform(get("/api/submissions/search/by-team?teamName={teamName}&page=1&size=10", teamName))
                 .andExpect(status().isOk())
                 .andDo(document(
                         "page-example",
@@ -686,10 +685,10 @@ public class ApiDocumentation {
                                 links(
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
-                                        linkWithRel("history").description("Search for all versions of a sample by domain and alias "),
+                                        linkWithRel("history").description("Search for all versions of a sample by team and alias "),
                                         linkWithRel("by-submission").description("Search for all samples within a submission"),
-                                        linkWithRel("by-domain").description("Search for samples within a domain"),
-                                        linkWithRel("current-version").description("Find the current version of a sample by domain and alias")
+                                        linkWithRel("by-team").description("Search for samples within a team"),
+                                        linkWithRel("current-version").description("Find the current version of a sample by team and alias")
                                 ),
                                 responseFields(
                                         linksResponseField()
@@ -699,38 +698,38 @@ public class ApiDocumentation {
     }
 
     @Test
-    public void domain() throws Exception {
+    public void team() throws Exception {
 
-        Submission s = storeSubmission();
-        Domain d = s.getDomain();
+        Submission submission = storeSubmission();
+        Team team = submission.getTeam();
 
         this.mockMvc.perform(
-                get("/api/domains/{domainName}", d.getName())
+                get("/api/teams/{teamName}", team.getName())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("get-domain",
+                        document("get-team",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
-                                        linkWithRel("submissions").description("Collection of submissions within this domain"),
-                                        linkWithRel("analyses").description("Collection of analyses within this domain"),
-                                        linkWithRel("assays").description("Collection of assays within this domain"),
-                                        linkWithRel("assayData").description("Collection of assay data within this domain"),
-                                        linkWithRel("egaDacs").description("Collection of DACs within this domain"),
-                                        linkWithRel("egaDacPolicies").description("Collection of DAC policies within this domain"),
-                                        linkWithRel("egaDatasets").description("Collection of EGA Datasets within this domain"),
-                                        linkWithRel("projects").description("Collection of projects within this domain"),
-                                        linkWithRel("protocols").description("Collection of protocols within this domain"),
-                                        linkWithRel("samples").description("Collection of samples within this domain"),
-                                        linkWithRel("sampleGroups").description("Collection of sample groups within this domain"),
-                                        linkWithRel("studies").description("Collection of studies within this domain")
+                                        linkWithRel("submissions").description("Collection of submissions within this team"),
+                                        linkWithRel("analyses").description("Collection of analyses within this team"),
+                                        linkWithRel("assays").description("Collection of assays within this team"),
+                                        linkWithRel("assayData").description("Collection of assay data within this team"),
+                                        linkWithRel("egaDacs").description("Collection of DACs within this team"),
+                                        linkWithRel("egaDacPolicies").description("Collection of DAC policies within this team"),
+                                        linkWithRel("egaDatasets").description("Collection of EGA Datasets within this team"),
+                                        linkWithRel("projects").description("Collection of projects within this team"),
+                                        linkWithRel("protocols").description("Collection of protocols within this team"),
+                                        linkWithRel("samples").description("Collection of samples within this team"),
+                                        linkWithRel("sampleGroups").description("Collection of sample groups within this team"),
+                                        linkWithRel("studies").description("Collection of studies within this team")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("name").description("Name of this domain")
+                                        fieldWithPath("name").description("Name of this team")
                                 )
                         )
                 );
@@ -750,8 +749,8 @@ public class ApiDocumentation {
                                 links(
 
                                         halLinks(),
-                                        //domain
-                                        linkWithRel("domain").description("Domain "),
+                                        //team
+                                        linkWithRel("team").description("Team "),
                                         //submissions
                                         linkWithRel("submissions:search").description("Search resource for submissions"),
                                         linkWithRel("submissions:create").description("Create a new submission resource"),
@@ -795,17 +794,17 @@ public class ApiDocumentation {
     }
 
     @Test
-    public void submissionsByDomain() throws Exception {
+    public void submissionsByTeam() throws Exception {
 
         Submission sub = storeSubmission();
 
 
         this.mockMvc.perform(
-                get("/api/submissions/search/by-domain?domainName={domainName}", sub.getDomain().getName())
+                get("/api/submissions/search/by-team?teamName={teamName}", sub.getTeam().getName())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("submissions/by-domain",
+                        document("submissions/by-team",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -814,7 +813,7 @@ public class ApiDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.submissions").description("Submissions matching the domain name"),
+                                        fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
                                         paginationPageSizeDescriptor(),
                                         paginationTotalElementsDescriptor(),
                                         paginationTotalPagesDescriptor(),

@@ -7,7 +7,7 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.controllers.DomainController;
+import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -42,7 +42,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addStatusDescriptions(links);
         addStatuses(links);
         addSubmissions(links);
-        addDomain(links);
+        addTeam(links);
 
     }
 
@@ -74,9 +74,9 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     }
 
 
-    private void addDomain(List<Link> links) {
+    private void addTeam(List<Link> links) {
         links.add(
-                linkTo(methodOn(DomainController.class).getDomain(null)).withRel("domain")
+                linkTo(methodOn(TeamController.class).getTeam(null)).withRel("team")
         );
     }
 
