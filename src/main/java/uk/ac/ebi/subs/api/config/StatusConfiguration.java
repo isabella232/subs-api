@@ -40,9 +40,9 @@ public class StatusConfiguration {
                         .addSystemTransition(SubmissionStatusEnum.Processing),
 
                 StatusDescription.build(SubmissionStatusEnum.Processing, "Submission system is processing the submission")
-                        .addSystemTransition(SubmissionStatusEnum.Done),
+                        .addSystemTransition(SubmissionStatusEnum.Completed),
 
-                StatusDescription.build(SubmissionStatusEnum.Done, "Submission has been stored in the archives")
+                StatusDescription.build(SubmissionStatusEnum.Completed, "Submission has been stored in the archives")
         );
 
         return Collections.unmodifiableList(statuses);
@@ -106,11 +106,13 @@ public class StatusConfiguration {
                         .acceptUpdates(),
 
                 StatusDescription.build(ProcessingStatusEnum.Processing, "Archive is processing document")
-                        .addSystemTransition(ProcessingStatusEnum.Done),
+                        .addSystemTransition(ProcessingStatusEnum.Completed),
 
-                StatusDescription.build(ProcessingStatusEnum.Done, "Archive has stored document"),
+                StatusDescription.build(ProcessingStatusEnum.Completed, "Archive has stored document"),
 
-                StatusDescription.build(ProcessingStatusEnum.Error, "Archive agent has rejected a document")
+                StatusDescription.build(ProcessingStatusEnum.Error, "Archive agent has rejected a document"),
+
+                StatusDescription.build(ProcessingStatusEnum.Rejected, "Archive agent has rejected a document")
         );
 
 
