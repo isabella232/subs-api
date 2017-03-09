@@ -316,7 +316,7 @@ include::{snippets}/patch-submission-status/links.adoc[]
 
 === Submittable resources
 
-Resources of these types are submittable resources:
+Resources of these types are item resources:
 
 * Analysis
 * Assay

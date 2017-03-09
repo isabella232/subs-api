@@ -6,12 +6,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-<<<<<<< HEAD
-import uk.ac.ebi.subs.api.controllers.DomainController;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
-=======
 import uk.ac.ebi.subs.api.controllers.TeamController;
->>>>>>> master
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
