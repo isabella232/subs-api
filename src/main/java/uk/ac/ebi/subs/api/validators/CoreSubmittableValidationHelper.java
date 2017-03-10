@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.repository.projections.SubmittableWithStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
 
@@ -28,22 +28,27 @@ public class CoreSubmittableValidationHelper {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final SubmissionRepository submissionRepository;
-    final List<Status> processingStatuses;
-    final List<Status> releaseStatuses;
+    private SubmissionRepository submissionRepository;
+    private List<StatusDescription> processingStatuses;
+    private List<StatusDescription> releaseStatuses;
+    private OperationControlService operationControlService;
 
     @Autowired
     public CoreSubmittableValidationHelper(
             SubmissionRepository submissionRepository,
-            List<Status> processingStatuses,
-            List<Status> releaseStatuses) {
+            List<StatusDescription> processingStatuses,
+            List<StatusDescription> releaseStatuses,
+            OperationControlService operationControlService) {
         this.submissionRepository = submissionRepository;
         this.processingStatuses = processingStatuses;
         this.releaseStatuses = releaseStatuses;
+        this.operationControlService = operationControlService;
     }
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
         StoredSubmittable storedVersion = null;
+
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
 
         if (target.getId() != null) {
             storedVersion = (StoredSubmittable) repository.findOne(target.getId());
@@ -53,27 +58,25 @@ public class CoreSubmittableValidationHelper {
     }
 
 
-    /*TODO review error codes, I just made some up for now */
     public void validate(StoredSubmittable target, StoredSubmittable storedVersion, Errors errors) {
         logger.info("validate {}", target);
         StoredSubmittable submittable = (StoredSubmittable) target;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "status", "required", "status is required");
 
 
-        if (submittable.getSubmission() != null) {
-            Submission submission = submittable.getSubmission();
-
-            if (!SubmissionStatus.Draft.name().equals(submission.getStatus())) {
-                errors.reject("submissionLocked","Submission has been submitted, changes are not possible");
-            }
-
+        if (submittable.getSubmission() != null && !operationControlService.isUpdateable(submittable.getSubmission())) {
+            SubsApiErrors.resource_locked.addError(errors);
         }
 
-        //submittables have their IDs set on creation, so having an ID does not mean it is already stored
-        if (submittable.getId() != null && storedVersion != null) {
+        if (errors.hasErrors()) return;
+
+        if (storedVersion != null && !operationControlService.isUpdateable(storedVersion)){
+            SubsApiErrors.resource_locked.addError(errors);
+        }
+
+        if (storedVersion != null) {
             validateAgainstStoredVersion(errors, submittable, storedVersion);
+
         }
     }
 
@@ -86,19 +89,11 @@ public class CoreSubmittableValidationHelper {
                 errors
         );
 
-
-        ValidationHelper.validateStatusChange(
-                submittable.getStatus(),
-                storedVersion.getStatus(),
-                processingStatuses,
-                "status",
-                errors);
-
-
         /*Yes, this is stupid
          * Spring Data Auditing is set for this object, but it doesn't maintain the createdDate on save
          */
 
         submittable.setCreatedDate(storedVersion.getCreatedDate());
+        submittable.setCreatedBy(storedVersion.getCreatedBy());
     }
 }

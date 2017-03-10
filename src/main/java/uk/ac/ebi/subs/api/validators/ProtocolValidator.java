@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Protocol;
-import uk.ac.ebi.subs.repository.repos.ProtocolRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 
 @Component
 public class ProtocolValidator implements Validator {

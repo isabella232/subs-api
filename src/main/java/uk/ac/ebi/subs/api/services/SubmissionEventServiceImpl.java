@@ -7,29 +7,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 /**
  * send a submission off to the rabbit exchange for processing
  */
 @Service
-public class SubmissionProcessingServiceImpl implements SubmissionProcessingService{
+public class SubmissionEventServiceImpl implements SubmissionEventService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-
-    RabbitMessagingTemplate rabbitMessagingTemplate;
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    public SubmissionProcessingServiceImpl(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter) {
+    public SubmissionEventServiceImpl(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
     }
 
     @Override
-    public void submitSubmissionForProcessing(Submission submission) {
+    public void submissionCreated(Submission submission) {
+        //TODO
+    }
+
+    @Override
+    public void submissionUpdated(Submission submission) {
+        //TODO
+    }
+
+    @Override
+    public void submissionSubmitted(Submission submission) {
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
@@ -41,7 +49,7 @@ public class SubmissionProcessingServiceImpl implements SubmissionProcessingServ
     }
 
     @Override
-    public void deleteSubmissionContents(Submission submission) {
+    public void submissionDeleted(Submission submission) {
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 Topics.EVENT_SUBMISSION_DELETED,

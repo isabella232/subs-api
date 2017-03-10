@@ -3,15 +3,17 @@ package uk.ac.ebi.subs.api.handlers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.annotation.*;
+import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
+import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.core.annotation.HandleBeforeSave;
+import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
-import uk.ac.ebi.subs.api.exceptions.ResourceLockedException;
-import uk.ac.ebi.subs.api.services.SubmissionProcessingService;
-import uk.ac.ebi.subs.api.updateability.OperationControlService;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.api.services.SubmissionEventService;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.Date;
 import java.util.UUID;
@@ -29,24 +31,49 @@ public class SubmissionEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private OperationControlService operationControlService;
+    public SubmissionEventHandler(
+            SubmissionRepository submissionRepository,
+            SubmissionEventService submissionEventService,
+            SubmissionStatusRepository submissionStatusRepository
+    ) {
+        this.submissionEventService = submissionEventService;
+        this.submissionStatusRepository = submissionStatusRepository;
+        this.submissionRepository = submissionRepository;
+    }
 
-    @Autowired
+    public void setSubmissionRepository(SubmissionRepository submissionRepository) {
+        this.submissionRepository = submissionRepository;
+    }
+
+    public void setSubmissionEventService(SubmissionEventService submissionEventService) {
+        this.submissionEventService = submissionEventService;
+    }
+
+    public void setSubmissionStatusRepository(SubmissionStatusRepository submissionStatusRepository) {
+        this.submissionStatusRepository = submissionStatusRepository;
+    }
+
     private SubmissionRepository submissionRepository;
-
-    @Autowired
-    private SubmissionProcessingService submissionProcessingService;
+    private SubmissionEventService submissionEventService;
+    private SubmissionStatusRepository submissionStatusRepository;
 
     /**
      * Give submission an ID and draft status on creation
+     *
      * @param submission
      */
     @HandleBeforeCreate
     public void handleBeforeCreate(Submission submission) {
         submission.setId(UUID.randomUUID().toString());
-        submission.setStatus(SubmissionStatus.Draft);
         submission.setCreatedDate(new Date());
+
+        SubmissionStatus submissionStatus = new SubmissionStatus(SubmissionStatusEnum.Draft);
+        submissionStatus.setId(UUID.randomUUID().toString());
+        submissionStatusRepository.insert(submissionStatus);
+
+        submission.setSubmissionStatus(submissionStatus);
+
+        submissionEventService.submissionCreated(submission);
     }
 
     /**
@@ -60,37 +87,14 @@ public class SubmissionEventHandler {
     public void handleBeforeSave(Submission submission) {
 
         Submission storedSubmission = submissionRepository.findOne(submission.getId());
+        submission.setSubmissionStatus(storedSubmission.getSubmissionStatus());
 
-        if (storedSubmission != null) {
-            if (!operationControlService.isUpdateable(storedSubmission)) {
-                throw new ResourceLockedException();
-            }
-        }
-
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatus.Submitted.name())){
-            submission.setSubmissionDate(new Date());
-        }
-
+        submissionEventService.submissionUpdated(submission);
     }
 
-
-    /**
-     * Once the submission has been stored, if it has a status of submitted, submit it for processing
-     *
-     * @param submission
-     */
-    @HandleAfterCreate
-    @HandleAfterSave
-    public void handleAfterCreateOrSave(Submission submission) {
-        logger.warn("after");
-        if (submission.getStatus() != null && submission.getStatus().equals(ProcessingStatus.Submitted.name())) {
-            submissionProcessingService.submitSubmissionForProcessing(submission);
-        }
-    }
-
-    @HandleAfterDelete
-    public void handleAfterDelete(Submission submission) {
-        submissionProcessingService.deleteSubmissionContents(submission);
+    @HandleBeforeDelete
+    public void handleBeforeDelete(Submission submission) {
+        submissionEventService.submissionDeleted(submission);
     }
 
 

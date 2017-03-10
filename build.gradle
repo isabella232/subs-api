@@ -29,6 +29,8 @@ dependencies {
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
 
     testCompile("com.mashape.unirest:unirest-java:1.4.9")
+
+    testCompile project(':subs-test-categories')
 }
 
 ext {
@@ -39,12 +41,27 @@ test {
     outputs.dir snippetsDir
 }
 
+task (testsMakesDocs, type: Test) {
+    outputs.dir snippetsDir
+    useJUnit {
+        includeCategories 'uk.ac.ebi.subs.DocumentationProducer'
+    }
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+configure(testsMakesDocs) {
+    group = "documentation"
+    description = 'Run tests that generate documentation snippets'
+}
+
 asciidoctor {
     attributes 'snippets': snippetsDir
     sourceDir file('src/main/resources/docs')
     backends 'html5'
     inputs.dir snippetsDir
-    dependsOn test
+    dependsOn testsMakesDocs
 }
 
 jar {

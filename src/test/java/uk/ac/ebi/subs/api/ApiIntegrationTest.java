@@ -17,25 +17,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+
+import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -48,6 +48,9 @@ public class ApiIntegrationTest {
     private String rootUri;
 
 
+
+    private ApiIntegrationTestHelper testHelper;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -55,14 +58,19 @@ public class ApiIntegrationTest {
     private SubmissionRepository submissionRepository;
 
     @Autowired
+    SubmissionStatusRepository submissionStatusRepository;
+
+    @Autowired
     private SampleRepository sampleRepository;
 
 
     @Before
     public void buildUp() throws URISyntaxException {
+
         rootUri = "http://localhost:" + port + "/api";
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
+        submissionStatusRepository.deleteAll();
 
         Unirest.setObjectMapper(new com.mashape.unirest.http.ObjectMapper() {
             public <T> T readValue(String value, Class<T> valueType) {
@@ -81,6 +89,8 @@ public class ApiIntegrationTest {
                 }
             }
         });
+
+        testHelper = new ApiIntegrationTestHelper(objectMapper,rootUri);
     }
 
     @After
@@ -88,94 +98,152 @@ public class ApiIntegrationTest {
         Unirest.shutdown();
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
+        submissionStatusRepository.deleteAll();
     }
 
     @Test
     public void checkRootRels() throws UnirestException, IOException {
-        Map<String, String> rootRels = rootRels();
+        Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("submissions", "samples"));
+        assertThat(rootRels.keySet(), hasItems("submissions:create", "samples:create"));
     }
 
     @Test
-    public void simpleSubmissionWorkflow() throws IOException, UnirestException {
-        Map<String, String> rootRels = rootRels();
+    public void postSubmission() throws UnirestException, IOException {
+        Map<String, String> rootRels = testHelper.rootRels();
 
-        HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels);
+        Submission submission = Helpers.generateSubmission();
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
 
-        String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
-        Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
+        List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
+        assertThat(submissionStatuses, notNullValue());
+        assertThat(submissionStatuses, hasSize(1));
+        SubmissionStatus submissionStatus = submissionStatuses.get(0);
+        assertThat(submissionStatus.getStatus(), notNullValue());
+        assertThat(submissionStatus.getStatus(), equalTo("Draft"));
+    }
 
-        assertThat(submissionRels.get("samples"), notNullValue());
 
-        List<Sample> testSamples = Helpers.generateTestSamples();
-        //add samples to the submission
-        for (Sample sample : testSamples) {
 
-            sample.setSubmission(submissionLocation);
+    @Test
+    public void submissionWithSamples() throws IOException, UnirestException {
+        Map<String, String> rootRels = testHelper.rootRels();
 
-            HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples"))
-                    .headers(standardPostHeaders())
-                    .body(sample)
-                    .asJson();
+        String submissionLocation = testHelper.submissionWithSamples(rootRels);
 
-            assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+
+    }
+
+
+
+    /**
+     * Make multiple submissions with the same contents. Use the sample history endpoint to check that you can
+     * get the right number of entries back
+     *
+     * @throws IOException
+     * @throws UnirestException
+     */
+    @Test
+    public void sampleVersions() throws IOException, UnirestException {
+        Map<String, String> rootRels = testHelper.rootRels();
+
+
+        int numberOfSubmissions = 5;
+
+        Submission submission = Helpers.generateSubmission();
+        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
+
+        for (int i = 0; i < numberOfSubmissions; i++) {
+            HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+            String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
+            Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+
+            assertThat(submissionRels.get("samples"), notNullValue());
+
+            //add samples to the submission
+            for (Sample sample : testSamples) {
+
+                sample.setSubmission(submissionLocation);
+
+                HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
+                        .headers(standardPostHeaders())
+                        .body(sample)
+                        .asJson();
+
+                assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+            }
         }
 
-        //retrieve the samples
-        String submissionSamplesUrl = submissionRels.get("samples");
+        String teamName = submission.getTeam().getName();
+        String teamUrl = this.rootUri + "/teams/" + teamName;
+        HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(standardGetHeaders()).asJson();
 
-        HttpResponse<JsonNode> samplesQueryResponse = Unirest.get(submissionSamplesUrl)
-                .headers(standardGetHeaders())
-                .asJson();
+        assertThat(teamQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
-        assertThat(samplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject teamPayload = teamQueryResponse.getBody().getObject();
+        Map<String, String> teamRels = testHelper.relsFromPayload(teamPayload);
 
-        JSONObject payload = samplesQueryResponse.getBody().getObject();
-        JSONArray sampleList = payload.getJSONObject("_embedded").getJSONArray("samples");
+        String teamSamplesUrl = teamRels.get("samples");
 
-        assertThat(sampleList.length(), is(equalTo(testSamples.size())));
+        assertThat(teamSamplesUrl,notNullValue());
 
-        //update the submission
-        //create a new submission
-        HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionLocation)
-                .headers(standardPostHeaders())
-                .body("{\"status\": \"Submitted\"}")
-                .asJson();
+        HttpResponse<JsonNode> teamSamplesQueryResponse = Unirest.get(teamSamplesUrl).headers(standardGetHeaders()).asJson();
+        assertThat(teamSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
+        JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
+        assertThat(teamSamples.length(),is(equalTo(testSamples.size())));
 
-        assertThat(submissionPatchResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+        for (int i = 0; i < teamSamples.length(); i++){
+            JSONObject teamSample = teamSamples.getJSONObject(i);
+
+            Map<String,String> sampleRels = testHelper.relsFromPayload(teamSample);
+            String selfUrl = sampleRels.get("self");
+
+            HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(standardGetHeaders()).asJson();
+            assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
+            JSONObject samplePayload = sampleResponse.getBody().getObject();
+            sampleRels = testHelper.relsFromPayload(samplePayload);
+
+            String historyUrl = sampleRels.get("history");
+
+            assertThat(historyUrl,notNullValue());
+
+            HttpResponse<JsonNode> historyResponse = Unirest.get(historyUrl).headers(standardGetHeaders()).asJson();
+            assertThat(historyResponse.getStatus(),is(equalTo(HttpStatus.OK.value())));
+            JSONObject historyPayload = historyResponse.getBody().getObject();
+            assertThat(historyPayload.has("_embedded"),is(true));
+            JSONObject embedded = historyPayload.getJSONObject("_embedded");
+            assertThat(embedded.has("samples"),is(true));
+            JSONArray sampleHistory = embedded.getJSONArray("samples");
+            assertThat(sampleHistory.length(),is(equalTo(numberOfSubmissions)));
+
+        }
+
     }
 
-    private HttpResponse<JsonNode> postSubmission(Map<String, String> rootRels) throws UnirestException {
-        //create a new submission
-        HttpResponse<JsonNode> submissionResponse = Unirest.post(rootRels.get("submissions"))
-                .headers(standardPostHeaders())
-                .body(Helpers.generateSubmission())
-                .asJson();
 
-        assertThat(submissionResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
-        assertThat(submissionResponse.getHeaders().get("Location"), notNullValue());
-        return submissionResponse;
-    }
+
 
     @Test
     public void testPut() throws IOException, UnirestException {
-        Map<String, String> rootRels = rootRels();
+        Map<String, String> rootRels = testHelper.rootRels();
 
-        HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels);
+        Submission submission = Helpers.generateSubmission();
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
-        Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
+        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
 
         assertThat(submissionRels.get("samples"), notNullValue());
 
-        Sample sample = Helpers.generateTestSamples().get(0);
+        Sample sample = Helpers.generateTestClientSamples(1).get(0);
         //add samples to the submission
 
         sample.setSubmission(submissionLocation);
 
-        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples"))
+        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
                 .headers(standardPostHeaders())
                 .body(sample)
                 .asJson();
@@ -186,67 +254,24 @@ public class ApiIntegrationTest {
         String sampleLocation = sampleResponse.getHeaders().getFirst("Location");
 
         sample.setAlias("bob"); //modify the sample
-        sample.setStatus("Draft"); // TODO move status out of the submittable so this is not necessary
         sample.setSubmission(submissionLocation);
 
         HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
-                .headers(standardPostHeaders())
+                .headers(ApiIntegrationTestHelper.standardPostHeaders())
                 .body(sample)
                 .asJson();
 
-        logger.info("samplePutResponse: {}",samplePutResponse.getBody());
+        logger.info("samplePutResponse: {}", samplePutResponse.getBody());
         assertThat(samplePutResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
 
     }
 
 
-    private Map<String, String> standardGetHeaders() {
-        Map<String, String> h = new HashMap<>();
-        h.put("accept", MediaTypes.HAL_JSON_VALUE);
-        return h;
-    }
-
-    private Map<String, String> standardPostHeaders() {
-        Map<String, String> h = new HashMap<>();
-        h.put("accept", MediaTypes.HAL_JSON_VALUE);
-        h.put("Content-Type", MediaType.APPLICATION_JSON_VALUE);
-        return h;
-    }
 
 
-    private Map<String, String> rootRels() throws UnirestException, IOException {
-        HttpResponse<JsonNode> response = Unirest.get(rootUri)
-                .headers(standardGetHeaders())
-                .asJson();
-
-        assertThat(response.getStatus(), is(equalTo(HttpStatus.OK.value())));
-        JSONObject payload = response.getBody().getObject();
-
-        return relsFromPayload(payload);
-    }
-
-    private Map<String, String> relsFromPayload(JSONObject payload) throws IOException {
-        assertThat((Set<String>) payload.keySet(), hasItem("_links"));
-
-        JSONObject links = payload.getJSONObject("_links");
-
-        Map<String, String> rels = new HashMap<>();
 
 
-        for (Object key : links.keySet()) {
-
-            assertThat(key.getClass(), typeCompatibleWith(String.class));
-
-            Object linkJson = links.get(key.toString());
-            Link link = objectMapper.readValue(linkJson.toString(), Link.class);
-            String href = link.withSelfRel().expand().getHref();
-
-            rels.put((String) key, href);
-
-        }
-        return rels;
-    }
 
 
 }

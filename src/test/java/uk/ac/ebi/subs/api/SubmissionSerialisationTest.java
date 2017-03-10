@@ -37,11 +37,11 @@ public class SubmissionSerialisationTest {
     @Before
     public void setUp() throws IOException {
         sub = new FullSubmission();
-        sub.getDomain().setName("exampleDomain");
+        sub.getTeam().setName("exampleTeam");
         sub.getSubmitter().setEmail("test@example.ac.uk");
         sub.getSamples().add(new Sample());
 
-        exampleJson = "{\"submitter\":{\"email\":\"test@example.ac.uk\"},\"domain\":{\"name\":\"exampleDomain\"}, \"samples\": [{}]}";
+        exampleJson = "{\"submitter\":{\"email\":\"test@example.ac.uk\"},\"team\":{\"name\":\"exampleTeam\"}, \"samples\": [{}]}";
     }
 
     @Test
@@ -50,8 +50,8 @@ public class SubmissionSerialisationTest {
         ObjectContent<FullSubmission> deserializedSub = this.json.parse(exampleJson);
         Submission actualSub = sub;
 
-        assertThat(actualSub.getDomain())
-                .isEqualTo(sub.getDomain());
+        assertThat(actualSub.getTeam())
+                .isEqualTo(sub.getTeam());
         assertThat(actualSub.getSubmitter())
                 .isEqualTo(sub.getSubmitter());
         assertThat(actualSub.getSubmissionDate()).isEqualTo(sub.getSubmissionDate());

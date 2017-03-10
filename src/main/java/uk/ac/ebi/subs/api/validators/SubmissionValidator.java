@@ -8,12 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.Status;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
-
-import java.util.List;
+import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 @Component
 public class SubmissionValidator implements Validator {
@@ -21,29 +18,38 @@ public class SubmissionValidator implements Validator {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
+    public SubmissionValidator(
+            SubmissionRepository submissionRepository,
+            TeamValidator teamValidator,
+            SubmitterValidator submitterValidator,
+            OperationControlService operationControlService
+    ) {
+        this.submissionRepository = submissionRepository;
+        this.teamValidator = teamValidator;
+        this.submitterValidator = submitterValidator;
+        this.operationControlService = operationControlService;
+    }
+
+
     private SubmissionRepository submissionRepository;
-
-    @Autowired
-    private DomainValidator domainValidator;
-
-    @Autowired
+    private TeamValidator teamValidator;
     private SubmitterValidator submitterValidator;
+    private OperationControlService operationControlService;
 
-    @Autowired
-    private List<Status> submissionStatuses;
 
     @Override
     public void validate(Object target, Errors errors) {
 
         Submission submission = (Submission) target;
 
-        ValidationUtils.rejectIfEmpty(errors, "submitter", "required", "submitter is required");
-        ValidationUtils.rejectIfEmpty(errors, "status", "required", "status is required");
-        ValidationUtils.rejectIfEmpty(errors, "domain", "required", "domain is required");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submitter");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"team");
+
+        if (errors.hasErrors()) return;
 
         try {
-            errors.pushNestedPath("domain");
-            ValidationUtils.invokeValidator(this.domainValidator, submission.getDomain(), errors);
+            errors.pushNestedPath("team");
+            ValidationUtils.invokeValidator(this.teamValidator, submission.getTeam(), errors);
         } finally {
             errors.popNestedPath();
         }
@@ -59,18 +65,19 @@ public class SubmissionValidator implements Validator {
             Submission storedVersion = submissionRepository.findOne(submission.getId());
 
             if (storedVersion != null) {
-                if (!storedVersion.getStatus().equals(SubmissionStatus.Draft.name())) {
-                    errors.reject("submissionLocked", "Submission has been submitted, changes are not possible");
+
+
+                if (!operationControlService.isUpdateable(submission)) {
+                    SubsApiErrors.resource_locked.addError(errors);
                 } else {
                     validateAgainstStoredVersion(submission, storedVersion, errors);
                 }
             }
         }
 
-        if (errors.hasErrors()){
-            logger.error("validation has errors {}",errors.getAllErrors());
-        }
-        else {
+        if (errors.hasErrors()) {
+            logger.error("validation has errors {}", errors.getAllErrors());
+        } else {
             logger.error("no validation errors");
         }
 
@@ -80,23 +87,11 @@ public class SubmissionValidator implements Validator {
 
         submitterCannotChange(target, storedVersion, errors);
 
-        domainCannotChange(target, storedVersion, errors);
-
-        statusChangeMustBePermitted(target, storedVersion, errors);
+        teamCannotChange(target, storedVersion, errors);
 
         createdDateCannotChange(target, storedVersion, errors);
 
         submittedDateCannotChange(target, storedVersion, errors);
-    }
-
-    private void statusChangeMustBePermitted(Submission target, Submission storedVersion, Errors errors) {
-        ValidationHelper.validateStatusChange(
-                target.getStatus(),
-                storedVersion.getStatus(),
-                submissionStatuses,
-                "status",
-                errors
-        );
     }
 
     private void submitterCannotChange(Submission target, Submission storedVersion, Errors errors) {
@@ -108,11 +103,11 @@ public class SubmissionValidator implements Validator {
         );
     }
 
-    private void domainCannotChange(Submission target, Submission storedVersion, Errors errors) {
+    private void teamCannotChange(Submission target, Submission storedVersion, Errors errors) {
         ValidationHelper.thingCannotChange(
-                target.getDomain(),
-                storedVersion.getDomain(),
-                "domain",
+                target.getTeam(),
+                storedVersion.getTeam(),
+                "team",
                 errors
         );
     }

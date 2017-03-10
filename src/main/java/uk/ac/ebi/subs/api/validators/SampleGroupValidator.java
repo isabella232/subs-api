@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.SampleGroup;
-import uk.ac.ebi.subs.repository.repos.SampleGroupRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleGroupRepository;
 
 @Component
 public class SampleGroupValidator implements Validator {

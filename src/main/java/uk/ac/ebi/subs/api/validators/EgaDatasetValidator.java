@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.EgaDataset;
-import uk.ac.ebi.subs.repository.repos.EgaDatasetRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.EgaDatasetRepository;
 
 @Component
 public class EgaDatasetValidator implements Validator {

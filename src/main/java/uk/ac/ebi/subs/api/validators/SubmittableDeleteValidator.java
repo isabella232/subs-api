@@ -3,23 +3,33 @@ package uk.ac.ebi.subs.api.validators;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 
 @Component
 public class SubmittableDeleteValidator implements Validator {
+
+    private OperationControlService operationControlService;
+
+    public SubmittableDeleteValidator(OperationControlService operationControlService) {
+        this.operationControlService = operationControlService;
+    }
+
     @Override
     public boolean supports(Class<?> clazz) {
-        return Submittable.class.isAssignableFrom(clazz);
+        return StoredSubmittable.class.isAssignableFrom(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        Submittable submittable = (Submittable) target;
+        StoredSubmittable submittable = (StoredSubmittable) target;
 
-        if (!ProcessingStatus.Draft.name().equals(submittable.getStatus())) {
-            errors.reject("cannotDeleteAfterSubmission", "Deletion is not possible after submission");
+
+        if (!operationControlService.isUpdateable(submittable)) {
+            SubsApiErrors.resource_locked.addError(errors);
         }
+        //TODO could also lock out deletion of objects that are referenced, but need to consider the rules carefully
 
     }
 }

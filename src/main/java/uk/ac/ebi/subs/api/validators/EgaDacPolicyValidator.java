@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.EgaDacPolicy;
-import uk.ac.ebi.subs.repository.repos.EgaDacPolicyRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.EgaDacPolicyRepository;
 
 @Component
 public class EgaDacPolicyValidator implements Validator {
