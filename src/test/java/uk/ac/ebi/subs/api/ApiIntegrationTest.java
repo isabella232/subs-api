@@ -22,10 +22,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
-import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
-import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -34,8 +34,8 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-
-import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.*;
+import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.standardGetHeaders;
+import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.standardPostHeaders;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
