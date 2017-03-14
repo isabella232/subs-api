@@ -17,7 +17,14 @@ public class ProcessingStatusResourceProcessor implements ResourceProcessor<Reso
 
         addStatusDescriptionRel(resource);
 
+        redactIds(resource);
+
         return resource;
+    }
+
+    private void redactIds(Resource<ProcessingStatus> resource) {
+        resource.getContent().setSubmissionId(null);
+        resource.getContent().setSubmittableId(null);
     }
 
     private void addStatusDescriptionRel(Resource<ProcessingStatus> resource) {
