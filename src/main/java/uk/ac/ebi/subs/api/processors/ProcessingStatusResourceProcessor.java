@@ -1,0 +1,31 @@
+package uk.ac.ebi.subs.api.processors;
+
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
+@Component
+public class ProcessingStatusResourceProcessor implements ResourceProcessor<Resource<ProcessingStatus>> {
+
+    @Override
+    public Resource<ProcessingStatus> process(Resource<ProcessingStatus> resource) {
+
+        addStatusDescriptionRel(resource);
+
+        return resource;
+    }
+
+    private void addStatusDescriptionRel(Resource<ProcessingStatus> resource) {
+        resource.add(
+                linkTo(
+                        methodOn(StatusDescriptionController.class)
+                                .processingStatus(resource.getContent().getStatus()))
+                        .withRel("statusDescription")
+        );
+    }
+}
