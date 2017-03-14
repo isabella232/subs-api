@@ -374,6 +374,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -427,6 +428,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -469,6 +471,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("archive").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -658,7 +661,8 @@ public class ApiDocumentation {
                                         fieldWithPath("lastModifiedDate").description(""),
                                         fieldWithPath("createdBy").description(""),
                                         fieldWithPath("lastModifiedBy").description(""),
-                                        fieldWithPath("_embedded.submission").description("")
+                                        fieldWithPath("_embedded.submission").description(""),
+                                        fieldWithPath("_embedded.processingStatus").description("")
 
 
                                 )
