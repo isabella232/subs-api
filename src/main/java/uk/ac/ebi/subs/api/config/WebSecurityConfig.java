@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -27,6 +28,7 @@ import uk.ac.ebi.tsc.aap.client.security.TokenAuthenticationService;
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan("uk.ac.ebi.tsc.aap.client")
+@Profile("production")
 //ComponentScan annotation to scan aap-client-java external artifact
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSecurityConfig.class);
