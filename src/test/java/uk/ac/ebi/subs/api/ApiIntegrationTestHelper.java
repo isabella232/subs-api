@@ -5,6 +5,8 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.http.utils.Base64Coder;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.hateoas.Link;
@@ -31,6 +33,9 @@ public class ApiIntegrationTestHelper {
 
     private ObjectMapper objectMapper;
     private String rootUri;
+
+    private static String DEFAULT_USER = "usi_user";
+    private static String DEFAULT_PASSWORD = "password";
 
     public ApiIntegrationTestHelper(ObjectMapper objectMapper, String rootUri) {
         this.objectMapper = objectMapper;
@@ -123,6 +128,7 @@ public class ApiIntegrationTestHelper {
     public static Map<String, String> standardGetHeaders() {
         Map<String, String> h = new HashMap<>();
         h.put("accept", MediaTypes.HAL_JSON_VALUE);
+        h.put("Authorization", "Basic " + Base64Coder.encodeString(DEFAULT_USER + ":" + DEFAULT_PASSWORD));
         return h;
     }
 
@@ -130,6 +136,7 @@ public class ApiIntegrationTestHelper {
         Map<String, String> h = new HashMap<>();
         h.put("accept", MediaTypes.HAL_JSON_VALUE);
         h.put("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+        h.put("Authorization", "Basic " + Base64Coder.encodeString(DEFAULT_USER + ":" + DEFAULT_PASSWORD));
         return h;
     }
 }
