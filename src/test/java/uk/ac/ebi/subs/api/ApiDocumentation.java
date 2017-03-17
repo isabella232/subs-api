@@ -694,10 +694,12 @@ public class ApiDocumentation {
                                 links(
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
-                                        linkWithRel("history").description("Search for all versions of a sample by team and alias "),
                                         linkWithRel("by-submission").description("Search for all samples within a submission"),
                                         linkWithRel("by-team").description("Search for samples within a team"),
-                                        linkWithRel("current-version").description("Find the current version of a sample by team and alias")
+                                        linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
+                                        linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
+                                        linkWithRel("history").description("Search for all versions of a sample by team and alias ")
+
                                 ),
                                 responseFields(
                                         linksResponseField()
