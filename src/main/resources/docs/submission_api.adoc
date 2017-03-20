@@ -14,6 +14,8 @@ If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[s
 All API access is over HTTP, and accessed from `http://www.ebi.ac.uk/submissions/api`.
 All data is sent and received as JSON.
 
+`TODO URL and support e-mail address are provisional`
+
 === HTTP Verbs
 
 This API aims to use appropriate HTTP verbs for each action
@@ -55,7 +57,7 @@ This API aims to use appropriate HTTP verbs for each action
 
 === Authentication
 
-TODO, pending implementation details from AAP. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
+`TODO, pending implementation details from the AAP team`. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
 requests to the submissions API.
 
 [source,bash]
@@ -68,6 +70,8 @@ The `Authorization` header has been omitted from all further example requests, f
 === Errors
 
 There are several types of client errors on API calls that receive request bodies.
+
+`TODO catch exceptions for invalid JSON/wrong type and give a clear error response`
 
 * Sending invalid JSON will result in a `400 Bad Request` response
 include::{snippets}/invalid-json/curl-request.adoc[]
@@ -238,8 +242,8 @@ status to `Submitted`. The submissions system will add the resources to the arch
 
 You can query the system to find the status of each item in a submission, and any accessions assigned by the archives.
 
-TODO needs a rewrite + extend to cover discovering previously submitted records.
-TODO needs updating once we have validation.
+`TODO needs a rewrite + extend to cover discovering previously submitted records`.
+`TODO needs updating once we have validation`.
 
 == Resources
 
@@ -263,9 +267,9 @@ include::{snippets}/root-endpoint/links.adoc[]
 
 === Teams
 
-TODO there isn't a proper entry point for teams yet. If you know the team name, you can access it
+`TODO there isn't a proper entry point for teams yet. If you know the team name, you can access it
 through this endpoint. Teams cannot be created or deleted through this API, they are controlled
-through the AAP.
+through the AAP`.
 
 ==== Request
 
@@ -334,6 +338,8 @@ Resources of these types are item resources:
 The methods to create and update them are common between all of these types.
 We will use sample as an example.
 
+`TODO extend to cover all resources`
+
 ==== Create a sample
 
 ===== Request
@@ -386,6 +392,8 @@ requests.
 * release status
 * submission status
 * processing status
+
+`TODO to cover all status descriptions`
 
 
 
