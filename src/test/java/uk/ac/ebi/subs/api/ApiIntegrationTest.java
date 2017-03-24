@@ -303,7 +303,8 @@ public class ApiIntegrationTest {
         }
 
         String teamName = submission.getTeam().getName();
-        String teamUrl = this.rootUri + "/teams/" + teamName;
+        String teamUrl = rootRels.get("team").replace("{teamName}",teamName);
+
         HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(standardGetHeaders()).asJson();
 
         assertThat(teamQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
