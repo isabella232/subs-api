@@ -30,6 +30,8 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -137,6 +139,129 @@ public class ApiIntegrationTest {
     }
 
 
+    /**
+     * POSTing two samples with the same alias in one submission should throw an error
+     */
+    @Test
+    public void reuseAliasInSubmissionGivesError() throws IOException, UnirestException{
+        Map<String, String> rootRels = testHelper.rootRels();
+
+        Submission submission = Helpers.generateSubmission();
+        List<Sample> testSamples = Helpers.generateTestClientSamples(1);
+        Sample sample = testSamples.get(0);
+
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+        String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
+        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+
+        assertThat(submissionRels.get("samples:create"), notNullValue());
+
+        sample.setSubmission(submissionLocation);
+
+        HttpResponse<JsonNode> sampleFirstResponse = Unirest.post(rootRels.get("samples:create"))
+                .headers(standardPostHeaders())
+                .body(sample)
+                .asJson();
+
+        assertThat(sampleFirstResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+
+        HttpResponse<JsonNode> sampleSecondResponse = Unirest.post(rootRels.get("samples:create"))
+                .headers(standardPostHeaders())
+                .body(sample)
+                .asJson();
+
+        assertThat(sampleSecondResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
+
+        JSONArray errors = sampleSecondResponse.getBody().getObject().getJSONArray("errors");
+
+        assertThat(errors,notNullValue());
+        assertThat(errors.length(),is(equalTo(1)));
+
+        Map<String,String> expectedError = new HashMap<>();
+        expectedError.put("property","alias");
+        expectedError.put("message","already_exists");
+        expectedError.put("entity","Sample");
+        expectedError.put("invalidValue",sample.getAlias());
+
+        Map<String,Object> errorAsMap = new HashMap<>();
+        JSONObject error = errors.getJSONObject(0);
+        error.keySet().stream().forEach(key -> errorAsMap.put((String)key,error.get((String)key)));
+
+        assertThat(errorAsMap,is(equalTo(expectedError)));
+
+    }
+
+    /**
+     * POSTing two samples with different aliases in one submission, and changing one so they have the same
+     * alias should throw an error
+     */
+    @Test
+    public void sneakyReuseAliasInSubmissionGivesError() throws IOException, UnirestException{
+        Map<String, String> rootRels = testHelper.rootRels();
+
+        Submission submission = Helpers.generateSubmission();
+        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
+        Map<Sample,String> testSampleLocations = new HashMap<>();
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+        String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
+        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+
+        assertThat(submissionRels.get("samples:create"), notNullValue());
+
+        for (Sample sample : testSamples) {
+
+            sample.setSubmission(submissionLocation);
+
+            HttpResponse<JsonNode> samplePostResponse = Unirest.post(rootRels.get("samples:create"))
+                    .headers(standardPostHeaders())
+                    .body(sample)
+                    .asJson();
+
+            assertThat(samplePostResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+
+            testSampleLocations.put(sample, samplePostResponse.getHeaders().getFirst("Location") );
+        }
+
+        Sample firstSample = testSamples.remove(0);
+
+        for (Sample sample : testSamples){
+            String sampleLocation = testSampleLocations.get(sample);
+
+            sample.setAlias( firstSample.getAlias() );
+
+
+            HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
+                    .headers(standardPostHeaders())
+                    .body(sample)
+                    .asJson();
+
+            assertThat(samplePutResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
+
+            JSONArray errors = samplePutResponse.getBody().getObject().getJSONArray("errors");
+
+            assertThat(errors,notNullValue());
+            assertThat(errors.length(),is(equalTo(1)));
+
+            Map<String,String> expectedError = new HashMap<>();
+            expectedError.put("property","alias");
+            expectedError.put("message","already_exists");
+            expectedError.put("entity","Sample");
+            expectedError.put("invalidValue",firstSample.getAlias());
+
+            Map<String,Object> errorAsMap = new HashMap<>();
+            JSONObject error = errors.getJSONObject(0);
+            error.keySet().stream().forEach(key -> errorAsMap.put((String)key,error.get((String)key)));
+
+            assertThat(errorAsMap,is(equalTo(expectedError)));
+
+        }
+
+    }
+
 
     /**
      * Make multiple submissions with the same contents. Use the sample history endpoint to check that you can
@@ -161,7 +286,7 @@ public class ApiIntegrationTest {
             String submissionLocation = submissionResponse.getHeaders().get("Location").get(0).toString();
             Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
 
-            assertThat(submissionRels.get("samples"), notNullValue());
+            assertThat(submissionRels.get("samples:create"), notNullValue());
 
             //add samples to the submission
             for (Sample sample : testSamples) {

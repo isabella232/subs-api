@@ -80,9 +80,9 @@ public class LinkHelper {
         Links searchLinks = repositoryEntityLinks.linksToSearchResources(type);
 
         if (searchLinks == null || searchLinks.isEmpty()) {
-            logger.info("No search links found for class {}", type);
+            logger.debug("No search links found for class {}", type);
         } else {
-            logger.info("Search links found for clazz {}: {} ", type, searchLinks);
+            logger.debug("Search links found for class {}: {} ", type, searchLinks);
 
             String href = collectionLink.getHref() + "/search";
             String rel = relBase + SEARCH_REL_SUFFIX;

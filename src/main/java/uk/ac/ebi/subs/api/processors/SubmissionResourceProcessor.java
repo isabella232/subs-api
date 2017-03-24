@@ -6,8 +6,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -45,8 +47,46 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         ifUpdateableAddLinks(resource);
 
+        addStatusSummaryReport(resource);
+        addTypeStatusSummaryReport(resource);
+
+        addReceiptLink(resource);
 
         return resource;
+    }
+
+    private void addReceiptLink(Resource<Submission> resource) {
+        Link searchLink = repositoryEntityLinks.linkToSearchResource(ProcessingStatus.class,"by-submission");
+        Assert.notNull(searchLink);
+
+        Map<String,String> params = new HashMap<>();
+        params.put("submissionId",resource.getContent().getId());
+
+        Link link = searchLink.expand(params).withRel("processingStatuses");
+
+        resource.add(link);
+    }
+
+    private void addStatusSummaryReport(Resource<Submission> resource) {
+        Link statusSummary = linkTo(
+                methodOn(ProcessingStatusController.class)
+                        .summariseProcessingStatusForSubmission(resource.getContent().getId())
+        ).withRel("processingStatusSummary");
+
+
+        resource.add(statusSummary);
+    }
+
+    private void addTypeStatusSummaryReport(Resource<Submission> resource) {
+
+
+        Link typeStatusSummary = linkTo(
+                methodOn(ProcessingStatusController.class)
+                        .summariseTypeProcessingStatusForSubmission(resource.getContent().getId())
+        ).withRel("typeProcessingStatusSummary");
+
+
+        resource.add(typeStatusSummary);
     }
 
     private void ifUpdateableAddLinks(Resource<Submission> submissionResource) {
