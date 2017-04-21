@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import uk.ac.ebi.subs.api.services.SubsTokenAuthenticationService;
 import uk.ac.ebi.tsc.aap.client.security.StatelessAuthenticationEntryPoint;
 import uk.ac.ebi.tsc.aap.client.security.StatelessAuthenticationFilter;
 import uk.ac.ebi.tsc.aap.client.security.TokenAuthenticationService;
@@ -37,7 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private StatelessAuthenticationEntryPoint unauthorizedHandler;
 
     @Autowired
-    private TokenAuthenticationService tokenAuthenticationService;
+    private SubsTokenAuthenticationService tokenAuthenticationService;
 
 
     private StatelessAuthenticationFilter statelessAuthenticationFilterBean() throws Exception {
