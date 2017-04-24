@@ -48,12 +48,14 @@ public class SubsTokenAuthenticationService extends TokenAuthenticationService {
         final String token = extractToken(request);
         UserAuthentication authentication = null;
 
-        if (tokenCacheMap.get(token) != null) {
+        if (token != null && tokenCacheMap.get(token) != null) {
             authentication = tokenCacheMap.get(token);
         } else {
             authentication = (UserAuthentication) super.getAuthentication(request);
-            getAuthenticationAndCreateDomain(token, authentication);
-            tokenCacheMap.put(token, authentication);
+            if (authentication != null) {
+                getAuthenticationAndCreateDomain(token, authentication);
+                tokenCacheMap.put(token, authentication);
+            }
         }
 
         return authentication;
@@ -71,8 +73,8 @@ public class SubsTokenAuthenticationService extends TokenAuthenticationService {
             final Collection<Domain> domains = domainService.getDomains(user, token);
             Domain newDomain = createNewDomain(user);
             if (!domains.contains(newDomain)) {
-                final Domain domain = domainService.createDomain(newDomain.getDomainName(), newDomain.getDomainDesc(), token);
-                user.getDomains().add(domain);
+//                final Domain domain = domainService.createDomain(newDomain.getDomainName(), newDomain.getDomainDesc(), token);
+                user.getDomains().add(createTestDomain());
             }
 
         }
@@ -87,7 +89,11 @@ public class SubsTokenAuthenticationService extends TokenAuthenticationService {
     }
 
     protected Domain createNewDomain(User user) {
-        return new Domain(usiAppTeamPrefix + user.getUsername(), "USI Domain", null);
+        return new Domain(usiAppTeamPrefix + user.getUsername().toUpperCase(), "USI Domain", null);
+    }
+
+    protected Domain createTestDomain () {
+        return new Domain("my-team","my-team",null);
     }
 
 

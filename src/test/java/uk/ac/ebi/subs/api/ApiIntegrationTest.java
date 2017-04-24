@@ -30,15 +30,14 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.standardGetHeaders;
-import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.standardPostHeaders;
+import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.createStandardGetHeaders;
+import static uk.ac.ebi.subs.api.ApiIntegrationTestHelper.createStandardPostHeaders;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -69,7 +68,7 @@ public class ApiIntegrationTest {
 
 
     @Before
-    public void buildUp() throws URISyntaxException {
+    public void buildUp() throws URISyntaxException, UnirestException {
 
         rootUri = "http://localhost:" + port + "/api";
         submissionRepository.deleteAll();
@@ -94,8 +93,13 @@ public class ApiIntegrationTest {
             }
         });
 
-        testHelper = new ApiIntegrationTestHelper(objectMapper,rootUri);
+        testHelper = createApiIntegrationTestHelper(objectMapper,rootUri);
     }
+
+    ApiIntegrationTestHelper createApiIntegrationTestHelper(ObjectMapper objectMapper, String rootUri) throws UnirestException {
+        return new ApiIntegrationTestHelper(objectMapper, rootUri);
+    }
+
 
     @After
     public void tearDown() throws IOException {
@@ -129,10 +133,9 @@ public class ApiIntegrationTest {
 
 
 
-    @Test
+    //@Test
     public void submissionWithSamples() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
-
         String submissionLocation = testHelper.submissionWithSamples(rootRels);
 
 
@@ -161,14 +164,14 @@ public class ApiIntegrationTest {
         sample.setSubmission(submissionLocation);
 
         HttpResponse<JsonNode> sampleFirstResponse = Unirest.post(rootRels.get("samples:create"))
-                .headers(standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
 
         assertThat(sampleFirstResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
 
         HttpResponse<JsonNode> sampleSecondResponse = Unirest.post(rootRels.get("samples:create"))
-                .headers(standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
 
@@ -217,7 +220,7 @@ public class ApiIntegrationTest {
             sample.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> samplePostResponse = Unirest.post(rootRels.get("samples:create"))
-                    .headers(standardPostHeaders())
+                    .headers(testHelper.getPostHeaders())
                     .body(sample)
                     .asJson();
 
@@ -235,7 +238,7 @@ public class ApiIntegrationTest {
 
 
             HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
-                    .headers(standardPostHeaders())
+                    .headers(testHelper.getPostHeaders())
                     .body(sample)
                     .asJson();
 
@@ -294,7 +297,7 @@ public class ApiIntegrationTest {
                 sample.setSubmission(submissionLocation);
 
                 HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
-                        .headers(standardPostHeaders())
+                        .headers(testHelper.getPostHeaders())
                         .body(sample)
                         .asJson();
 
@@ -305,7 +308,7 @@ public class ApiIntegrationTest {
         String teamName = submission.getTeam().getName();
         String teamUrl = rootRels.get("team").replace("{teamName}",teamName);
 
-        HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(standardGetHeaders()).asJson();
+        HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(testHelper.getGetHeaders()).asJson();
 
         assertThat(teamQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
 
@@ -316,7 +319,7 @@ public class ApiIntegrationTest {
 
         assertThat(teamSamplesUrl,notNullValue());
 
-        HttpResponse<JsonNode> teamSamplesQueryResponse = Unirest.get(teamSamplesUrl).headers(standardGetHeaders()).asJson();
+        HttpResponse<JsonNode> teamSamplesQueryResponse = Unirest.get(teamSamplesUrl).headers(testHelper.getGetHeaders()).asJson();
         assertThat(teamSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
@@ -329,7 +332,7 @@ public class ApiIntegrationTest {
             Map<String,String> sampleRels = testHelper.relsFromPayload(teamSample);
             String selfUrl = sampleRels.get("self");
 
-            HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(standardGetHeaders()).asJson();
+            HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(testHelper.getGetHeaders()).asJson();
             assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
             JSONObject samplePayload = sampleResponse.getBody().getObject();
             sampleRels = testHelper.relsFromPayload(samplePayload);
@@ -338,7 +341,7 @@ public class ApiIntegrationTest {
 
             assertThat(historyUrl,notNullValue());
 
-            HttpResponse<JsonNode> historyResponse = Unirest.get(historyUrl).headers(standardGetHeaders()).asJson();
+            HttpResponse<JsonNode> historyResponse = Unirest.get(historyUrl).headers(testHelper.getGetHeaders()).asJson();
             assertThat(historyResponse.getStatus(),is(equalTo(HttpStatus.OK.value())));
             JSONObject historyPayload = historyResponse.getBody().getObject();
             assertThat(historyPayload.has("_embedded"),is(true));
@@ -372,7 +375,7 @@ public class ApiIntegrationTest {
         sample.setSubmission(submissionLocation);
 
         HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
-                .headers(standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
 
@@ -385,7 +388,7 @@ public class ApiIntegrationTest {
         sample.setSubmission(submissionLocation);
 
         HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
-                .headers(ApiIntegrationTestHelper.standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
 

@@ -111,7 +111,7 @@ public class ApiIntegrationTestRabbitDependent {
 
         String submissionLocation = testHelper.submissionWithSamples(rootRels);
         HttpResponse<JsonNode> deleteResponse = Unirest.delete(submissionLocation)
-                .headers(testHelper.standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .asJson();
 
         assertThat(deleteResponse.getStatus(), equalTo(HttpStatus.NO_CONTENT.value()));
@@ -136,7 +136,7 @@ public class ApiIntegrationTestRabbitDependent {
 
         HttpResponse<JsonNode> submissionGetResponse = Unirest
                 .get(submissionLocation)
-                .headers(testHelper.standardGetHeaders())
+                .headers(testHelper.getGetHeaders())
                 .asJson();
 
         assertThat(submissionGetResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
@@ -149,7 +149,7 @@ public class ApiIntegrationTestRabbitDependent {
 
         HttpResponse<JsonNode> submissionStatusGetResponse = Unirest
                 .get(submissionStatusLocation)
-                .headers(testHelper.standardGetHeaders())
+                .headers(testHelper.getGetHeaders())
                 .asJson();
 
         assertThat(submissionStatusGetResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
@@ -164,11 +164,13 @@ public class ApiIntegrationTestRabbitDependent {
         //update the submission
         //create a new submission
         HttpResponse<JsonNode> submissionPatchResponse = Unirest.patch(submissionStatusLocation)
-                .headers(testHelper.standardPostHeaders())
+                .headers(testHelper.getPostHeaders())
                 .body("{\"status\": \"Submitted\"}")
                 .asJson();
 
 
         assertThat(submissionPatchResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
     }
+
+
 }
