@@ -10,8 +10,8 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.ObjectContent;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Sample;
 
 import java.io.IOException;
@@ -24,38 +24,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SubmissionSerialisationTest {
 
     @Autowired
-    private JacksonTester<FullSubmission> json;
-
-    @Test
-    public void testSerialize() throws Exception {
-        assertThat(this.json.write(sub)).isEqualToJson(exampleJson);
-    }
+    private JacksonTester<Submission> json;
 
     String exampleJson;
-    FullSubmission sub;
+    SubmissionEnvelope submissionEnvelope;
 
     @Before
     public void setUp() throws IOException {
-        sub = new FullSubmission();
-        sub.getTeam().setName("exampleTeam");
-        sub.getSubmitter().setEmail("test@example.ac.uk");
-        sub.getSamples().add(new Sample());
+        submissionEnvelope = new SubmissionEnvelope(new Submission());
+        submissionEnvelope.getSubmission().getTeam().setName("exampleTeam");
+        submissionEnvelope.getSubmission().getSubmitter().setEmail("test@example.ac.uk");
 
-        exampleJson = "{\"submitter\":{\"email\":\"test@example.ac.uk\"},\"team\":{\"name\":\"exampleTeam\"}, \"samples\": [{}]}";
+        exampleJson = "{\"submitter\":{\"email\":\"test@example.ac.uk\"},\"team\":{\"name\":\"exampleTeam\"}}";
+    }
+
+    @Test
+    public void testSerialize() throws Exception {
+        assertThat(this.json.write(submissionEnvelope.getSubmission())).isEqualToJson(exampleJson);
     }
 
     @Test
     public void testDeserialize() throws Exception {
 
-        ObjectContent<FullSubmission> deserializedSub = this.json.parse(exampleJson);
-        Submission actualSub = sub;
+        ObjectContent<Submission> deserializedSub = this.json.parse(exampleJson);
+        Submission actualSubmission = deserializedSub.getObject();
 
-        assertThat(actualSub.getTeam())
-                .isEqualTo(sub.getTeam());
-        assertThat(actualSub.getSubmitter())
-                .isEqualTo(sub.getSubmitter());
-        assertThat(actualSub.getSubmissionDate()).isEqualTo(sub.getSubmissionDate());
+        assertThat(actualSubmission.getTeam())
+                .isEqualTo(submissionEnvelope.getSubmission().getTeam());
+        assertThat(actualSubmission.getSubmitter())
+                .isEqualTo(submissionEnvelope.getSubmission().getSubmitter());
+        assertThat(actualSubmission.getSubmissionDate())
+                .isEqualTo(submissionEnvelope.getSubmission().getSubmissionDate());
     }
-
-
 }
