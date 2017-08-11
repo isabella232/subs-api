@@ -1,4 +1,6 @@
-sudo: false
+sudo: true
+services:
+- rabbitmq
 language: java
 jdk:
 - oraclejdk8
