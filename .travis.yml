@@ -4,15 +4,16 @@ jdk:
 - oraclejdk8
 addons:
   apt:
-   sources:
+    sources:
     - mongodb-upstart
-    - sourceline: 'deb [arch=amd64] http://repo.mongodb.org/apt/ubuntu precise/mongodb-org/3.4 multiverse'
-      key_url: 'https://www.mongodb.org/static/pgp/server-3.4.asc'
-   packages:
+    - sourceline: deb [arch=amd64] http://repo.mongodb.org/apt/ubuntu precise/mongodb-org/3.4
+        multiverse
+      key_url: https://www.mongodb.org/static/pgp/server-3.4.asc
+    packages:
     - oracle-java8-installer
     - mongodb-org-server
     - mongodb-org-shell
-install: "./gradlew assemble"
+install: ./gradlew assemble
 before_script:
 - sleep 25
 before_cache:
@@ -21,14 +22,19 @@ before_cache:
 cache:
   apt: true
   directories:
-  - "$HOME/.m2"
-  - "$HOME/.gradle/caches/"
-  - "$HOME/.gradle/wrapper/"
+  - $HOME/.m2
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
 before_install:
 - openssl aes-256-cbc -K $encrypted_d650e6e34745_key -iv $encrypted_d650e6e34745_iv
   -in gradle.properties.enc -out gradle.properties -d
 after_success:
-  - test $TRAVIS_BRANCH = "master" && ./gradlew uploadArchives
-group: "stable"
-dist: "precise"
-os: "linux"
+- test $TRAVIS_BRANCH = "master" && ./gradlew uploadArchives
+group: stable
+dist: precise
+os: linux
+env:
+  matrix:
+  - secure: HZ8/ZTjqCFQuaMXqPGzq7ZM+dVvkTzVgCld7Zt1I9bVFMD8dFQsTeMADd+P+NFeRBMw2rT3Pl3rnr6Uhdjooh5A25K8lIh0qX2vzacCRYxl6iP2NJ5elkGdzH8mbRFPW9eC6dqgats3Y/+uo9rA4f9414niTid6BJvFOeyyiG5/Odi/B99wD+KBrKwRN1GrTxaA9OITG2+dIRezsbvgDBQ3LIKXKF5Z26FPri04NvhjwkEqkJj8LrLTMbCK+8hLpRCgU/N+mULtUNZJkl7rm20/AtY3nbpvfouqRlbQuafqTA13pClrMrUD8fiiIz7UqF01wfNCH74wJ2Vx1aCOXlQC/9Yp+cHCOI7yCN0//3hJ7kWp+K3H9zeyO10b50Wcp+0OhJPiMqqszMayk1aeh3VyaMoOTrxmJ7+7tYBN2NpZce+6ah+ztx9Rutwo44yGy3HqLjEE5OtiHdT4qDrI4j6WxC4f2eRHOJgkhhynIslP1AlsZbfRDn5MnYxkIMxWFODathQr90Rw62czmwqQoPqiYZKIz86aKSkow7V02+hjBpvkO0qPvMUpUTEwFkwLBqL05owsrm1FNDwcf0JQCX2cLJ1od0VeeGlStA+Lhk35MYM3Awm4a0WOTPVhNLyR22piKBY7G6FbNnAoHhmkgZSQdfHsgjE+36WYPffdV28w=
+  - secure: nTvMwIfvAu9DjqILWA8UMRcnF4VdR2skiu1SnNjSYKZg8m6be/0WeLXYJtIvIPeq7Xb+oHkPYFXGfgz5Jfa9ggYsZpYPE6qlmzmI4k72lE23tTDHN7BTXG5C05sWuGJwdDjwqDl7GZiH7L0y3ZqBjx9CNWs1QQak1ERZUKH15/4sxW0E1rH2+LD73fnuqBiJTiSTIWyaY/+FSyrfxk305ZwLIXL4wio7vpnGaiF5N1JplNiX/ygMJCu3TYp0QEcQxtFj0yT6+97DWQMAGiX9QYYjVEXH6Nk/MMrThUt++idnNughqVH57fhMuh22dndRNYeKqHK/9t4j6KoAak6mR8nD8AUiAiIn6n3lPDF/jHN3FVIW5uDyf1pnL8JPpdTL5aGKjwem9l24jshqOCaiH8vCfkVE9Q8/u+z+hhyVo7kJir6ejYGosANqeFmRFwQzMHIHwCp/+rqgBODonFJeGUmui5GQNWM/Pl7DYCQbFEOAb5np1TIZnkzVDEGbAgIqWM0ms0/IkIyfn/qoZPfQCLkEmcbWkTcLW+QSyLh0xKGcYc6HE6g3aMy+DuKgdC0uqoSKnxLsXZjTz1JlJHC5y6/mODAhT6L9wSwKR/w5vp6XtiGP9JomgJC/oOn4xWA90sTpZjYCxZpJAUd9X2LGE6SKt/6FK/9PHmMP+MGPco0=
+  - secure: gO9qLPCiF/MkNASdTOasK5z8UniSA8SnhwkYhUXq+A3Lu8vPmDv1yTPZUpoEZ7XZQ5QwEFe7kt81nwiRO8Cp/gbQJb9b1EfnQqOgtU7aZpmU+3f3xbRftVsV3Azh+PeEn6wpf4N77DsWg6ahLlaCrfTz0QQ1ARlWn2dzIRw2Dg7ia/rtTHxmDO3Ydkvrjk84ld2vXE5VMc0h2Wws0JcTt2sFY6KBUHBPTgQZRpNip7/jLLNPrgrVN+g1eHil7iLD7rHWDmkB9xqbtt03B4agY+03JW5/bM3K/B5oQUvZGWeKAp3pJ8buDfA+6rTeotwvdG16IxTax7705r2P9VoIImRzZBPTQQkfcRiTIe4pPdRz4XRigcr1d5KVfjtI4rAFqZOtiaWkkJYBzx4uMueHYNEF8FG/k+iX30ZCfHvO2OYTnTrSRJbrGEIZEiFh6Bk6WfHzXFf6rFsPOqBCXPteyR4KFEG3wni+uLQz9JUGAXrk8DxfCRPNNSboeJ4cPaHLfBkdfJbU1tn1zAof44WflqU6kQYbKjPHa5SAnmbTLUUbzlG59l+wCaPfimc8X7KTaUzWzgqcqbosJc4yGJn+h2jNYVUOZIOemdUJ8e5C+P9VsKIh+bEWGBx6CXzdTr1QG+iPRM0XbYnWq1ysaWwrlAeNdRPzHQNWb/0GFozIPN4=
