@@ -57,6 +57,7 @@ dependencies {
 
     testCompile("com.mashape.unirest:unirest-java:1.4.9")
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
+    testCompile("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.4.6'
     compile('uk.ac.ebi.tsc.aap.client:security:0.2.2-SNAPSHOT') {
