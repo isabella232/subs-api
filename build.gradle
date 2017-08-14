@@ -132,6 +132,14 @@ if (project.hasProperty('sshKeyFile')) {
 if (project.hasProperty('sshPassphrase')) {
     ssh.settings.passphrase = sshPassphrase
 }
+task('externalCiTest', type: Test) {
+	useJUnit {
+		excludeCategories 'uk.ac.ebi.subs.RabbitMQDependentTest', 'uk.ac.ebi.subs.BioSamplesDependentTest'
+	}
+	testLogging {
+		exceptionFormat = 'full'
+	}
+}
 
 task deployToDev(type: SshTask, dependsOn: 'build') {
     doLast {

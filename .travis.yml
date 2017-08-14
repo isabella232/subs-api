@@ -1,6 +1,3 @@
-sudo: true
-services:
-- rabbitmq
 language: java
 jdk:
 - oraclejdk8
@@ -30,6 +27,7 @@ cache:
 before_install:
 - openssl aes-256-cbc -K $encrypted_c7b4af537a7c_key -iv $encrypted_c7b4af537a7c_iv
   -in gradle.properties.enc -out gradle.properties -d
+script: "./gradlew externalCiTest"          
 after_success:
 - test $TRAVIS_BRANCH = "master" && ./gradlew uploadArchives
 group: stable
