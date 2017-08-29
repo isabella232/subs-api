@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
@@ -340,7 +341,7 @@ public class ApiDocumentation {
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
         vr.setValidationStatus(ValidationStatus.Complete);
-       validationResultRepository.insert(vr);
+        validationResultRepository.insert(vr);
 
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
         Assert.notNull(status);
@@ -436,20 +437,19 @@ public class ApiDocumentation {
     }
 
 
-
     private void fakeProcessingStatus(Submission sub) {
         IntStream
-                .rangeClosed(1,10)
+                .rangeClosed(1, 10)
                 .mapToObj(Integer::valueOf)
                 .forEach(index ->
-                     storeProcessingStatus(
-                             sub,
-                             Sample.class,
-                             "sample"+index,
-                             "SAMEAFAKE0000"+index,
-                             Archive.BioSamples,
-                             ProcessingStatusEnum.Completed
-                     )
+                        storeProcessingStatus(
+                                sub,
+                                Sample.class,
+                                "sample" + index,
+                                "SAMEAFAKE0000" + index,
+                                Archive.BioSamples,
+                                ProcessingStatusEnum.Completed
+                        )
                 );
 
         storeProcessingStatus(
@@ -462,13 +462,13 @@ public class ApiDocumentation {
         );
 
         IntStream
-                .rangeClosed(1,10)
+                .rangeClosed(1, 10)
                 .mapToObj(Integer::valueOf)
                 .forEach(index ->
                         storeProcessingStatus(
                                 sub,
                                 Assay.class,
-                                "assay"+index,
+                                "assay" + index,
                                 null,
                                 Archive.Ena,
                                 ProcessingStatusEnum.Dispatched
@@ -476,13 +476,13 @@ public class ApiDocumentation {
                 );
 
         IntStream
-                .rangeClosed(1,10)
+                .rangeClosed(1, 10)
                 .mapToObj(Integer::valueOf)
                 .forEach(index ->
                         storeProcessingStatus(
                                 sub,
                                 AssayData.class,
-                                "assayData"+index,
+                                "assayData" + index,
                                 null,
                                 Archive.Ena,
                                 ProcessingStatusEnum.Dispatched
@@ -497,7 +497,7 @@ public class ApiDocumentation {
             String accession,
             Archive archive,
             ProcessingStatusEnum processingStatusEnum
-    ){
+    ) {
         ProcessingStatus status = new ProcessingStatus();
         status.setSubmissionId(sub.getId());
         status.setAccession(accession);
@@ -535,7 +535,7 @@ public class ApiDocumentation {
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
 
-                                        fieldWithPath("archive").description("Destination archive for this study"),
+                                        fieldWithPath("studyType").description("Type of data in this study"),
                                         fieldWithPath("publications").description("Publications for this study"),
                                         fieldWithPath("contacts").description("Contact details for people involved in this study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
@@ -570,7 +570,7 @@ public class ApiDocumentation {
     @Test
     public void createAssay() throws Exception {
         Submission sub = storeSubmission();
-        uk.ac.ebi.subs.data.client.Assay assay= Helpers.generateTestClientAssays(1).get(0);
+        uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
         setSubmissionInSubmittable(sub, assay);
 
@@ -594,9 +594,7 @@ public class ApiDocumentation {
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
 
-                                        fieldWithPath("archive").description("Destination archive for this assay"),
                                         fieldWithPath("studyRef").description("Reference to the study that this assay is part of"),
-
                                         fieldWithPath("sampleUses").description("Samples used in this assay"),
                                         fieldWithPath("sampleUses[0].sampleRef").description("Reference to the sample used in this assay"),
                                         fieldWithPath("protocolUses").description("Protocols used in this study"),
@@ -651,8 +649,6 @@ public class ApiDocumentation {
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
-
-                                        fieldWithPath("archive").description("Destination archive for this assay"),
                                         fieldWithPath("assayRef").description("Reference to the assay that this assay data is generated from"),
 
                                         fieldWithPath("sampleRef").description("Reference to the sample that this assay data is generated from"),
@@ -717,7 +713,6 @@ public class ApiDocumentation {
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
-                                        fieldWithPath("archive").description("The destination archive for this record"),
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
@@ -772,7 +767,6 @@ public class ApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
-                                        fieldWithPath("archive").description("The destination archive for this record"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
@@ -803,7 +797,7 @@ public class ApiDocumentation {
                 );
 
         this.mockMvc.perform(
-                patch("/api/samples/{id}", sampleId).content("{\"archive\":\"BioSamples\"}")
+                patch("/api/samples/{id}", sampleId).content("{\"title\":\"New title\"}")
                         .contentType(RestMediaTypes.HAL_JSON)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -824,7 +818,6 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
-                                        fieldWithPath("archive").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -849,7 +842,7 @@ public class ApiDocumentation {
         ValidationResult validationResult = validationResultRepository.findAll().get(0);
 
         this.mockMvc.perform(
-                get("/api/validationResults/{validationResultId}",validationResult.getUuid())
+                get("/api/validationResults/{validationResultId}", validationResult.getUuid())
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())

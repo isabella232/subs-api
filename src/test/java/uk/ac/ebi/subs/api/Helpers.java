@@ -50,7 +50,6 @@ public class Helpers {
             s.setDescription("Material derived from cell line NA12878");
             s.setTaxon("Homo sapiens");
             s.setTaxonId(9606L);
-            s.setArchive(Archive.BioSamples);
 
             Attribute cellLineType = attribute("Cell line type", "EBV-LCL cell line");
             Term ebvLclCellLine = new Term();
@@ -84,7 +83,7 @@ public class Helpers {
             s.setTitle("My Sequencing Study " + i);
             s.setDescription("We sequenced some humans to discover variants linked with a disease");
 
-            s.setArchive(Archive.Ena);
+            s.setStudyType(StudyDataType.Sequencing);
 
             Attribute studyAbstract = new Attribute();
             studyAbstract.setName("study_abstract");
@@ -129,8 +128,6 @@ public class Helpers {
 
             a.setStudyRef(studyRef);
 
-            a.setArchive(Archive.Ena);
-
             SampleRef sampleRef = new SampleRef();
             sampleRef.setAlias(samples.get(i-1).getAlias());
             sampleRef.setTeam(TEAM_NAME);
@@ -166,8 +163,6 @@ public class Helpers {
             ad.setAlias("AD" + i);
             ad.setTitle("AssayData" + i);
             ad.setDescription("Human sequencing experiment run");
-
-            ad.setArchive(Archive.Ena);
 
             AssayRef assayRef = new AssayRef();
             assayRef.setAlias(assays.get(i-1).getAlias());

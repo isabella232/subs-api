@@ -74,34 +74,7 @@ public class CoreSubmittableValidationHelper {
 
         validateOnlyUseOfAliasInSubmission(target, repository, errors);
 
-        validateArchiveIsLockedToAlias(target, repository, errors);
-    }
 
-    public void validateArchiveIsLockedToAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
-        if (target.getAlias() == null ){
-            return;
-        }
-
-        List<Archive> archives;
-
-        try (Stream<? extends StoredSubmittable> itemsWithAliasStream = repository.streamByTeamNameAndAliasOrderByCreatedDateDesc(
-                target.getSubmission().getTeam().getName(),
-                target.getAlias()
-        )){
-            archives = itemsWithAliasStream
-                    .map(Submittable::getArchive)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .collect(Collectors.toList());
-        }
-
-        if (archives.size() > 1){
-            throw new IllegalStateException("Multiple archives found in history of item "+target);
-        }
-
-        if (archives.size() == 1 && !target.getArchive().equals( archives.get(0) )){
-            SubsApiErrors.invalid.addError(errors,"archive");
-        }
     }
 
     public void validateOnlyUseOfAliasInSubmission(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
