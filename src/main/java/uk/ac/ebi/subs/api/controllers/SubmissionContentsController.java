@@ -4,7 +4,6 @@ import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +16,7 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 @RestController
 @BasePathAwareController
-public class SubmissionContentsController implements ResourceProcessor<SubmissionContentsController.SubmissionContentsResource>{
+public class SubmissionContentsController implements ResourceProcessor<SubmissionContentsController.SubmissionContentsResource> {
 
     private SubmissionRepository submissionRepository;
     private LinkHelper linkHelper;
@@ -34,7 +33,7 @@ public class SubmissionContentsController implements ResourceProcessor<Submissio
     public SubmissionContentsResource submissionContents(@PathVariable @P("submissionId") String submissionId) {
         Submission submission = submissionRepository.findOne(submissionId);
 
-        if (submission == null){
+        if (submission == null) {
             throw new ResourceNotFoundException();
         }
 
@@ -44,9 +43,9 @@ public class SubmissionContentsController implements ResourceProcessor<Submissio
 
     @Override
     public SubmissionContentsResource process(SubmissionContentsResource resource) {
-        linkHelper.addSubmittablesInSubmissionSearchLinks(resource.getLinks(),resource.submission.getId());
+        linkHelper.addSubmittablesInSubmissionLinks(resource.getLinks(), resource.submission.getId());
 
-        if (operationControlService.isUpdateable(resource.submission)){
+        if (operationControlService.isUpdateable(resource.submission)) {
             linkHelper.addSubmittablesCreateLinks(resource.getLinks());
         }
 
