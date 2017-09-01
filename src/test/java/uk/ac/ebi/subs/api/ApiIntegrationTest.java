@@ -83,7 +83,8 @@ public abstract class ApiIntegrationTest {
     public void checkRootRels() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("submissions:create", "samples:create"));
+        assertThat(rootRels.keySet(), hasItems("teams","team"));
+        assertThat(rootRels.keySet(), not(hasItems("submissions:create","samples:create")));
     }
 
     @Test
@@ -114,13 +115,20 @@ public abstract class ApiIntegrationTest {
      */
     public void submittablesMustHaveSubmissionEmbedded()throws IOException, UnirestException{
         Map<String, String> rootRels = testHelper.rootRels();
+        Submission submission = Helpers.generateSubmission();
+
+        Map<String, String> teamRels = testHelper.teamRels(submission.getTeam().getName());
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submission);
+        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+        Map<String,String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
 
         List<Sample> testSamples = Helpers.generateTestClientSamples(1);
         Sample sample = testSamples.get(0);
 
-        assertThat(rootRels.get("samples:create"), notNullValue());
+        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
-        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
+        HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
@@ -144,19 +152,20 @@ public abstract class ApiIntegrationTest {
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+        Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
 
-        assertThat(submissionRels.get("samples:create"), notNullValue());
+        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
         sample.setSubmission(submissionLocation);
 
-        HttpResponse<JsonNode> sampleFirstResponse = Unirest.post(rootRels.get("samples:create"))
+        HttpResponse<JsonNode> sampleFirstResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
 
         assertThat(sampleFirstResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
 
-        HttpResponse<JsonNode> sampleSecondResponse = Unirest.post(rootRels.get("samples:create"))
+        HttpResponse<JsonNode> sampleSecondResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();
@@ -197,14 +206,15 @@ public abstract class ApiIntegrationTest {
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+        Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
 
-        assertThat(submissionRels.get("samples:create"), notNullValue());
+        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
         for (Sample sample : testSamples) {
 
             sample.setSubmission(submissionLocation);
 
-            HttpResponse<JsonNode> samplePostResponse = Unirest.post(rootRels.get("samples:create"))
+            HttpResponse<JsonNode> samplePostResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                     .headers(testHelper.getPostHeaders())
                     .body(sample)
                     .asJson();
@@ -271,15 +281,15 @@ public abstract class ApiIntegrationTest {
 
             String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
             Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
-
-            assertThat(submissionRels.get("samples:create"), notNullValue());
+            Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
+            assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
             //add samples to the submission
             for (Sample sample : testSamples) {
 
                 sample.setSubmission(submissionLocation);
 
-                HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
+                HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                         .headers(testHelper.getPostHeaders())
                         .body(sample)
                         .asJson();
@@ -296,8 +306,8 @@ public abstract class ApiIntegrationTest {
 
         JSONObject teamPayload = teamQueryResponse.getBody().getObject();
         Map<String, String> teamRels = testHelper.relsFromPayload(teamPayload);
-
-        String teamSamplesUrl = teamRels.get("samples");
+        Map<String, String> teamContentsRels = testHelper.relsFromUri(teamRels.get("items"));
+        String teamSamplesUrl = teamContentsRels.get("samples");
 
         assertThat(teamSamplesUrl,notNullValue());
 
@@ -336,22 +346,25 @@ public abstract class ApiIntegrationTest {
 
     @Test
     public void testPut() throws IOException, UnirestException {
-        Map<String, String> rootRels = testHelper.rootRels();
-
         Submission submission = Helpers.generateSubmission();
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        Map<String, String> teamRels = testHelper.teamRels(submission.getTeam().getName());
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submission);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
 
-        assertThat(submissionRels.get("samples"), notNullValue());
+        Map<String,String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
+
+
+        assertThat(submissionContentsRels.get("samples"), notNullValue());
 
         Sample sample = Helpers.generateTestClientSamples(1).get(0);
         //add samples to the submission
 
         sample.setSubmission(submissionLocation);
 
-        HttpResponse<JsonNode> sampleResponse = Unirest.post(rootRels.get("samples:create"))
+        HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
                 .body(sample)
                 .asJson();

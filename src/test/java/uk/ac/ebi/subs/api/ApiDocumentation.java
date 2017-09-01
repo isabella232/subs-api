@@ -1190,8 +1190,8 @@ public class ApiDocumentation {
 
                                         halLinks(),
                                         //team
-                                        linkWithRel("teams").description("Teams"),
-
+                                        linkWithRel("teams").description("Collection resource for teams"),
+                                        linkWithRel("team").description("Templated link for finding one team"),
                                         //status descriptions
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
