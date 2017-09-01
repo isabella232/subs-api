@@ -33,21 +33,13 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     private LinkHelper linkHelper;
 
     private void addLinks(List<Link> links) {
-
-
-        linkHelper.addSubmittablesSearchLinks(links);
-        linkHelper.addSubmittablesCreateLinks(links);
-
         addStatusDescriptions(links);
-        addStatuses(links);
-        addSubmissions(links);
         addTeams(links);
-
     }
 
     @Override
     public RepositoryLinksResource process(RepositoryLinksResource resource) {
-
+        logger.debug("processing resource: {}",resource.getLinks());
         clearAllLinks(resource);
 
         addLinks(resource.getLinks());
@@ -56,24 +48,11 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     }
 
     private void clearAllLinks(RepositoryLinksResource resource) {
+        logger.debug("clearing links: {}",resource.getLinks());
         resource.removeLinks();
     }
 
-    private void addStatuses(List<Link> links) {
-        List<Class> statusClasses = Arrays.asList(ProcessingStatus.class, SubmissionStatus.class);
-
-        for (Class clazz : statusClasses) {
-            linkHelper.addSearchLink(links, clazz);
-        }
-    }
-
-    private void addSubmissions(List<Link> links) {
-        linkHelper.addSearchLink(links, Submission.class);
-        linkHelper.addCreateLink(links, Submission.class);
-    }
-
-
-    private void addTeams(List<Link> links) {
+      private void addTeams(List<Link> links) {
         links.add(
                 linkTo(methodOn(TeamController.class).getTeams(null)
                 ).withRel("teams")
