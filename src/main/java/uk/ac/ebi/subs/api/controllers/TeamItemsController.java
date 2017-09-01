@@ -23,7 +23,7 @@ public class TeamItemsController implements ResourceProcessor<TeamItemsControlle
 
     @PreAuthorizeParamTeamName
     @RequestMapping("/teams/{teamName}/items")
-    public TeamItemsResource TeamItems(@PathVariable @P("teamName") String teamName) {
+    public TeamItemsResource teamItems(@PathVariable @P("teamName") String teamName) {
 
         Team team = Team.build(teamName);
 
