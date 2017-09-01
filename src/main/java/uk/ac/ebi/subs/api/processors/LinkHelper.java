@@ -11,7 +11,9 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class LinkHelper {
@@ -44,6 +46,19 @@ public class LinkHelper {
     public void addSubmittablesCreateLinks(Collection<Link> links){
         for (Class type : submittablesClassList){
             this.addCreateLink(links,type);
+        }
+    }
+
+    public void addSubmittablesInSubmissionSearchLinks(Collection<Link> links, String submissionId){
+        Map<String,String> params = new HashMap<>();
+        params.put("submissionId",submissionId);
+
+        for (Class type : submittablesClassList){
+            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,"by-submission");
+            Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
+
+            Link submittablesInSubmission = searchLink.expand(params).withRel(  collectionLink.getRel() );
+            links.add(submittablesInSubmission);
         }
     }
 

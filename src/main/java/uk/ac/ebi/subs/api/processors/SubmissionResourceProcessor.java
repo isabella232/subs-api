@@ -7,6 +7,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
+import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -98,19 +99,19 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private void ifUpdateableAddLinks(Resource<Submission> submissionResource) {
         if (operationControlService.isUpdateable(submissionResource.getContent())) {
 
-            linkHelper.addSubmittablesCreateLinks(submissionResource.getLinks());
-
             linkHelper.addSelfUpdateLink(submissionResource.getLinks(), submissionResource.getContent());
         }
     }
 
     private void addContentsRels(Resource<Submission> submissionResource) {
-        Map<String, String> expansionParams = new HashMap<>();
-        expansionParams.put("submissionId", submissionResource.getContent().getId());
 
-        for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList) {
-            addObjectToSubmissionAsLink(submittableClass, submissionResource, expansionParams);
-        }
+        submissionResource.add(
+                linkTo(
+                        methodOn(SubmissionContentsController.class)
+                                .submissionContents(submissionResource.getContent().getId())
+                ).withRel("contents")
+        );
+
     }
 
     private void addValidationResultLinks(Resource<Submission> submissionResource) {
