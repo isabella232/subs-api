@@ -49,15 +49,29 @@ public class LinkHelper {
         }
     }
 
-    public void addSubmittablesInSubmissionSearchLinks(Collection<Link> links, String submissionId){
+    public void addSubmittablesInSubmissionLinks(Collection<Link> links, String submissionId){
         Map<String,String> params = new HashMap<>();
         params.put("submissionId",submissionId);
 
+        this.addSubmittablesLinksWithNamedSearchRel(links,"by-submission",params);
+
+    }
+
+    public void addSubmittablesInTeamLinks(Collection<Link> links, String teamName){
+        Map<String,String> params = new HashMap<>();
+        params.put("teamName",teamName);
+
+        this.addSubmittablesLinksWithNamedSearchRel(links,"by-team",params);
+    }
+
+    private void addSubmittablesLinksWithNamedSearchRel(Collection<Link> links, String relName, Map<String,String> expansionParams){
+
         for (Class type : submittablesClassList){
-            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,"by-submission");
+            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,relName
+            );
             Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
-            Link submittablesInSubmission = searchLink.expand(params).withRel(  collectionLink.getRel() );
+            Link submittablesInSubmission = searchLink.expand(expansionParams).withRel(  collectionLink.getRel() );
             links.add(submittablesInSubmission);
         }
     }

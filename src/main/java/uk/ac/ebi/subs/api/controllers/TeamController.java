@@ -12,10 +12,9 @@ import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import uk.ac.ebi.subs.data.component.Team;
-import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepositoryCustom;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 
@@ -26,6 +25,10 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @BasePathAwareController
 public class TeamController {
 
+    private SubmissionRepository submissionRepository;
+    private PagedResourcesAssembler<Submission> pagedResourcesAssembler;
+    private PagedResourcesAssembler<Team> teamPagedResourcesAssembler;
+    private SubmissionRepositoryCustom submissionRepositoryCustom;
     public TeamController(SubmissionRepository submissionRepository,
                           SubmissionRepositoryCustom submissionRepositoryCustom,
                           PagedResourcesAssembler<Submission> pagedResourcesAssembler,
@@ -36,13 +39,8 @@ public class TeamController {
         this.submissionRepositoryCustom = submissionRepositoryCustom;
     }
 
-    private SubmissionRepository submissionRepository;
-    private PagedResourcesAssembler<Submission> pagedResourcesAssembler;
-    private PagedResourcesAssembler<Team> teamPagedResourcesAssembler;
-    private SubmissionRepositoryCustom submissionRepositoryCustom;
-
     @RequestMapping("/teams")
-    public PagedResources<Resource<Team>> getTeams(Pageable pageable){
+    public PagedResources<Resource<Team>> getTeams(Pageable pageable) {
         Page<Team> teams = submissionRepositoryCustom.distinctTeams(pageable);
         return teamPagedResourcesAssembler.toResource(teams);
     }

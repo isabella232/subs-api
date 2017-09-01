@@ -6,28 +6,26 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import uk.ac.ebi.subs.api.controllers.TeamItemsController;
 import uk.ac.ebi.subs.data.component.Team;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Component
 public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> {
 
-
-    public TeamResourceProcessor(
-            RepositoryEntityLinks repositoryEntityLinks,
-            List<Class<? extends StoredSubmittable>> submittablesClassList
-    ) {
+    public TeamResourceProcessor(RepositoryEntityLinks repositoryEntityLinks, LinkHelper linkHelper) {
         this.repositoryEntityLinks = repositoryEntityLinks;
-        this.submittablesClassList = submittablesClassList;
+        this.linkHelper = linkHelper;
     }
 
     private RepositoryEntityLinks repositoryEntityLinks;
-    private List<Class<? extends StoredSubmittable>> submittablesClassList;
+    private LinkHelper linkHelper;
 
 
     @Override
@@ -36,10 +34,17 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
 
         addSubmissionsRel(resource);
 
-        addContentsRels(resource);
+        addItemsRel(resource);
 
 
         return resource;
+    }
+
+    private void addItemsRel(Resource<Team> resource) {
+        resource.getLinks().add(
+                linkTo(methodOn(TeamItemsController.class).TeamItems(resource.getContent().getName())
+                ).withRel("items")
+        );
     }
 
     private void addSubmissionsRel(Resource<Team> resource) {
@@ -47,19 +52,9 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
         expansionParams.put("teamName", resource.getContent().getName());
 
         addRelWithCollectionRelName(resource, expansionParams, Submission.class);
+        linkHelper.addCreateLink(resource.getLinks(), Submission.class);
     }
 
-    private void addContentsRels(Resource<Team> resource) {
-        String teamName = resource.getContent().getName();
-        Map<String, String> expansionParams = new HashMap<>();
-        expansionParams.put("teamName", teamName);
-
-
-        for (Class<? extends StoredSubmittable> submittableClass : submittablesClassList) {
-            addRelWithCollectionRelName(resource, expansionParams, submittableClass);
-        }
-
-    }
 
     private void addRelWithCollectionRelName(Resource<Team> resource, Map<String, String> expansionParams, Class<?> classWithByTeamRel) {
         Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByTeamRel, "by-team");
