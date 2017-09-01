@@ -49,16 +49,9 @@ public class TeamController {
     @RequestMapping("/teams/{teamName}")
     @PreAuthorizeParamTeamName
     public Resource<Team> getTeam(@PathVariable @P("teamName") String teamName) {
-        //TODO this is a stub, we should make sure that the Teams are real and that the user is authorised
+
         Team d = new Team();
         d.setName(teamName);
-
-        Page<Submission> subsPage = submissionRepository.findByTeamName(teamName, new PageRequest(0, 1));
-
-        if (subsPage.getTotalElements() == 0) {
-            throw new ResourceNotFoundException();
-            //TODO temporary check until we have real team support
-        }
 
         Resource<Team> resource = new Resource<>(d);
 
