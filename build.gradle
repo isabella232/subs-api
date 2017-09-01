@@ -106,6 +106,12 @@ jar {
     }
 }
 
+processTestResources {
+    filesMatching('application.properties') {
+        expand(project.properties)
+    }
+}
+
 publish {
     dependsOn assemble
 }

@@ -45,16 +45,9 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
         return postHeaders;
     }
 
-    static String getJWTToken (String authURL, String username, String password) throws UnirestException {
+    String getJWTToken (String authURL, String username, String password) throws UnirestException {
         final HttpResponse<String> stringHttpResponse = Unirest.get(authURL).basicAuth(username, password).asString();
         return stringHttpResponse.getBody();
     }
 
-    @Override
-    public void checkRootRels() throws IOException, UnirestException {
-        final Map<String, String> standardGetHeader = ApiIntegrationTestHelper.createStandardGetHeader();
-        testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
-                Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),standardGetHeader,ApiIntegrationTestHelper.createStandardGetHeader());
-        super.checkRootRels();
-    }
 }
