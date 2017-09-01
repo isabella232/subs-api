@@ -1,8 +1,7 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resource;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +12,7 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 
 @RestController
 @BasePathAwareController
-public class TeamItemsController implements ResourceProcessor<TeamItemsController.TeamItemsResource> {
+public class TeamItemsController {
 
     private LinkHelper linkHelper;
 
@@ -23,27 +22,35 @@ public class TeamItemsController implements ResourceProcessor<TeamItemsControlle
 
     @PreAuthorizeParamTeamName
     @RequestMapping("/teams/{teamName}/items")
-    public TeamItemsResource teamItems(@PathVariable @P("teamName") String teamName) {
+    public Resource<TeamItems> teamItems(@PathVariable @P("teamName") String teamName) {
 
         Team team = Team.build(teamName);
 
-        return new TeamItemsResource(team);
+        return this.process(new Resource<>(new TeamItems(team)));
 
     }
 
-    @Override
-    public TeamItemsResource process(TeamItemsResource resource) {
-        linkHelper.addSubmittablesInTeamLinks(resource.getLinks(), resource.team.getName());
 
-        resource.team = null;
+    public Resource<TeamItems> process(Resource<TeamItems> resource) {
+        linkHelper.addSubmittablesInTeamLinks(resource.getLinks(), resource.getContent().getTeam().getName());
+
+        resource.getContent().setTeam(null);
 
         return resource;
     }
 
-    class TeamItemsResource extends ResourceSupport {
+    public class TeamItems {
         private Team team;
 
-        public TeamItemsResource(Team team) {
+        public Team getTeam() {
+            return team;
+        }
+
+        public void setTeam(Team team) {
+            this.team = team;
+        }
+
+        public TeamItems(Team team) {
             this.team = team;
         }
     }

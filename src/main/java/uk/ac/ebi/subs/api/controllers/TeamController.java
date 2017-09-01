@@ -46,7 +46,7 @@ public class TeamController {
     }
 
 
-    @RequestMapping("/teams/{teamName}")
+    @RequestMapping("/teams/{teamName:.+}")
     @PreAuthorizeParamTeamName
     public Resource<Team> getTeam(@PathVariable @P("teamName") String teamName) {
 
@@ -65,5 +65,7 @@ public class TeamController {
 
         return resource;
     }
+
+
 
 }

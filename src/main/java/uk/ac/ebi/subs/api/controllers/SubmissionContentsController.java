@@ -2,8 +2,8 @@ package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +16,7 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 @RestController
 @BasePathAwareController
-public class SubmissionContentsController implements ResourceProcessor<SubmissionContentsController.SubmissionContentsResource> {
+public class SubmissionContentsController {
 
     private SubmissionRepository submissionRepository;
     private LinkHelper linkHelper;
@@ -30,34 +30,40 @@ public class SubmissionContentsController implements ResourceProcessor<Submissio
 
     @PreAuthorizeSubmissionIdTeamName
     @RequestMapping("/submissions/{submissionId}/contents")
-    public SubmissionContentsResource submissionContents(@PathVariable @P("submissionId") String submissionId) {
+    public Resource<SubmissionContents> submissionContents(@PathVariable @P("submissionId") String submissionId) {
         Submission submission = submissionRepository.findOne(submissionId);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
         }
-
-        return new SubmissionContentsResource(submission);
-
+        return this.process(new Resource<>(new SubmissionContents(submission)));
     }
 
-    @Override
-    public SubmissionContentsResource process(SubmissionContentsResource resource) {
-        linkHelper.addSubmittablesInSubmissionLinks(resource.getLinks(), resource.submission.getId());
+    public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
+        linkHelper.addSubmittablesInSubmissionLinks(resource.getLinks(), resource.getContent().getSubmission().getId());
 
-        if (operationControlService.isUpdateable(resource.submission)) {
+        if (operationControlService.isUpdateable(resource.getContent().getSubmission() )) {
             linkHelper.addSubmittablesCreateLinks(resource.getLinks());
         }
 
-        resource.submission = null;
+        resource.getContent().setSubmission(null);
 
         return resource;
     }
 
-    class SubmissionContentsResource extends ResourceSupport {
+
+    public class SubmissionContents {
         private Submission submission;
 
-        public SubmissionContentsResource(Submission submission) {
+        public SubmissionContents(Submission submission) {
+            this.submission = submission;
+        }
+
+        public Submission getSubmission() {
+            return submission;
+        }
+
+        public void setSubmission(Submission submission) {
             this.submission = submission;
         }
     }

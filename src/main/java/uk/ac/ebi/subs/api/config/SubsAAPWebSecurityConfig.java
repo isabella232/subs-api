@@ -35,6 +35,7 @@ import uk.ac.ebi.tsc.aap.client.security.TokenAuthenticationService;
 @EnableConfigurationProperties
 @ConditionalOnWebApplication
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan("uk.ac.ebi.tsc.aap.client.security")
 @ConditionalOnProperty(prefix = "aap", name = "enabled", matchIfMissing = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 15)
@@ -64,8 +65,7 @@ public class SubsAAPWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 // don't create session
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/api").permitAll()
-                .antMatchers("/").permitAll()
+                .authorizeRequests().antMatchers("/").permitAll()
                 .antMatchers("/browser/**/*").permitAll()
                 .antMatchers("/docs/**/*").permitAll()
                 .anyRequest().authenticated();

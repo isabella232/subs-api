@@ -57,8 +57,8 @@ public abstract class ApiIntegrationTest {
     @Autowired
     protected SampleRepository sampleRepository;
 
-    @MockBean
-    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    //@MockBean
+    //private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Before
     public void buildUp() throws URISyntaxException, UnirestException {
@@ -72,11 +72,6 @@ public abstract class ApiIntegrationTest {
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
         submissionStatusRepository.deleteAll();
-    }
-
-    @AfterClass
-    public static void shutdown() throws IOException {
-        Unirest.shutdown();
     }
 
     @Test
