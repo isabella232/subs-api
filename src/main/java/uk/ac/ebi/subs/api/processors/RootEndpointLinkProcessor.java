@@ -6,14 +6,15 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
-import uk.ac.ebi.subs.repository.model.ProcessingStatus;
-import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -39,7 +40,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     @Override
     public RepositoryLinksResource process(RepositoryLinksResource resource) {
-        logger.debug("processing resource: {}",resource.getLinks());
+        logger.debug("processing resource: {}", resource.getLinks());
         clearAllLinks(resource);
 
         addLinks(resource.getLinks());
@@ -48,15 +49,19 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     }
 
     private void clearAllLinks(RepositoryLinksResource resource) {
-        logger.debug("clearing links: {}",resource.getLinks());
+        logger.debug("clearing links: {}", resource.getLinks());
         resource.removeLinks();
     }
 
-      private void addTeams(List<Link> links) {
-        links.add(
+    private void addTeams(List<Link> links) {
+        Link teamsLink =
                 linkTo(methodOn(TeamController.class).getTeams(null)
-                ).withRel("teams")
-        );
+                ).withRel("teams");
+
+        links.add(teamsLink);
+
+        ControllerLinkBuilder linkBuilder = linkTo(methodOn(TeamController.class).getTeam(null));
+        links.add(linkBuilder.withRel("team"));
     }
 
     private void addStatusDescriptions(List<Link> links) {
