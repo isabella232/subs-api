@@ -1226,7 +1226,7 @@ public class ApiDocumentation {
     private Submission storeSubmission() {
         Submission sub = Helpers.generateTestSubmission();
 
-        this.submissionStatusRepository.save(sub.getSubmissionStatus());
+        this.submissionStatusRepository.insert(sub.getSubmissionStatus());
         this.submissionRepository.save(sub);
         return sub;
     }
