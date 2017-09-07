@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
@@ -309,29 +308,8 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This submission can be updated"),
                                         linkWithRel("self:delete").description("This submission can be deleted"),
                                         linkWithRel("team").description("The team this submission belongs to"),
-                                        linkWithRel("analyses").description("Analyses within this submission"),
-                                        linkWithRel("assays").description("Assays within this submission"),
-                                        linkWithRel("assayData").description("Assay data within this submission"),
-                                        linkWithRel("egaDacs").description("DACs within this submission"),
-                                        linkWithRel("egaDacPolicies").description("DAC policies within this submission"),
-                                        linkWithRel("egaDatasets").description("EGA datasets within this submission"),
-                                        linkWithRel("projects").description("Projects within this submission"),
-                                        linkWithRel("protocols").description("Protocols within this submission"),
-                                        linkWithRel("samples").description("Samples within this submission"),
-                                        linkWithRel("sampleGroups").description("Sample groups within this submission"),
-                                        linkWithRel("studies").description("Studies within this submission"),
-                                        linkWithRel("submissionStatus").description("Status of this submission"),
-                                        linkWithRel("sampleGroups:create").description("This submission can accept new sample groups"),
-                                        linkWithRel("analyses:create").description("This submission can accept new analyses"),
-                                        linkWithRel("egaDatasets:create").description("This submission can accept new EGA datasets"),
-                                        linkWithRel("projects:create").description("This submission can accept new projects"),
-                                        linkWithRel("assays:create").description("This submission can accept new assays"),
-                                        linkWithRel("protocols:create").description("This submission can accept new protocols"),
-                                        linkWithRel("assayData:create").description("This submission can accept new assay data"),
-                                        linkWithRel("egaDacs:create").description("This submission can accept new DACs"),
-                                        linkWithRel("samples:create").description("This submission can accept new samples"),
-                                        linkWithRel("egaDacPolicies:create").description("This submission can accept new DAC policies"),
-                                        linkWithRel("studies:create").description("This submission can accept new studies"),
+                                        linkWithRel("contents").description("The contents of this submission"),
+                                        linkWithRel("submissionStatus").description("The status of this submission"),
                                         linkWithRel("processingStatuses").description("All processing statuses for the contents of this submission"),
                                         linkWithRel("validationResults").description("All validation results for the contents of this submission"),
                                         linkWithRel("processingStatusSummary").description("Summary of processing statuses for this submission"),
@@ -342,7 +320,46 @@ public class ApiDocumentation {
                         )
                 );
 
+
         Submission sub = submissionRepository.findAll().get(0);
+
+        this.mockMvc.perform(get("/api/submissions/{submissionId}/contents", sub.getId()))
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "submission-contents",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        links(
+                                halLinks(),
+                                linkWithRel("analyses").description("Collection of analyses within this submission"),
+                                linkWithRel("assays").description("Collection of assays within this submission"),
+                                linkWithRel("assayData").description("Collection of assay data within this submission"),
+                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
+                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
+                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
+                                linkWithRel("projects").description("Collection of projects within this submission"),
+                                linkWithRel("protocols").description("Collection of protocols within this submission"),
+                                linkWithRel("samples").description("Collection of samples within this submission"),
+                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
+                                linkWithRel("studies").description("Collection of studies within this submission"),
+                                linkWithRel("analyses:create").description("Create a new analysis resource"),
+                                linkWithRel("assayData:create").description("Create a new assay data resource"),
+                                linkWithRel("assays:create").description("Create a new assay resource"),
+                                linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
+                                linkWithRel("egaDacs:create").description("Create a new DAC resource"),
+                                linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                linkWithRel("projects:create").description("Create a new project resource"),
+                                linkWithRel("protocols:create").description("Create a new protocol resource"),
+                                linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("studies:create").description("Create a new study resource")
+                        ),
+                        responseFields(
+                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                        )
+                ));
+
+
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
@@ -1107,7 +1124,9 @@ public class ApiDocumentation {
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
                                         linkWithRel("submissions").description("Collection of submissions within this team"),
-                                        linkWithRel("analyses").description("Collection of analyses within this team"),
+                                        linkWithRel("submissions:create").description("Collection of submissions within this team"),
+                                        linkWithRel("items").description("Items owned by this team")
+                                        /*linkWithRel("analyses").description("Collection of analyses within this team"),
                                         linkWithRel("assays").description("Collection of assays within this team"),
                                         linkWithRel("assayData").description("Collection of assay data within this team"),
                                         linkWithRel("egaDacs").description("Collection of DACs within this team"),
@@ -1117,7 +1136,7 @@ public class ApiDocumentation {
                                         linkWithRel("protocols").description("Collection of protocols within this team"),
                                         linkWithRel("samples").description("Collection of samples within this team"),
                                         linkWithRel("sampleGroups").description("Collection of sample groups within this team"),
-                                        linkWithRel("studies").description("Collection of studies within this team")
+                                        linkWithRel("studies").description("Collection of studies within this team")*/
                                 ),
                                 responseFields(
                                         linksResponseField(),
@@ -1127,8 +1146,7 @@ public class ApiDocumentation {
                 );
     }
 
-    @Test
-    public void rootEndpoint() throws Exception {
+    /*
 
         this.mockMvc.perform(
                 get("/api/")
@@ -1145,9 +1163,14 @@ public class ApiDocumentation {
                                         linkWithRel("teams").description("Teams"),
                                         //submissions
                                         linkWithRel("submissions:search").description("Search resource for submissions"),
+    //submissions
+
+
+    linkWithRel("submissions:search").description("Search resource for submissions"),
                                         linkWithRel("submissions:create").description("Create a new submission resource"),
-                                        //submittables
-                                        linkWithRel("analyses:create").description("Create a new analysis resource"),
+
+    //submittables
+    linkWithRel("analyses:create").description("Create a new analysis resource"),
                                         linkWithRel("analyses:search").description("Search resource for analyses"),
                                         linkWithRel("assayData:create").description("Create a new assay data resource"),
                                         linkWithRel("assayData:search").description("Search resource for assay data"),
@@ -1169,12 +1192,34 @@ public class ApiDocumentation {
                                         linkWithRel("samples:search").description("Search resource for samples"),
                                         linkWithRel("studies:create").description("Create a new study resource"),
                                         linkWithRel("studies:search").description("Search resource for studies"),
+
+    //statuses
+    linkWithRel("processingStatuses:search").description("Search resource for processing statuses"),
+
+
+     */
+
+    @Test
+    public void rootEndpoint() throws Exception {
+
+        this.mockMvc.perform(
+                get("/api")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("root-endpoint",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+
+                                        halLinks(),
+                                        //team
+                                        linkWithRel("teams").description("Collection resource for teams"),
+                                        linkWithRel("team").description("Templated link for finding one team"),
                                         //status descriptions
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
-                                        //statuses
-                                        linkWithRel("processingStatuses:search").description("Search resource for processing statuses"),
                                         //profile
                                         linkWithRel("profile").description("Application level details")
                                 ),

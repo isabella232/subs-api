@@ -1,6 +1,5 @@
 package uk.ac.ebi.subs.api.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +23,13 @@ import java.util.Optional;
 public class StatusDescriptionController {
 
 
+    private List<StatusDescription> releaseStatuses;
+    private List<StatusDescription> processingStatuses;
+    private List<StatusDescription> submissionStatuses;
+    private PagedResourcesAssembler pagedResourcesAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler;
+    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
     public StatusDescriptionController(List<StatusDescription> releaseStatuses, List<StatusDescription> processingStatuses, List<StatusDescription> submissionStatuses, PagedResourcesAssembler pagedResourcesAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler, ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler) {
         this.releaseStatuses = releaseStatuses;
         this.processingStatuses = processingStatuses;
@@ -33,14 +39,6 @@ public class StatusDescriptionController {
         this.releaseStatusResourceAssembler = releaseStatusResourceAssembler;
         this.submissionStatusResourceAssembler = submissionStatusResourceAssembler;
     }
-
-    private List<StatusDescription> releaseStatuses;
-    private List<StatusDescription> processingStatuses;
-    private List<StatusDescription> submissionStatuses;
-    private PagedResourcesAssembler pagedResourcesAssembler;
-    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler;
-    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler;
-    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
 
     @RequestMapping("/processingStatuses")
     public PagedResources<Resource<StatusDescription>> allProcessingStatus(Pageable pageable) {

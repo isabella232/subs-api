@@ -21,13 +21,13 @@ public class ProcessingStatusController {
     }
 
     @RequestMapping("/processingStatusSummaryCounts")
-    public Map<String,Integer> summariseProcessingStatusForSubmission(@PathVariable String submissionId){
+    public Map<String, Integer> summariseProcessingStatusForSubmission(@PathVariable String submissionId) {
 
         return processingStatusRepository.summariseSubmissionStatus(submissionId);
     }
 
     @RequestMapping("/processingStatusSummaryTypeCounts")
-    public Map<String,Map<String,Integer>> summariseTypeProcessingStatusForSubmission(@PathVariable String submissionId){
+    public Map<String, Map<String, Integer>> summariseTypeProcessingStatusForSubmission(@PathVariable String submissionId) {
 
         return processingStatusRepository.summariseSubmissionStatusAndType(submissionId);
 
