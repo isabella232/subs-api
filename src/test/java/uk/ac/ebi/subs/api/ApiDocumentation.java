@@ -366,6 +366,9 @@ public class ApiDocumentation {
         vr.setValidationStatus(ValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
+        SubmissionStatus status = submissionStatusRepository.findAll().get(0);
+        Assert.notNull(status);
+
         this.mockMvc.perform(get("/api/submissions/{submissionId}/availableSubmissionStatuses", sub.getId()))
                 .andExpect(status().isOk())
                 .andDo(document(
@@ -373,7 +376,8 @@ public class ApiDocumentation {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
-                                fieldWithPath("_links").description("Links")
+                                fieldWithPath("_links").description("Links"),
+                                fieldWithPath("_embedded").description("The list of resources")
                         ),
                         links(
                                 halLinks(),
@@ -381,9 +385,6 @@ public class ApiDocumentation {
                                 linkWithRel("submission").description("This submission")
                         )
                 ));
-
-        SubmissionStatus status = submissionStatusRepository.findAll().get(0);
-        Assert.notNull(status);
 
         this.mockMvc.perform(
                 patch("/api/submissionStatuses/{id}", status.getId()).content("{\"status\": \"Submitted\"}")
@@ -398,7 +399,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("status").description("Current status value"),
-                                        fieldWithPath("_embedded").description("The list of resources"),
+
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
