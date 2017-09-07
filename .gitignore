@@ -13,7 +13,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 *.zip
@@ -27,4 +26,7 @@ hs_err_pid*
 build
 out
 *.iml
+application.pid
+
+.gradle/*/taskArtifacts
 

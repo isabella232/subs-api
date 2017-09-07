@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
-import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 import java.util.Map;
 
@@ -22,15 +21,13 @@ public class ProcessingStatusController {
     }
 
     @RequestMapping("/processingStatusSummaryCounts")
-    @PreAuthorizeSubmissionIdTeamName
     public Map<String,Integer> summariseProcessingStatusForSubmission(@PathVariable String submissionId){
 
         return processingStatusRepository.summariseSubmissionStatus(submissionId);
     }
 
     @RequestMapping("/processingStatusSummaryTypeCounts")
-    @PreAuthorizeSubmissionIdTeamName
-    public Map<String,Map<String,Integer>> summariseTypeProcessingStatusForSubmission(@PathVariable String submissionId){
+    public Map<String, Map<String, Integer>> summariseTypeProcessingStatusForSubmission(@PathVariable String submissionId) {
 
         return processingStatusRepository.summariseSubmissionStatusAndType(submissionId);
 

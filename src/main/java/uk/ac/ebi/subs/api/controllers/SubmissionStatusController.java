@@ -67,14 +67,14 @@ public class SubmissionStatusController {
         Resources<Resource<StatusDescription>> resources = new Resources<>(statusResources);
 
         resources.add(
-            linkTo(
-                methodOn(this.getClass())
-                    .availableSubmissionStatuses(submissionId)
-            ).withSelfRel()
+                linkTo(
+                        methodOn(this.getClass())
+                                .availableSubmissionStatuses(submissionId)
+                ).withSelfRel()
         );
 
         resources.add(
-            repositoryEntityLinks.linkToSingleResource(Submission.class,submissionId)
+                repositoryEntityLinks.linkToSingleResource(Submission.class, submissionId)
         );
 
 
