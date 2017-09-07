@@ -349,6 +349,22 @@ public class ApiDocumentation {
         vr.setValidationStatus(ValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
+        this.mockMvc.perform(get("/api/submissions/{submissionId}/availableSubmissionStatuses", sub.getId()))
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "available-status-report",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links")
+                        ),
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("submission").description("This submission")
+                        )
+                ));
+
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
         Assert.notNull(status);
 
@@ -365,7 +381,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("status").description("Current status value"),
-
+                                        fieldWithPath("_embedded").description("The list of resources"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -438,6 +454,22 @@ public class ApiDocumentation {
                                 fieldWithPath("AssayData").description("Counts of statuses for this document type"),
                                 fieldWithPath("Study").description("Counts of statuses for this document type"),
                                 fieldWithPath("Sample").description("Counts of statuses for this document type")
+                        )
+                ));
+
+        this.mockMvc.perform(get("/api/submissions/{submissionId}/availableSubmissionStatuses", sub.getId()))
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "available-status-reports",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links")
+                        ),
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("submission").description("This submission")
                         )
                 ));
     }
