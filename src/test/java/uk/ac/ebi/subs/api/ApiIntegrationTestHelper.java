@@ -182,7 +182,7 @@ public class ApiIntegrationTestHelper {
     public Map<String, String> teamRels(String teamName) throws UnirestException, IOException {
         Map<String,String> rootRels = rootRels();
         String teamRel = rootRels.get("team");
-        String teamUri = teamRel.replace("{teamName}",teamName);
+        String teamUri = teamRel.replace("{teamName:.+}",teamName);
 
         return relsFromUri(teamUri);
     }
