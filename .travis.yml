@@ -27,7 +27,7 @@ cache:
 before_install:
 - openssl aes-256-cbc -K $encrypted_c7b4af537a7c_key -iv $encrypted_c7b4af537a7c_iv
   -in gradle.properties.enc -out gradle.properties -d
-script: "./gradlew externalCiTest" --debug --stacktrace
+script: "./gradlew externalCiTest --debug --stacktrace"
 after_success:
 - test $TRAVIS_BRANCH = "master" && ./gradlew uploadArchives
 group: stable
