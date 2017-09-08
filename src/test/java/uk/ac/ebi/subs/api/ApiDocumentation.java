@@ -369,6 +369,23 @@ public class ApiDocumentation {
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
         Assert.notNull(status);
 
+        this.mockMvc.perform(get("/api/submissions/{submissionId}/availableSubmissionStatuses", sub.getId()))
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "available-status-report",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links"),
+                                fieldWithPath("_embedded").description("The list of resources")
+                        ),
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("submission").description("This submission")
+                        )
+                ));
+
         this.mockMvc.perform(
                 patch("/api/submissionStatuses/{id}", status.getId()).content("{\"status\": \"Submitted\"}")
                         .contentType(RestMediaTypes.HAL_JSON)
@@ -455,6 +472,22 @@ public class ApiDocumentation {
                                 fieldWithPath("AssayData").description("Counts of statuses for this document type"),
                                 fieldWithPath("Study").description("Counts of statuses for this document type"),
                                 fieldWithPath("Sample").description("Counts of statuses for this document type")
+                        )
+                ));
+
+        this.mockMvc.perform(get("/api/submissions/{submissionId}/availableSubmissionStatuses", sub.getId()))
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "available-status-reports",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links")
+                        ),
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("submission").description("This submission")
                         )
                 ));
     }
@@ -1271,7 +1304,7 @@ public class ApiDocumentation {
     private Submission storeSubmission() {
         Submission sub = Helpers.generateTestSubmission();
 
-        this.submissionStatusRepository.save(sub.getSubmissionStatus());
+        this.submissionStatusRepository.insert(sub.getSubmissionStatus());
         this.submissionRepository.save(sub);
         return sub;
     }

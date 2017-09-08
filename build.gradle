@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compile("uk.ac.ebi.subs:subs-repository:0.1.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:0.1.2-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-processing-model:0.1.1-SNAPSHOT")
 
     compile("uk.ac.ebi.subs:subs-data-model:0.1.0-SNAPSHOT")
@@ -225,4 +225,9 @@ task deployJar(type: SshTask, dependsOn: 'assemble') {
         knownHosts = allowAnyHosts
     }
 }
+
+task printClasspath << {
+    configurations.testCompile.each { println it }
+}
+
 

@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.api.services.ValidationResultService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ public class SubmissionStatusController {
     }
 
     @RequestMapping("/availableSubmissionStatuses")
+    @PreAuthorizeSubmissionIdTeamName
     public Resources<Resource<StatusDescription>> availableSubmissionStatuses(@PathVariable String submissionId) {
         Submission currentSubmission = submissionRepository.findOne(submissionId);
 
