@@ -188,7 +188,13 @@ to the archives. You do this by changing the submission status. To get to the su
 `submissionStatus` link from the submission, then the `self` link.
 
 Follow the `availableStatuses` link from submission or submissionStatus to see the statuses that are currently available.
-Available statuses are affected by whever or not validation has finished and the current status of the submission.
+Available statuses are affected by whether or not validation has finished and the current status of the submission.
+
+include::{snippets}/available-status-report/curl-request.adoc[]
+
+This will return a response to show that the status can now be updated to 'Submitted':
+
+include::{snippets}/available-status-report/http-response.adoc[]
 
 Once validation is complete, you can change the submission status to 'Submitted', using either a `PUT` or `PATCH` request:
 
