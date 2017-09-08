@@ -196,7 +196,7 @@ This will return a response to show that the status can now be updated to 'Submi
 
 include::{snippets}/available-status-report/http-response.adoc[]
 
-Once validation is complete, you can change the submission status to 'Submitted', using either a `PUT` or `PATCH` request:
+You can change the submission status to 'Submitted', using either a `PUT` or `PATCH` request:
 
 include::{snippets}/patch-submission-status/curl-request.adoc[]
 
