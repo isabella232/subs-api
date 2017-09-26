@@ -21,14 +21,6 @@ public class RestRepositoryConfig {
     public RepositoryRestConfigurer repositoryRestConfigurer() {
 
         return new RepositoryRestConfigurerAdapter() {
-
-            @Override
-            public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-                config.setRepositoryDetectionStrategy(
-                        RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED
-                );
-            }
-
             @Override
             public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
                 objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
