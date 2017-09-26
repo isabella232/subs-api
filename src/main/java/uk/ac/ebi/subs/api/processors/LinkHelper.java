@@ -67,8 +67,7 @@ public class LinkHelper {
     private void addSubmittablesLinksWithNamedSearchRel(Collection<Link> links, String relName, Map<String,String> expansionParams){
 
         for (Class type : submittablesClassList){
-            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,relName
-            );
+            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,relName);
             Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
             Link submittablesInSubmission = searchLink.expand(expansionParams).withRel(  collectionLink.getRel() );
