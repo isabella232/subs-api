@@ -93,13 +93,11 @@ public class ApiIntegrationTestHelper {
         Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
         Map<String,String> submissionContentsRels = relsFromUri(submissionRels.get("contents"));
 
-        assertThat(submissionContentsRels.get("samples"), notNullValue());
+        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
         List<Sample> testSamples = Helpers.generateTestClientSamples(2);
         //add samples to the submission
         for (Sample sample : testSamples) {
-
-            sample.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                     .headers(postHeaders)
@@ -137,8 +135,6 @@ public class ApiIntegrationTestHelper {
         List<Study> testStudies = Helpers.generateTestClientStudies(2);
         //add samples to the submission
         for (Study study : testStudies) {
-
-            study.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> studyResponse = Unirest.post(submissionContentsRels.get("studies:create"))
                     .headers(postHeaders)

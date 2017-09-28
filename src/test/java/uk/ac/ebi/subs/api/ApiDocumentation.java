@@ -188,7 +188,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 post("/api/submissions").content("Tyger Tyger, burning bright, In the forests of the night")
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isBadRequest())
@@ -216,7 +216,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 post("/api/submissions").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isBadRequest())
@@ -253,7 +253,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 post("/api/submissions").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isBadRequest())
@@ -283,7 +283,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 post("/api/submissions").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
@@ -388,7 +388,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 patch("/api/submissionStatuses/{id}", status.getId()).content("{\"status\": \"Submitted\"}")
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())
@@ -569,13 +569,11 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
-        setSubmissionInSubmittable(sub, study);
-
         String jsonRepresentation = objectMapper.writeValueAsString(study);
 
         this.mockMvc.perform(
-                post("/api/studies").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                post("/api/submissions/"+sub.getId()+"/contents/studies").content(jsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
@@ -628,13 +626,11 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
-        setSubmissionInSubmittable(sub, assay);
-
         String jsonRepresentation = objectMapper.writeValueAsString(assay);
 
         this.mockMvc.perform(
-                post("/api/assays").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                post("/api/submissions/"+sub.getId()+"/contents/assays").content(jsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
@@ -684,13 +680,11 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
-        setSubmissionInSubmittable(sub, assayData);
-
         String jsonRepresentation = objectMapper.writeValueAsString(assayData);
 
         this.mockMvc.perform(
-                post("/api/assayData").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                post("/api/submissions/"+sub.getId()+"/contents/assayData").content(jsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
@@ -737,25 +731,17 @@ public class ApiDocumentation {
                 );
     }
 
-    private void setSubmissionInSubmittable(Submission sub, PartOfSubmission submittable) {
-        submittable.setSubmission(SCHEME + "://" + HOST + "/api/submissions/" + sub.getId());
-    }
-
-
     @Test
     public void createSample() throws Exception {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
 
-
-        setSubmissionInSubmittable(sub, sample);
-
         String jsonRepresentation = objectMapper.writeValueAsString(sample);
 
 
         this.mockMvc.perform(
-                post("/api/samples").content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                post("/api/submissions/"+sub.getId()+"/contents/samples/").content(jsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
@@ -810,7 +796,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 put("/api/samples/{id}", sampleId).content(jsonRepresentation)
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())
@@ -854,7 +840,7 @@ public class ApiDocumentation {
 
         this.mockMvc.perform(
                 patch("/api/samples/{id}", sampleId).content("{\"title\":\"New title\"}")
-                        .contentType(RestMediaTypes.HAL_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())

@@ -8,13 +8,15 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 @Component
 public class LinkHelper {
 
@@ -43,10 +45,38 @@ public class LinkHelper {
         }
     }
 
-    public void addSubmittablesCreateLinks(Collection<Link> links){
+    public void addSubmittablesCreateLinks(Submission submission, Collection<Link> links){
+        Assert.notNull(submission.getId());
+
         for (Class type : submittablesClassList){
-            this.addCreateLink(links,type);
+            this.addSubmittableCreateLink(links,type,submission);
         }
+    }
+
+    public void addSubmittableCreateLink(Collection<Link> links, Class type, Submission submission) {
+
+        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
+        String relBase = collectionLink.getRel();
+
+        String createRel = relBase + CREATE_REL_SUFFIX;
+
+        Map<String,String> expansionParams= new HashMap<>();
+        expansionParams.put("repository",relBase);
+
+
+        Link submittablesCreateLink = linkTo(
+                methodOn(SubmissionContentsController.class)
+                        .createSubmissionContents(
+                                submission.getId(),
+                                null,
+                                null,
+                                null,
+                                null
+                        )
+        ).withRel(createRel)
+                .expand(expansionParams);
+
+        links.add(submittablesCreateLink);
     }
 
     public void addSubmittablesInSubmissionLinks(Collection<Link> links, String submissionId){
@@ -54,7 +84,6 @@ public class LinkHelper {
         params.put("submissionId",submissionId);
 
         this.addSubmittablesLinksWithNamedSearchRel(links,"by-submission",params);
-
     }
 
     public void addSubmittablesInTeamLinks(Collection<Link> links, String teamName){
@@ -92,6 +121,7 @@ public class LinkHelper {
 
 
     public void addCreateLink(Collection<Link> links, Class type) {
+
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
         String relBase = collectionLink.getRel();

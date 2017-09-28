@@ -79,9 +79,6 @@ If successful, this will return a JSON object with links to parts of the submiss
 
 include::{snippets}/create-submission/http-response.adoc[]
 
-The `location` header in the response has the URL for the created submission. You will need this when adding things to
-the submission.
-
 == Adding samples
 
 We'll start by adding samples. It's a good template for adding anything to a submission - while the details in the
@@ -109,8 +106,6 @@ In addition, if you use a taxon ID, it must be one marked as 'submittable' in th
 Using the link from the submission labelled `samples:create` and `POST` a sample object:
 
 include::{snippets}/create-sample/curl-request.adoc[]
-
-Note that the submission field above contains the URL to the submission, this allows the records to be linked together.
 
 This will return a response to show that the sample record has been created:
 

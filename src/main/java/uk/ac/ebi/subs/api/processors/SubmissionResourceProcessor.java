@@ -7,7 +7,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
-import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
+import uk.ac.ebi.subs.api.controllers.SubmissionContentsLinksController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -107,7 +107,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         submissionResource.add(
                 linkTo(
-                        methodOn(SubmissionContentsController.class)
+                        methodOn(SubmissionContentsLinksController.class)
                                 .submissionContents(submissionResource.getContent().getId())
                 ).withRel("contents")
         );

@@ -104,33 +104,6 @@ public abstract class ApiIntegrationTest {
         String submissionLocation = testHelper.submissionWithSamples(rootRels);
     }
 
-    @Test
-    /**
-     * POSTing a sample without a submission should throw an error
-     */
-    public void submittablesMustHaveSubmissionEmbedded()throws IOException, UnirestException{
-        Map<String, String> rootRels = testHelper.rootRels();
-        Submission submission = Helpers.generateSubmission();
-
-        Map<String, String> teamRels = testHelper.teamRels(submission.getTeam().getName());
-
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submission);
-        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
-        Map<String,String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
-
-        List<Sample> testSamples = Helpers.generateTestClientSamples(1);
-        Sample sample = testSamples.get(0);
-
-        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
-
-        HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
-                .headers(testHelper.getPostHeaders())
-                .body(sample)
-                .asJson();
-
-        assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
-    }
-
     /**
      * POSTing two samples with the same alias in one submission should throw an error
      */
