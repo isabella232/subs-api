@@ -1,70 +1,58 @@
 package uk.ac.ebi.subs.api.controllers;
 
-import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.data.rest.webmvc.*;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.subs.api.processors.LinkHelper;
-import uk.ac.ebi.subs.api.services.OperationControlService;
+import org.springframework.web.bind.annotation.RequestMethod;
+import uk.ac.ebi.subs.api.services.PersistentEntityCreationHelper;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
-@RestController
-@BasePathAwareController
+@RepositoryRestController
 public class SubmissionContentsController {
 
     private SubmissionRepository submissionRepository;
-    private LinkHelper linkHelper;
-    private OperationControlService operationControlService;
+    private PersistentEntityCreationHelper persistentEntityCreationHelper;
 
-    public SubmissionContentsController(SubmissionRepository submissionRepository, LinkHelper linkHelper, OperationControlService operationControlService) {
+    public SubmissionContentsController(SubmissionRepository submissionRepository, PersistentEntityCreationHelper persistentEntityCreationHelper) {
         this.submissionRepository = submissionRepository;
-        this.linkHelper = linkHelper;
-        this.operationControlService = operationControlService;
+        this.persistentEntityCreationHelper = persistentEntityCreationHelper;
     }
 
     @PreAuthorizeSubmissionIdTeamName
-    @RequestMapping("/submissions/{submissionId}/contents")
-    public Resource<SubmissionContents> submissionContents(@PathVariable @P("submissionId") String submissionId) {
+    @RequestMapping(value = "/submissions/{submissionId}/contents/{repository}", method = RequestMethod.POST)
+    public ResponseEntity<ResourceSupport> createSubmissionContents(
+            @PathVariable @P("submissionId") String submissionId,
+            PersistentEntityResource payload,
+            PersistentEntityResourceAssembler assembler,
+            RootResourceInformation resourceInformation,
+            @RequestHeader(value = "Accept", required = false) String acceptHeader
+    ) {
         Submission submission = submissionRepository.findOne(submissionId);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
         }
-        return this.process(new Resource<>(new SubmissionContents(submission)));
+
+        if (!StoredSubmittable.class.isAssignableFrom(payload.getContent().getClass())) {
+            throw new IllegalArgumentException();
+        }
+
+        StoredSubmittable submittable = (StoredSubmittable) payload.getContent();
+        submittable.setSubmission(submission);
+
+        return persistentEntityCreationHelper.createPersistentEntity(
+                payload,
+                resourceInformation,
+                assembler,
+                acceptHeader
+        );
     }
 
-    public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
-        linkHelper.addSubmittablesInSubmissionLinks(resource.getLinks(), resource.getContent().getSubmission().getId());
-
-        if (operationControlService.isUpdateable(resource.getContent().getSubmission() )) {
-            linkHelper.addSubmittablesCreateLinks(resource.getLinks());
-        }
-
-        resource.getContent().setSubmission(null);
-
-        return resource;
-    }
-
-
-    public class SubmissionContents {
-        private Submission submission;
-
-        public SubmissionContents(Submission submission) {
-            this.submission = submission;
-        }
-
-        public Submission getSubmission() {
-            return submission;
-        }
-
-        public void setSubmission(Submission submission) {
-            this.submission = submission;
-        }
-    }
 }
