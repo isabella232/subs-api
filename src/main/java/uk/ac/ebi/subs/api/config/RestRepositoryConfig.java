@@ -11,10 +11,17 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import uk.ac.ebi.tsc.aap.client.model.User;
+import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Configuration
 @EnableMongoAuditing(auditorAwareRef = "auditorProvider")
 public class RestRepositoryConfig {
+
+    public static final String DEFAULT_USI_USER = "usi-user";
 
 
     @Bean
@@ -34,7 +41,20 @@ public class RestRepositoryConfig {
         return new AuditorAware<String>() {
             @Override
             public String getCurrentAuditor() {
-                return "nemo"; //TODO once authentication is working, make this return the real user
+                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null) {
+
+                    final Object details = authentication.getDetails();
+                    if (details instanceof User) {
+                        return ((User) details).getUserReference();
+                    } else {
+                        return authentication.getName();
+                    }
+
+                } else {
+                    return DEFAULT_USI_USER;
+                }
+
             }
         };
     }
