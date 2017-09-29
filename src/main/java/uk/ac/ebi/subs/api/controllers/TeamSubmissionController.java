@@ -25,6 +25,13 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import java.net.URI;
 
 @RestController
+/**
+ * This controller accepts new Submissions for a team.
+ * Unlike the SubmissionContentsController, it can't be implemented using Spring Data Rest
+ * repository / persistent entity handling. SDR requires that the top level entity type is
+ * exported through SDR, which isn't possible for teams.
+ * We have therefore reimplemented some functionality from SDR.
+ */
 public class TeamSubmissionController {
 
     private SubmissionRepository submissionRepository;
@@ -48,26 +55,26 @@ public class TeamSubmissionController {
             @RequestBody Submission submission,
             @RequestHeader(value = "Accept", required = false) String acceptHeader
     ) {
+
         submission.setTeam(Team.build(teamName));
 
-        publisher.publishEvent(new BeforeCreateEvent(submission));
-        Submission savedSubmission = submissionRepository.insert(submission);
-        publisher.publishEvent(new AfterCreateEvent(savedSubmission));
+        Submission savedSubmission = createSubmission(submission);
 
-
-        Resource<Submission> resource = new Resource<>(savedSubmission);
-        resource.add(
-                repositoryEntityLinks.linkToSingleResource(submission)
-        );
-        resource.add(
-                repositoryEntityLinks.linkToSingleResource(submission).withSelfRel()
-        );
-
-        resource = submissionResourceProcessor.process(resource);
-
+        Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
 
         HttpHeaders httpHeaders = buildHeaders(resource,savedSubmission);
 
+        return buildResponseEntity(acceptHeader, resource, httpHeaders);
+    }
+
+    private Submission createSubmission(@RequestBody Submission submission) {
+        publisher.publishEvent(new BeforeCreateEvent(submission));
+        Submission savedSubmission = submissionRepository.insert(submission);
+        publisher.publishEvent(new AfterCreateEvent(savedSubmission));
+        return savedSubmission;
+    }
+
+    private ResponseEntity<ResourceSupport> buildResponseEntity(@RequestHeader(value = "Accept", required = false) String acceptHeader, Resource<Submission> resource, HttpHeaders httpHeaders) {
         boolean returnBody = config.returnBodyOnCreate(acceptHeader);
 
         if (returnBody) {
@@ -82,6 +89,22 @@ public class TeamSubmissionController {
                     httpHeaders
             );
         }
+    }
+
+    private Resource<Submission> buildSubmissionResource(@RequestBody Submission submission, Submission savedSubmission) {
+        Resource<Submission> resource = new Resource<>(savedSubmission);
+        resource.add(
+                repositoryEntityLinks.linkToSingleResource(submission)
+        );
+        resource.add(
+                repositoryEntityLinks.linkToSingleResource(submission).withSelfRel()
+        );
+        resource.add(
+                repositoryEntityLinks.linkToSingleResource(submission.getSubmissionStatus())
+        );
+
+        resource = submissionResourceProcessor.process(resource);
+        return resource;
     }
 
     private HttpHeaders buildHeaders(Resource<Submission> resource, Submission submission) {

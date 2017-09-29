@@ -16,6 +16,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
@@ -72,7 +73,7 @@ public class ApiIntegrationTestHelper {
     }
 
     public HttpResponse<JsonNode> postSubmission(Map<String, String> rootRels, Submission submission) throws UnirestException, IOException {
-        Map<String, String> teamRels = teamRels(submission.getTeam().getName());
+        Map<String, String> teamRels = teamRels(Helpers.TEAM_NAME);
         //create a new submission
         HttpResponse<JsonNode> submissionResponse = Unirest.post(teamRels.get("submissions:create"))
                 .headers(postHeaders)
@@ -86,7 +87,7 @@ public class ApiIntegrationTestHelper {
 
     public String submissionWithSamples(Map<String, String> rootRels) throws UnirestException, IOException {
         Submission submission = Helpers.generateSubmission();
-        Map<String,String> teamRels = teamRels(submission.getTeam().getName());
+        Map<String,String> teamRels = teamRels(Helpers.TEAM_NAME);
         HttpResponse<JsonNode> submissionResponse = postSubmission(teamRels, submission);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
@@ -176,6 +177,7 @@ public class ApiIntegrationTestHelper {
     }
 
     public Map<String, String> teamRels(String teamName) throws UnirestException, IOException {
+        Assert.notNull(teamName);
         Map<String,String> rootRels = rootRels();
         String teamRel = rootRels.get("team");
         String teamUri = teamRel.replace("{teamName:.+}",teamName);

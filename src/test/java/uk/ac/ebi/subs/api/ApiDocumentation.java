@@ -84,7 +84,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ApiDocumentation {
 
     private static final String HOST = "submission-dev.ebi.ac.uk";
-    private static final String SCHEME = "http";
+    private static final String SCHEME = "https";
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -237,10 +237,9 @@ public class ApiDocumentation {
 
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
-        submission.setTeam(new Team());
-        submission.getTeam().setName(Helpers.TEAM_NAME);
         submission.setSubmitter(new Submitter());
         submission.getSubmitter().setEmail("alice@test.org");
+        submission.setTeam(null);
         return submission;
     }
 
@@ -282,7 +281,7 @@ public class ApiDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions").content(jsonRepresentation)
+                post("/api/teams/"+Helpers.TEAM_NAME+"/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
