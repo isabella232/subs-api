@@ -6,7 +6,9 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.api.controllers.TeamItemsController;
+import uk.ac.ebi.subs.api.controllers.TeamSubmissionController;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
 
@@ -48,11 +50,30 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     }
 
     private void addSubmissionsRel(Resource<Team> resource) {
+        addGetSubmissionsRel(resource);
+
+
+        Map<String,String> expansionParams= new HashMap<>();
+        expansionParams.put("repository","submissions");
+
+        Link submissionCreateLink = linkTo(
+                methodOn(TeamSubmissionController.class)
+                        .createTeamSubmission(
+                                resource.getContent().getName(),
+                                null,
+                                null
+                        )
+        ).withRel("submissions"+LinkHelper.CREATE_REL_SUFFIX)
+                .expand(expansionParams);
+
+        resource.add(submissionCreateLink);
+    }
+
+    private void addGetSubmissionsRel(Resource<Team> resource) {
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("teamName", resource.getContent().getName());
 
         addRelWithCollectionRelName(resource, expansionParams, Submission.class);
-        linkHelper.addCreateLink(resource.getLinks(), Submission.class);
     }
 
 

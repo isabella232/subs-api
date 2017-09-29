@@ -22,7 +22,6 @@ public class Helpers {
     public static Submission generateSubmission() {
         Submission s = new Submission();
 
-        s.setTeam(generateTestTeam());
         s.setSubmitter(generateTestSubmitter());
 
         return s;

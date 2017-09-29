@@ -266,7 +266,7 @@ public abstract class ApiIntegrationTest {
             }
         }
 
-        String teamName = submission.getTeam().getName();
+        String teamName = Helpers.TEAM_NAME;
         String teamUrl = this.rootUri + "/teams/" + teamName;
         HttpResponse<JsonNode> teamQueryResponse = Unirest.get(teamUrl).headers(testHelper.getGetHeaders()).asJson();
 
@@ -315,7 +315,7 @@ public abstract class ApiIntegrationTest {
     @Test
     public void testPut() throws IOException, UnirestException {
         Submission submission = Helpers.generateSubmission();
-        Map<String, String> teamRels = testHelper.teamRels(submission.getTeam().getName());
+        Map<String, String> teamRels = testHelper.teamRels(Helpers.TEAM_NAME);
 
         HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submission);
 

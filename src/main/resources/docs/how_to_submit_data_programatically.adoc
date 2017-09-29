@@ -40,7 +40,7 @@ architecture or URL structure.
 
 include::{snippets}/root-endpoint/curl-request.adoc[]
 
-This will return a long list of links, in http://stateless.co/hal_specification.html[HAL JSON] format:
+This will return a list of links, in http://stateless.co/hal_specification.html[HAL JSON] format:
 
 include::{snippets}/root-endpoint/http-response.adoc[]
 
@@ -48,7 +48,7 @@ You don't need to worry about most of those links for now, we'll learn about the
 
 == Create a submission
 
-The submission system allows you to build up your submission over time and send it to the archives when you are ready.
+The submission system allows you to build up your submission and send it to the archives when you are ready.
 The first step is to create a submission.
 
 === Pick a team
@@ -56,12 +56,9 @@ The first step is to create a submission.
 Every submission is owned by a _team_. A team is a group of people, working together on the same data. How you use this
 is up to you. You could create a team for just yourself, everyone in a lab, or one for all collaborators on a project.
 
-At this stage of development the API doesn't restrict what team you use. A future update will add support for team
-membership and administration. Until then, you can use any team name you like.
+Teams are created and administed through the AAP system. TODO - link to AAP interface.
 
-A team document is structured like this:
-
-`{"name" : "my-team"}`
+From the root endpoint, the link labelled `teams` will show you the teams you are a member of.
 
 At present, you also need to provide a submitter object when creating a submission. In future versions this will be
 taken from your log in information, but for now you need to provide a submitter document:
@@ -70,7 +67,7 @@ taken from your log in information, but for now you need to provide a submitter 
 
 === POSTing a submission
 
-Using the link labelled `submissions:create`, `POST` a document containing a team and a submitter to create
+Using the link labelled `submissions:create`, `POST` a document containing a submitter to create
 a submission:
 
 include::{snippets}/create-submission/curl-request.adoc[]

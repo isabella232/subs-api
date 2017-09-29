@@ -21,7 +21,7 @@ public class TeamItemsController {
     }
 
     @PreAuthorizeParamTeamName
-    @RequestMapping("/teams/{teamName}/items")
+    @RequestMapping("/teams/{teamName:.+}/items")
     public Resource<TeamItems> teamItems(@PathVariable @P("teamName") String teamName) {
 
         Team team = Team.build(teamName);
