@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import uk.ac.ebi.subs.api.services.PersistentEntityCreationHelper;
+import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 @RepositoryRestController
@@ -54,5 +56,7 @@ public class SubmissionContentsController {
                 acceptHeader
         );
     }
+
+
 
 }
