@@ -8,7 +8,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ public abstract class ApiIntegrationTest {
     public void buildUp() throws URISyntaxException, UnirestException {
         rootUri = "http://localhost:" + port + "/api";
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
-                Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),createGetHeaders(),createPostHeaders());
+                Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
     }
 
     @After
@@ -78,8 +77,8 @@ public abstract class ApiIntegrationTest {
     public void checkRootRels() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("teams","team"));
-        assertThat(rootRels.keySet(), not(hasItems("submissions:create","samples:create")));
+        assertThat(rootRels.keySet(), hasItems("teams", "team"));
+        assertThat(rootRels.keySet(), not(hasItems("submissions:create", "samples:create")));
     }
 
     @Test
@@ -108,7 +107,7 @@ public abstract class ApiIntegrationTest {
      * POSTing two samples with the same alias in one submission should throw an error
      */
     @Test
-    public void reuseAliasInSubmissionGivesError() throws IOException, UnirestException{
+    public void reuseAliasInSubmissionGivesError() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
 
         Submission submission = Helpers.generateSubmission();
@@ -142,20 +141,20 @@ public abstract class ApiIntegrationTest {
 
         JSONArray errors = sampleSecondResponse.getBody().getObject().getJSONArray("errors");
 
-        assertThat(errors,notNullValue());
-        assertThat(errors.length(),is(equalTo(1)));
+        assertThat(errors, notNullValue());
+        assertThat(errors.length(), is(equalTo(1)));
 
-        Map<String,String> expectedError = new HashMap<>();
-        expectedError.put("property","alias");
-        expectedError.put("message","already_exists");
-        expectedError.put("entity","Sample");
-        expectedError.put("invalidValue",sample.getAlias());
+        Map<String, String> expectedError = new HashMap<>();
+        expectedError.put("property", "alias");
+        expectedError.put("message", "already_exists");
+        expectedError.put("entity", "Sample");
+        expectedError.put("invalidValue", sample.getAlias());
 
-        Map<String,Object> errorAsMap = new HashMap<>();
+        Map<String, Object> errorAsMap = new HashMap<>();
         JSONObject error = errors.getJSONObject(0);
-        error.keySet().stream().forEach(key -> errorAsMap.put((String)key,error.get((String)key)));
+        error.keySet().stream().forEach(key -> errorAsMap.put((String) key, error.get((String) key)));
 
-        assertThat(errorAsMap,is(equalTo(expectedError)));
+        assertThat(errorAsMap, is(equalTo(expectedError)));
     }
 
     /**
@@ -163,12 +162,12 @@ public abstract class ApiIntegrationTest {
      * alias should throw an error
      */
     @Test
-    public void sneakyReuseAliasInSubmissionGivesError() throws IOException, UnirestException{
+    public void sneakyReuseAliasInSubmissionGivesError() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
 
         Submission submission = Helpers.generateSubmission();
         List<Sample> testSamples = Helpers.generateTestClientSamples(2);
-        Map<Sample,String> testSampleLocations = new HashMap<>();
+        Map<Sample, String> testSampleLocations = new HashMap<>();
 
         HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
 
@@ -189,15 +188,15 @@ public abstract class ApiIntegrationTest {
 
             assertThat(samplePostResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
 
-            testSampleLocations.put(sample, samplePostResponse.getHeaders().getFirst("Location") );
+            testSampleLocations.put(sample, samplePostResponse.getHeaders().getFirst("Location"));
         }
 
         Sample firstSample = testSamples.remove(0);
 
-        for (Sample sample : testSamples){
+        for (Sample sample : testSamples) {
             String sampleLocation = testSampleLocations.get(sample);
 
-            sample.setAlias( firstSample.getAlias() );
+            sample.setAlias(firstSample.getAlias());
 
 
             HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
@@ -209,20 +208,20 @@ public abstract class ApiIntegrationTest {
 
             JSONArray errors = samplePutResponse.getBody().getObject().getJSONArray("errors");
 
-            assertThat(errors,notNullValue());
-            assertThat(errors.length(),is(equalTo(1)));
+            assertThat(errors, notNullValue());
+            assertThat(errors.length(), is(equalTo(1)));
 
-            Map<String,String> expectedError = new HashMap<>();
-            expectedError.put("property","alias");
-            expectedError.put("message","already_exists");
-            expectedError.put("entity","Sample");
-            expectedError.put("invalidValue",firstSample.getAlias());
+            Map<String, String> expectedError = new HashMap<>();
+            expectedError.put("property", "alias");
+            expectedError.put("message", "already_exists");
+            expectedError.put("entity", "Sample");
+            expectedError.put("invalidValue", firstSample.getAlias());
 
-            Map<String,Object> errorAsMap = new HashMap<>();
+            Map<String, Object> errorAsMap = new HashMap<>();
             JSONObject error = errors.getJSONObject(0);
-            error.keySet().stream().forEach(key -> errorAsMap.put((String)key,error.get((String)key)));
+            error.keySet().stream().forEach(key -> errorAsMap.put((String) key, error.get((String) key)));
 
-            assertThat(errorAsMap,is(equalTo(expectedError)));
+            assertThat(errorAsMap, is(equalTo(expectedError)));
 
         }
     }
@@ -277,19 +276,19 @@ public abstract class ApiIntegrationTest {
         Map<String, String> teamContentsRels = testHelper.relsFromUri(teamRels.get("items"));
         String teamSamplesUrl = teamContentsRels.get("samples");
 
-        assertThat(teamSamplesUrl,notNullValue());
+        assertThat(teamSamplesUrl, notNullValue());
 
         HttpResponse<JsonNode> teamSamplesQueryResponse = Unirest.get(teamSamplesUrl).headers(testHelper.getGetHeaders()).asJson();
         assertThat(teamSamplesQueryResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(teamSamples.length(),is(equalTo(testSamples.size())));
+        assertThat(teamSamples.length(), is(equalTo(testSamples.size())));
 
-        for (int i = 0; i < teamSamples.length(); i++){
+        for (int i = 0; i < teamSamples.length(); i++) {
             JSONObject teamSample = teamSamples.getJSONObject(i);
 
-            Map<String,String> sampleRels = testHelper.relsFromPayload(teamSample);
+            Map<String, String> sampleRels = testHelper.relsFromPayload(teamSample);
             String selfUrl = sampleRels.get("self");
 
             HttpResponse<JsonNode> sampleResponse = Unirest.get(selfUrl).headers(testHelper.getGetHeaders()).asJson();
@@ -299,16 +298,16 @@ public abstract class ApiIntegrationTest {
 
             String historyUrl = sampleRels.get("history");
 
-            assertThat(historyUrl,notNullValue());
+            assertThat(historyUrl, notNullValue());
 
             HttpResponse<JsonNode> historyResponse = Unirest.get(historyUrl).headers(testHelper.getGetHeaders()).asJson();
-            assertThat(historyResponse.getStatus(),is(equalTo(HttpStatus.OK.value())));
+            assertThat(historyResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
             JSONObject historyPayload = historyResponse.getBody().getObject();
-            assertThat(historyPayload.has("_embedded"),is(true));
+            assertThat(historyPayload.has("_embedded"), is(true));
             JSONObject embedded = historyPayload.getJSONObject("_embedded");
-            assertThat(embedded.has("samples"),is(true));
+            assertThat(embedded.has("samples"), is(true));
             JSONArray sampleHistory = embedded.getJSONArray("samples");
-            assertThat(sampleHistory.length(),is(equalTo(numberOfSubmissions)));
+            assertThat(sampleHistory.length(), is(equalTo(numberOfSubmissions)));
         }
     }
 
@@ -322,7 +321,7 @@ public abstract class ApiIntegrationTest {
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
 
-        Map<String,String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
+        Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
 
 
         assertThat(submissionContentsRels.get("samples"), notNullValue());
@@ -354,11 +353,11 @@ public abstract class ApiIntegrationTest {
         assertThat(samplePutResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
     }
 
-    public Map<String,String> createGetHeaders () throws UnirestException {
+    public Map<String, String> createGetHeaders() throws UnirestException {
         return ApiIntegrationTestHelper.createStandardGetHeader();
     }
 
-    public Map<String,String> createPostHeaders () throws UnirestException {
+    public Map<String, String> createPostHeaders() throws UnirestException {
         return ApiIntegrationTestHelper.createStandardPostHeader();
     }
 }

@@ -68,6 +68,7 @@ public class SubsAAPWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/").permitAll()
                 .antMatchers("/browser/**/*").permitAll()
                 .antMatchers("/docs/**/*").permitAll()
+                .antMatchers("/health").permitAll()
                 .anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(statelessAuthenticationFilterBean(),
