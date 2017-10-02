@@ -9,6 +9,9 @@ import uk.ac.ebi.tsc.aap.client.model.User;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+/**
+ * Injects a mocked AAP user into the security context.
+ */
 public class WithMockAAPUserSecurityContextFactory implements WithSecurityContextFactory<WithMockAAPUser> {
     @Override
     public SecurityContext createSecurityContext(WithMockAAPUser annotation) {
