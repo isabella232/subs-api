@@ -58,7 +58,13 @@ is up to you. You could create a team for just yourself, everyone in a lab, or o
 
 Teams are created and administed through the AAP system. TODO - link to AAP interface.
 
-From the root endpoint, the link labelled `teams` will show you the teams you are a member of.
+From the root endpoint, follow the link labelled `teams`:
+
+include::{snippets}/get-teams/curl-request.adoc[]
+
+This will show you the teams you a member of:
+
+include::{snippets}/get-teams/http-response.adoc[]
 
 At present, you also need to provide a submitter object when creating a submission. In future versions this will be
 taken from your log in information, but for now you need to provide a submitter document:
