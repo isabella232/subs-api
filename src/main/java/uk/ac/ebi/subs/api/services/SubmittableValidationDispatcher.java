@@ -1,19 +1,76 @@
 package uk.ac.ebi.subs.api.services;
 
-import uk.ac.ebi.subs.repository.model.Assay;
-import uk.ac.ebi.subs.repository.model.Sample;
-import uk.ac.ebi.subs.repository.model.Study;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.data.submittable.BaseSubmittable;
+import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.validator.data.SubmittableValidationEnvelope;
+
 
 /**
  * Created by rolando on 09/06/2017.
  */
-public interface SubmittableValidationDispatcher {
-     void validateCreate(Sample sample);
-     void validateCreate(Study study);
-     void validateCreate(Assay assay);
+@Component
+public class SubmittableValidationDispatcher {
 
-     void validateUpdate(Sample sample);
-     void validateUpdate(Study study);
-     void validateUpdate(Assay assay);
+    @Autowired
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    private static final String SUBMITTABLE_CREATED_BASE = "usi.submittable.created.";
+    private static final String SUBMITTABLE_UPDATED_BASE = "usi.submittable.updated.";
+
+
+    public RabbitMessagingTemplate getRabbitMessagingTemplate() {
+        return rabbitMessagingTemplate;
+    }
+
+    public SubmittableValidationDispatcher() {
+    }
+
+    public void setRabbitMessagingTemplate(RabbitMessagingTemplate rabbitMessagingTemplate) {
+        this.rabbitMessagingTemplate = rabbitMessagingTemplate;
+    }
+
+    public SubmittableValidationDispatcher(RabbitMessagingTemplate rabbitMessagingTemplate) {
+        this.rabbitMessagingTemplate = rabbitMessagingTemplate;
+    }
+
+    public void validateCreate(StoredSubmittable storedSubmittable) {
+        sendEvent(storedSubmittable, SUBMITTABLE_CREATED_BASE);
+    }
+
+    public void validateUpdate(StoredSubmittable storedSubmittable) {
+        sendEvent(storedSubmittable, SUBMITTABLE_UPDATED_BASE);
+    }
+
+    protected void sendEvent(StoredSubmittable storedSubmittable, String routingKeyPrefix) {
+        ensureBaseSubmittable(storedSubmittable);
+
+        SubmittableValidationEnvelope<BaseSubmittable> validationEnvelope = new SubmittableValidationEnvelope(
+                storedSubmittable.getSubmission().getId(),
+                (BaseSubmittable) storedSubmittable
+        );
+
+        String routingKey = routingKeyPrefix + submittableQueueSuffix(storedSubmittable);
+
+
+        rabbitMessagingTemplate.convertAndSend(
+                Exchanges.SUBMISSIONS,
+                routingKey,
+                validationEnvelope);
+    }
+
+
+    protected String submittableQueueSuffix(StoredSubmittable storedSubmittable) {
+        return storedSubmittable.getClass().getSimpleName().toLowerCase();
+    }
+
+    protected void ensureBaseSubmittable(StoredSubmittable storedSubmittable) {
+        if (!BaseSubmittable.class.isAssignableFrom(storedSubmittable.getClass())) {
+            throw new IllegalArgumentException("StoredSubmittable should also be a base submittable");
+        }
+    }
+
 
 }
