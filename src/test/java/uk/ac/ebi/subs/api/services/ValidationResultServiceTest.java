@@ -15,9 +15,12 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationAuthor;
+
 import uk.ac.ebi.subs.validator.data.ValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationStatus;
+
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.*;
@@ -87,9 +90,9 @@ public class ValidationResultServiceTest {
         Submission submission_with_not_passed_validation = createSubmission(SUBMISSION_WITH_NOT_PASSED_VALIDATION_ID, NOT_PASSED_SUBMISSION_STATUS_ID);
 
         List<ValidationResult> results = generateValidationResults(1, SUBMISSION_WITH_NOT_PASSED_VALIDATION_ID);
-        addSingleValidationResult(results.get(0), ValidationAuthor.Taxonomy, ValidationStatus.Pass);
-        addSingleValidationResult(results.get(0), ValidationAuthor.Biosamples, ValidationStatus.Error);
-        results.get(0).setValidationStatus(ValidationStatus.Complete);
+        addSingleValidationResult(results.get(0), ValidationAuthor.Taxonomy, SingleValidationResultStatus.Pass);
+        addSingleValidationResult(results.get(0), ValidationAuthor.Biosamples, SingleValidationResultStatus.Error);
+        results.get(0).setValidationStatus(GlobalValidationStatus.Complete);
 
         when(submissionRepository.findBySubmissionStatusId(NOT_PASSED_SUBMISSION_STATUS_ID))
                 .thenReturn(submission_with_not_passed_validation);
@@ -105,9 +108,9 @@ public class ValidationResultServiceTest {
         Submission submission_with_successful_validation = createSubmission(SUCCESSFUL_SUBMISSION_ID, SUCCESSFUL_SUBMISSION_STATUS_ID);
 
         List<ValidationResult> results = generateValidationResults(1, SUCCESSFUL_SUBMISSION_ID);
-        addSingleValidationResult(results.get(0), ValidationAuthor.Taxonomy, ValidationStatus.Pass);
-        addSingleValidationResult(results.get(0), ValidationAuthor.Biosamples, ValidationStatus.Pass);
-        results.get(0).setValidationStatus(ValidationStatus.Complete);
+        addSingleValidationResult(results.get(0), ValidationAuthor.Taxonomy, SingleValidationResultStatus.Pass);
+        addSingleValidationResult(results.get(0), ValidationAuthor.Biosamples, SingleValidationResultStatus.Pass);
+        results.get(0).setValidationStatus(GlobalValidationStatus.Complete);
 
         when(submissionRepository.findBySubmissionStatusId(SUCCESSFUL_SUBMISSION_STATUS_ID))
                 .thenReturn(submission_with_successful_validation);
@@ -132,7 +135,7 @@ public class ValidationResultServiceTest {
             validationResult.setVersion(1);
             validationResult.setSubmissionId(submissionId);
             validationResult.setEntityUuid(ENTITY_UUIDS[i]);
-            validationResult.setValidationStatus(ValidationStatus.Pending);
+            validationResult.setValidationStatus(GlobalValidationStatus.Pending);
 
             results.add(validationResult);
         }
@@ -141,7 +144,7 @@ public class ValidationResultServiceTest {
     }
 
     private void addSingleValidationResult(ValidationResult validationResult, ValidationAuthor validationAuthor,
-                                           ValidationStatus validationStatus) {
+                                           SingleValidationResultStatus validationStatus) {
         SingleValidationResult singleValidationResult = new SingleValidationResult(validationAuthor, validationResult.getEntityUuid());
         singleValidationResult.setValidationStatus(validationStatus);
 

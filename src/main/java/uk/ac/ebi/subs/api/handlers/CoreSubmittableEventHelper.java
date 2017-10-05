@@ -34,43 +34,15 @@ public class CoreSubmittableEventHelper {
 
     // Validation of created submittables
     @HandleAfterCreate
-    public void validateOnCreate(Sample sample) {
-        submittableValidationDispatcher.validateCreate(sample);
-    }
-
-    @HandleAfterCreate
-    public void validateOnCreate(Study study) {
-        submittableValidationDispatcher.validateCreate(study);
-    }
-
-    @HandleAfterCreate
-    public void validateOnCreate(Assay assay) {
-        submittableValidationDispatcher.validateCreate(assay);
-    }
-
-    // Validation of updated submittables
-
-    @HandleAfterSave
-    public void validateOnSave(Sample sample) {
-        submittableValidationDispatcher.validateUpdate(sample);
+    public void validateOnCreate(StoredSubmittable storedSubmittable) {
+        submittableValidationDispatcher.validateCreate(storedSubmittable);
     }
 
     @HandleAfterSave
-    public void validateOnSave(Study study) {
-        submittableValidationDispatcher.validateUpdate(study);
+    public void validateOnSave(StoredSubmittable storedSubmittable) {
+        submittableValidationDispatcher.validateUpdate(storedSubmittable);
     }
 
-    @HandleAfterSave
-    public void validateOnSave(Assay assay) {
-        submittableValidationDispatcher.validateUpdate(assay);
-    }
-
-
-    private void setTeamFromSubmission(StoredSubmittable submittable) {
-        if (submittable.getSubmission() != null) {
-            submittable.setTeam(submittable.getSubmission().getTeam());
-        }
-    }
 
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {

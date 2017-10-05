@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '0.3.1-SNAPSHOT'
+version '0.3.2-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -40,8 +40,8 @@ dependencies {
     compile("uk.ac.ebi.subs:subs-processing-model:0.1.1-SNAPSHOT")
 
     compile("uk.ac.ebi.subs:subs-data-model:0.1.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-messaging:0.1.1-SNAPSHOT")
-    compile("uk.ac.ebi.subs:validator-common:0.1.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-messaging:0.3.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:validator-common:0.5.0-SNAPSHOT")
 
     compile("org.springframework.boot:spring-boot-starter-data-rest")
     compile 'org.springframework.data:spring-data-rest-hal-browser'

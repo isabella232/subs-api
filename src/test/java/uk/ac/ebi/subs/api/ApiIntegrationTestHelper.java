@@ -106,6 +106,14 @@ public class ApiIntegrationTestHelper {
                     .asJson();
 
             assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+
+            JsonNode sampleResourceBody = sampleResponse.getBody();
+            JSONObject embeddedResource = sampleResourceBody.getObject().getJSONObject("_embedded");
+            assertThat(embeddedResource,notNullValue());
+            assertThat(embeddedResource.getJSONObject("processingStatus"),notNullValue());
+            assertThat(embeddedResource.getJSONObject("submission"),notNullValue());
+            assertThat(embeddedResource.getJSONObject("validationResult"),notNullValue());
+
         }
 
         //retrieve the samples
