@@ -1169,58 +1169,34 @@ public class ApiDocumentation {
                 );
     }
 
-    /*
+    @Test
+    public void teams () throws Exception {
+
+        Submission submission = storeSubmission();
 
         this.mockMvc.perform(
-                get("/api/")
+                get("/api/teams")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("root-endpoint",
+                        document("get-teams",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
-
-                                        halLinks(),
-                                        //team
-                                        linkWithRel("teams").description("Teams"),
-                                        //submissions
-                                        linkWithRel("submissions:search").description("Search resource for submissions"),
-    //submissions
-
-
-    linkWithRel("submissions:search").description("Search resource for submissions"),
-                                        linkWithRel("submissions:create").description("Create a new submission resource"),
-
-    //submittables
-    linkWithRel("analyses:create").description("Create a new analysis resource"),
-                                        linkWithRel("analyses:search").description("Search resource for analyses"),
-                                        linkWithRel("assayData:create").description("Create a new assay data resource"),
-                                        linkWithRel("assayData:search").description("Search resource for assay data"),
-                                        linkWithRel("assays:create").description("Create a new assay resource"),
-                                        linkWithRel("assays:search").description("Search resource for assays"),
-                                        linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
-                                        linkWithRel("egaDacPolicies:search").description("Search resource for policies"),
-                                        linkWithRel("egaDacs:create").description("Create a new DAC resource"),
-                                        linkWithRel("egaDacs:search").description("Search resource for DACs"),
-                                        linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
-                                        linkWithRel("egaDatasets:search").description("Search resource for EGA datasets"),
-                                        linkWithRel("projects:create").description("Create a new project resource"),
-                                        linkWithRel("projects:search").description("Search resource for projects"),
-                                        linkWithRel("protocols:create").description("Create a new protocol resource"),
-                                        linkWithRel("protocols:search").description("Search resource for protocols"),
-                                        linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
-                                        linkWithRel("sampleGroups:search").description("Search resource for sample groups"),
-                                        linkWithRel("samples:create").description("Create a new sample resource"),
-                                        linkWithRel("samples:search").description("Search resource for samples"),
-                                        linkWithRel("studies:create").description("Create a new study resource"),
-                                        linkWithRel("studies:search").description("Search resource for studies"),
-
-    //statuses
-    linkWithRel("processingStatuses:search").description("Search resource for processing statuses"),
-
-
-     */
+                                        linkWithRel("self").description("This resource list")
+                                ),
+                                responseFields(
+                                        fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                        fieldWithPath("_embedded").description("The list of resources"),
+                                        fieldWithPath("_embedded.teams[].name").description("Name of this team"),
+                                        fieldWithPath("page.size").description("The number of resources in this page"),
+                                        fieldWithPath("page.totalElements").description("The total number of resources"),
+                                        fieldWithPath("page.totalPages").description("The total number of pages"),
+                                        fieldWithPath("page.number").description("The page number")
+                                )
+                        )
+                );
+    }
 
     @Test
     public void rootEndpoint() throws Exception {
