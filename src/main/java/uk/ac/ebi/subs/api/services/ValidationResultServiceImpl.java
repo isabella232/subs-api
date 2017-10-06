@@ -5,9 +5,10 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationAuthor;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class ValidationResultServiceImpl implements ValidationResultService {
 
     private boolean isValidationCompleted(List<ValidationResult> validationResults) {
         return validationResults.stream().filter(
-                validationResult -> validationResult.getValidationStatus() != ValidationStatus.Complete)
+                validationResult -> validationResult.getValidationStatus() != GlobalValidationStatus.Complete)
                 .findAny()
                 .orElse(null) == null;
     }
@@ -53,13 +54,13 @@ public class ValidationResultServiceImpl implements ValidationResultService {
         for (ValidationResult validationResult : validationResults) {
             Map<ValidationAuthor, List<SingleValidationResult>> expectedResults = validationResult.getExpectedResults();
             Set<ValidationAuthor> authors = expectedResults.keySet();
-            for ( ValidationAuthor validationAuthor : authors) {
+            for (ValidationAuthor validationAuthor : authors) {
                 List<SingleValidationResult> singleValidationResults = expectedResults.get(validationAuthor);
                 if (singleValidationResults.size() == 0) {
                     return false;
                 }
                 boolean isPassed = singleValidationResults.stream()
-                        .filter(singleValidationResult -> singleValidationResult.getValidationStatus().equals(ValidationStatus.Error))
+                        .filter(singleValidationResult -> singleValidationResult.getValidationStatus().equals(SingleValidationResultStatus.Error))
                         .findFirst()
                         .orElse(null) == null;
                 if (!isPassed) {

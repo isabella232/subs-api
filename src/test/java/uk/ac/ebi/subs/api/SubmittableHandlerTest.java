@@ -1,15 +1,15 @@
 package uk.ac.ebi.subs.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
@@ -55,6 +55,9 @@ public class SubmittableHandlerTest {
     @Autowired
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
+    @MockBean
+    private RabbitMessagingTemplate rabbitMessagingTemplate;
+
     @Before
     public void buildUp() throws URISyntaxException {
         rootUri = "http://localhost:" + port + "/api";
@@ -64,6 +67,9 @@ public class SubmittableHandlerTest {
         standardPostContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER,TestWebSecurityConfig.USI_PASSWORD));
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),standardGetContentHeader,standardPostContentHeader);
+
+        submittableValidationDispatcher.setRabbitMessagingTemplate(rabbitMessagingTemplate);
+
     }
 
     @After

@@ -34,7 +34,6 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
 import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
-import uk.ac.ebi.subs.data.client.PartOfSubmission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Submitter;
@@ -47,7 +46,7 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
@@ -80,7 +79,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
 @ActiveProfiles("basic_auth")
-@WithMockUser(username="usi_user",roles={Helpers.TEAM_NAME})
+@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
 public class ApiDocumentation {
 
     private static final String HOST = "submission-dev.ebi.ac.uk";
@@ -281,7 +280,7 @@ public class ApiDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/teams/"+Helpers.TEAM_NAME+"/submissions").content(jsonRepresentation)
+                post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -362,7 +361,7 @@ public class ApiDocumentation {
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
-        vr.setValidationStatus(ValidationStatus.Complete);
+        vr.setValidationStatus(GlobalValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
@@ -571,7 +570,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(study);
 
         this.mockMvc.perform(
-                post("/api/submissions/"+sub.getId()+"/contents/studies").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/studies").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -598,6 +597,7 @@ public class ApiDocumentation {
 
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -628,7 +628,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(assay);
 
         this.mockMvc.perform(
-                post("/api/submissions/"+sub.getId()+"/contents/assays").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/assays").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -651,7 +651,8 @@ public class ApiDocumentation {
                                         fieldWithPath("protocolUses").description("Protocols used in this study"),
 
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this assay."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this assay."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -682,7 +683,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(assayData);
 
         this.mockMvc.perform(
-                post("/api/submissions/"+sub.getId()+"/contents/assayData").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/assayData").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -707,7 +708,8 @@ public class ApiDocumentation {
                                         fieldWithPath("files[0].type").description("File type"),
 
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -739,7 +741,7 @@ public class ApiDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions/"+sub.getId()+"/contents/samples/").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -759,6 +761,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -814,6 +817,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -858,6 +862,7 @@ public class ApiDocumentation {
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
