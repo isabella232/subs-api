@@ -1202,7 +1202,7 @@ public class ApiDocumentation {
     public void rootEndpoint() throws Exception {
 
         this.mockMvc.perform(
-                get("/api")
+                get("/api/")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
