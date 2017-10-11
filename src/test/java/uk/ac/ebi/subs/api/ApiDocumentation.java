@@ -159,7 +159,7 @@ public class ApiDocumentation {
         docConfig.uris()
                 .withScheme(SCHEME)
                 .withHost(HOST)
-                .withPort(80);
+                .withPort(443);
 
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
