@@ -94,9 +94,16 @@ configure(testsMakesDocs) {
     description = 'Run tests that generate documentation snippets'
 }
 
+ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1']
+
+if (environment == "test") {
+    ext.asciiDoctorIncludes = [sample:'1']
+}
+
 asciidoctor {
     attributes 'snippets': snippetsDir
     sourceDir file('src/main/resources/docs')
+    attributes (asciiDoctorIncludes);
     backends 'html5'
     inputs.dir snippetsDir
     dependsOn testsMakesDocs

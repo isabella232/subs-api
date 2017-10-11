@@ -82,6 +82,8 @@ If successful, this will return a JSON object with links to parts of the submiss
 
 include::{snippets}/create-submission/http-response.adoc[]
 
+ifdef::sample[]
+
 == Adding samples
 
 We'll start by adding samples. It's a good template for adding anything to a submission - while the details in the
@@ -114,6 +116,8 @@ This will return a response to show that the sample record has been created:
 
 include::{snippets}/create-sample/http-response.adoc[]
 
+endif::sample[]
+
 === Validation
 
 Descriptive data is checked at two points during submission:
@@ -145,6 +149,8 @@ include::{snippets}/update-sample/http-response.adoc[]
 
 Updating a document will cause it to be re-validated, as described above.
 
+ifdef::study[]
+
 == Adding a study
 
 Experimental data are grouped into _studies_. Studies should describe the motivation and summarise the design for the
@@ -158,6 +164,10 @@ This will return a response to show that the study record has been created:
 
 include::{snippets}/create-study/http-response.adoc[]
 
+endif::study[]
+
+ifdef::assay[]
+
 == Adding assays
 
 Assay documents describes the processes performed on the sample to produce data. For example, this could be library
@@ -169,6 +179,10 @@ This will return a response to show that the assay record has been created:
 
 include::{snippets}/create-assay/http-response.adoc[]
 
+endif::assay[]
+
+ifdef::assayData[]
+
 == Adding assay data
 
 If you are familiar with the ENA SRA submission system, assay data is equivalent to a Run.
@@ -178,6 +192,8 @@ include::{snippets}/create-assay-data/curl-request.adoc[]
 This will return a response to show that the assay record has been created:
 
 include::{snippets}/create-assay-data/http-response.adoc[]
+
+endif::assayData[]
 
 == Finalising your submission
 
