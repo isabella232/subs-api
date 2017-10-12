@@ -53,6 +53,7 @@ dependencies {
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("com.google.code.gson:gson:2.7")
+    testCompile("org.yaml:snakeyaml:1.8")
     //bug in spring boot, see https://github.com/spring-projects/spring-boot/issues/6502
 
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
@@ -74,6 +75,7 @@ ext {
 }
 
 test {
+    systemProperty "spring.profiles.active", env
     outputs.dir snippetsDir
     runWithMongoDb = true
 }
@@ -117,7 +119,7 @@ jar {
 }
 
 processTestResources {
-    filesMatching('application.properties') {
+    filesMatching('application.yml') {
         expand(project.properties)
     }
 }
