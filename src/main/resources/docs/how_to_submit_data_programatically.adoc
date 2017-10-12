@@ -28,9 +28,154 @@ with your data and accessions back to us.
 
 This guide assumes some familiarity with REST APIs and the HTTP protocol.
 
-== Log in
+== Authorization amd authentication
 
-*TODO* we will add a section describing how to get an authorisation token and what to do with it.
+This section describes how to get an authorisation token (AAP token) and what to do with it.
+
+=== How to get a token
+
+You can obtain a AAP token by executing the following curl command.
+
+==== Example request
+
+ $ curl -u <your_aap_username>:<your_aap_password> https://explore.api.aap.tsi.ebi.ac.uk/auth
+
+The response will contains your AAP token. By default, the token is valid for 1 hour.
+
+==== Example response
+
+....
+eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIxNzEsImp0aSI6IlNWUndCYWlubTA1MFlEZHJaWFRMbWciLCJpYXQiOjE1MDc4MTg1NzEsInN1YiI6InVzci0wZmRhM2YzZS0wM2I1LTQzOTgtOGRjOS02ZmU4MWVkMzNhOTciLCJlbWFpbCI6Imthcm9seUBlYmkuYWMudWsiLCJuaWNrbmFtZSI6ImthcmVsIiwibmFtZSI6Ikthcm9seSBFcmRvcyIsImRvbWFpbnMiOlsiYWFwLXVzZXJzLWRvbWFpbiJdfQ.MnLeqmPdxGMy7ln3mlMFqhdNVDrf0uvilbe2pqngper56sjUYUOMnzvCK6ht2Q65P25VdJAA_nSOQJ03ZEqnp2ZB0urGpCY_sK0JV834ZSe1atLKww7wa2Ntq5EJakUfxrma9lHLTylGxJzYc3ej1s8pTE5Jj6tprvcV5s3eNEmYFUJL9RwhKmDA9-5E7TfOVYvEQSMw7IqXMiVSSQNU1o_dfalp-PYlqer9mTR2MPIMAaA2wdr7jKVDXzI7zKlprIRLVyJAiEPIeWzNYN8FC2RdigwqbcBt9UTTDrwDH5Op3fAJPrYWNpRD4-wV8mn5DWzd7cNm6dMqwm1C12WEg
+....
+
+=== How to use the obtained token
+
+You need to add this token as an `Authorization` header to all of your API requests.
+
+==== Example request
+
+ $ curl -i -X GET -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer <your_aap_token>" https://submissionexampleurl.test.com/api/teams
+
+
+=== How to setup a team
+
+If you want to create a new team, then you have to send a `POST` request.
+
+==== Example request
+
+ $ curl 'http://localhost:8080/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
+
+==== Example response
+
+....
+HTTP/1.1 201 Created
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+X-Application-Context: application:integration-test:0
+Content-Type: application/hal+json;charset=utf-8
+Content-Length: 768
+
+{
+  "domainReference" : "dom-de00a819-dfe4-4516-8ad8-0c8d571e162d",
+  "domainName" : "self.new domain",
+  "domainDesc" : "new domain Desc",
+  "isActive" : "Y",
+  "users" : null,
+  "managers" : null,
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
+    },
+    "deactivate" : {
+      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
+    },
+    "get users from domain" : {
+      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d/users"
+    },
+    "admin" : {
+      "href" : "http://localhost:8080/domains/dom-eb5bd028-a4aa-45b9-9457-7c375b55d1b3"
+    },
+    "get all domains" : {
+      "href" : "http://localhost:8080/domains"
+    }
+  }
+}
+....
+
+=== How to add a user to a team
+
+If you want to add a new user to a team, then you have to send a `PUT` request.
+
+==== Example request
+
+ $ curl 'http://localhost:8080/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json'
+
+==== Example response
+
+....
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+X-Application-Context: application:integration-test:0
+Content-Type: application/hal+json;charset=utf-8
+Content-Length: 1376
+
+{
+  "domainReference" : "dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80",
+  "domainName" : "wonderland",
+  "domainDesc" : "Drink me",
+  "isActive" : "N",
+  "users" : [ {
+    "userReference" : "usr-d8749acf-6a22-4438-accc-cc8d1877ba36",
+    "userName" : "karo",
+    "email" : "karo@example.com",
+    "mobile" : null,
+    "domains" : null,
+    "_links" : {
+      "self" : {
+        "href" : "http://localhost:8080/users/usr-d8749acf-6a22-4438-accc-cc8d1877ba36"
+      }
+    }
+  }, {
+    "userReference" : "usr-9832620d-ec53-43a1-873d-efdc50d34ad1",
+    "userName" : "ajay",
+    "email" : "ajay@example.com",
+    "mobile" : null,
+    "domains" : null,
+    "_links" : {
+      "self" : {
+        "href" : "http://localhost:8080/users/usr-9832620d-ec53-43a1-873d-efdc50d34ad1"
+      }
+    }
+  } ],
+  "managers" : null,
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
+    },
+    "deactivate" : {
+      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
+    },
+    "get users from domain" : {
+      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80/users"
+    },
+    "admin" : {
+      "href" : "http://localhost:8080/domains/dom-7c3aa7d3-e9bc-43e5-818a-8971390a3102"
+    },
+    "get all domains" : {
+      "href" : "http://localhost:8080/domains"
+    }
+  }
+}
+....
 
 == Fetch the API root
 
