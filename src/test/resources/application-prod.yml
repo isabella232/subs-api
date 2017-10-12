@@ -1,0 +1,5 @@
+usi:
+  docs:
+    hostname: submission.ebi.ac.uk
+    port: 443
+    scheme: https

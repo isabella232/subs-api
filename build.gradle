@@ -53,6 +53,7 @@ dependencies {
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("com.google.code.gson:gson:2.7")
+    testCompile("org.yaml:snakeyaml:1.8")
     //bug in spring boot, see https://github.com/spring-projects/spring-boot/issues/6502
 
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
@@ -67,13 +68,14 @@ dependencies {
     }
 }
 
-ext.environment = hasProperty('env') ? env : 'dev'
+ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 ext {
     snippetsDir = file('build/generated-snippets')
 }
 
 test {
+    systemProperty "spring.profiles.active", gradle_env
     outputs.dir snippetsDir
     runWithMongoDb = true
 }
@@ -96,7 +98,7 @@ configure(testsMakesDocs) {
 
 ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1']
 
-if (environment == "test") {
+if (gradle_env == "test") {
     ext.asciiDoctorIncludes = [sample:'1']
 }
 
@@ -117,7 +119,7 @@ jar {
 }
 
 processTestResources {
-    filesMatching('application.properties') {
+    filesMatching('application.yml') {
         expand(project.properties)
     }
 }
@@ -173,17 +175,17 @@ task('externalCiTest', type: Test) {
 task deployJar(type: SshTask, dependsOn: 'build') {
     doLast {
 
-        if (environment == "dev") {
+        if (gradle_env == "dev") {
 
             File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-dev/jar")
             sshRun(jarDeployDir)
 
-        } else if (environment == "test") {
+        } else if (gradle_env == "test") {
 
             File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-test/jar")
             sshRun(jarDeployDir)
 
-        } else if (environment == "dev2") {
+        } else if (gradle_env == "dev2") {
 
             File jarDeployDir = new File("/data/subs-api/jar")
             sshRun(jarDeployDir)
@@ -197,7 +199,7 @@ task deployJar(type: SshTask, dependsOn: 'build') {
 
 private Object sshRun(File jarDeployDir) {
     ssh.run {
-        session(remotes.role(environment)) {
+        session(remotes.role(gradle_env)) {
             println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
             put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
             println "creating symbolic link to $jar.archiveName"
