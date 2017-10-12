@@ -1,18 +1,18 @@
 package uk.ac.ebi.subs.api;
 
 
-import uk.ac.ebi.subs.data.client.*;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
-import uk.ac.ebi.subs.repository.model.*;
-import uk.ac.ebi.subs.repository.model.Assay;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,13 +56,9 @@ public class Helpers {
             ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
             cellLineType.getTerms().add(ebvLclCellLine);
 
-            s.getAttributes().add(cellLineType);
+            Attribute releaseDate = attribute("release", "2017-01-01T01:01:01");
 
-            SampleRelationship derivedFrom = new SampleRelationship();
-            derivedFrom.setAccession("SAME123392");
-            derivedFrom.setRelationshipNature("Derived from");
-
-            s.getSampleRelationships().add(derivedFrom);
+            s.getAttributes().addAll(Arrays.asList( cellLineType, releaseDate ));
         }
 
         return samples;
