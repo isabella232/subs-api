@@ -68,14 +68,14 @@ dependencies {
     }
 }
 
-ext.environment = hasProperty('env') ? env : 'dev'
+ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 ext {
     snippetsDir = file('build/generated-snippets')
 }
 
 test {
-    systemProperty "spring.profiles.active", env
+    systemProperty "spring.profiles.active", gradle_env
     outputs.dir snippetsDir
     runWithMongoDb = true
 }
@@ -98,7 +98,7 @@ configure(testsMakesDocs) {
 
 ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1']
 
-if (environment == "test") {
+if (gradle_env == "test") {
     ext.asciiDoctorIncludes = [sample:'1']
 }
 
@@ -175,17 +175,17 @@ task('externalCiTest', type: Test) {
 task deployJar(type: SshTask, dependsOn: 'build') {
     doLast {
 
-        if (environment == "dev") {
+        if (gradle_env == "dev") {
 
             File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-dev/jar")
             sshRun(jarDeployDir)
 
-        } else if (environment == "test") {
+        } else if (gradle_env == "test") {
 
             File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-test/jar")
             sshRun(jarDeployDir)
 
-        } else if (environment == "dev2") {
+        } else if (gradle_env == "dev2") {
 
             File jarDeployDir = new File("/data/subs-api/jar")
             sshRun(jarDeployDir)
