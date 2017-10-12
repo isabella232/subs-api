@@ -12,6 +12,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
@@ -78,12 +79,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@ActiveProfiles("basic_auth")
 @WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
 public class ApiDocumentation {
 
-    private static final String HOST = "submission-dev.ebi.ac.uk";
-    private static final String SCHEME = "https";
+    @Value("${usi.docs.hostname:localhost}")
+    private String host;
+
+    @Value("${usi.docs.port:8080}")
+    private int port;
+
+    @Value("${usi.docs.scheme:http}")
+    private String scheme;
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -157,9 +163,9 @@ public class ApiDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = documentationConfiguration(this.restDocumentation);
 
         docConfig.uris()
-                .withScheme(SCHEME)
-                .withHost(HOST)
-                .withPort(443);
+                .withScheme(scheme)
+                .withHost(host)
+                .withPort(port);
 
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
