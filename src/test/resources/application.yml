@@ -1,0 +1,15 @@
+aap: 
+  enabled: true
+  password: ${aapPassword}
+  url: "https://explore.api.aap.tsi.ebi.ac.uk/auth"
+  username: ${aapUsername}
+jwt:
+  certificate: public.der
+server: 
+  context-path: /api
+spring:
+  data: 
+    mongodb: 
+      database: subsTest
+    rest:
+      detection-strategy: annotated
