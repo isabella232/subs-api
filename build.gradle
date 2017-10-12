@@ -199,7 +199,7 @@ task deployJar(type: SshTask, dependsOn: 'build') {
 
 private Object sshRun(File jarDeployDir) {
     ssh.run {
-        session(remotes.role(environment)) {
+        session(remotes.role(gradle_env)) {
             println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
             put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
             println "creating symbolic link to $jar.archiveName"
