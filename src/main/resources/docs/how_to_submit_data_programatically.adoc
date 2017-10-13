@@ -28,7 +28,7 @@ with your data and accessions back to us.
 
 This guide assumes some familiarity with REST APIs and the HTTP protocol.
 
-== Authorization amd authentication
+== Authorization and authentication
 
 This section describes how to get an authorisation token (AAP token) and what to do with it.
 
