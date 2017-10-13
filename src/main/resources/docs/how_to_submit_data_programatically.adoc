@@ -407,8 +407,12 @@ Successful requests will return a HTTP status code in `20X` range
 error message to explain the problem. There's an explanation of each error type in the <<submission_api.adoc#_errors,reference docs>>.
 
 Errors can normally be resolved by correcting the content or format of your request. Please get in touch if the cause
-of the problem isn't clear. *TODO* add helpdesk link
+of the problem isn't clear or you need further assistance, by e-mailing our help desk - submission-help@ebi.ac.uk.
 
-== Where to go next?
+== Getting more information
 
 You can find more in-depth documentation on the API in the <<submission_api.adoc#,reference documentation>>.
+
+You can keep up to date with announcements about the submission system by subscribing to our mailing list.
+
+You can subscribe by filling out the form link:https://listserver.ebi.ac.uk/mailman/listinfo/submission-announce[here].
