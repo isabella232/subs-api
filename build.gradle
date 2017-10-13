@@ -75,12 +75,12 @@ ext {
 }
 
 test {
-    systemProperty "spring.profiles.active", gradle_env
     outputs.dir snippetsDir
     runWithMongoDb = true
 }
 
 task(testsMakesDocs, type: Test) {
+    jvmArgs "-Dspring.profiles.active=$gradle_env"
     outputs.dir snippetsDir
     useJUnit {
         includeCategories 'uk.ac.ebi.subs.DocumentationProducer'
