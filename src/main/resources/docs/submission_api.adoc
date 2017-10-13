@@ -16,7 +16,7 @@ All data is sent and received as JSON.
 
 `TODO URL and support e-mail address are provisional`
 
-=== HTTP Verbs
+== HTTP Verbs
 
 This API aims to use appropriate HTTP verbs for each action
 
@@ -36,7 +36,7 @@ This API aims to use appropriate HTTP verbs for each action
 |`HEAD`|Returns whether a resource is available
 |===
 
-=== HTTP status codes
+== HTTP status codes
 
 [cols=2*,options="header"]
 |===
@@ -55,7 +55,7 @@ This API aims to use appropriate HTTP verbs for each action
 |`412 Precondition Failed`|Returned in response to a conditional `PATCH`, `PUT` or `DELETE`, when the condition did not match the resource state
 |===
 
-=== Authentication
+== Authentication
 
 `TODO, pending implementation details from the AAP team`. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
 requests to the submissions API.
@@ -67,7 +67,7 @@ $ curl 'http://submission-dev.ebi.ac.uk/api' -i -H 'Accept: application/hal+json
 
 The `Authorization` header has been omitted from all further example requests, for brevity.
 
-=== Errors
+== Errors
 
 There are several types of client errors on API calls that receive request bodies.
 
@@ -98,7 +98,7 @@ so that you know what is wrong with the field.
 
 |===
 
-=== Hypermedia
+== Hypermedia
 
 This API uses hypermedia, and resources include links to other resources in their responses. Responses are in
 http://stateless.co/hal_specification.html[HAL] format. Links can be found beneath the `_links` key. API users should
@@ -119,26 +119,26 @@ Link naming follows a consistent pattern.
 * Where an individual resource accepts `PUT` or `PATCH` requests, a link will have the `:update` suffix, e.g. `self:update`
 * Where an individual resource accepts `DELETE` requests, a link will have the `:delete` suffix, e.g. `self:delete`
 
-=== Collection resources
+== Collection resources
 
 Collection resources represent a set of individual resources, often presented as summary representations. Each element
 will have its own `_links` element. Following the `self` link from one of these elements will bring you to the
 detailed representation.
 
-==== Summary representations
+=== Summary representations
 
 When fetching a list of resources, the response will often include a subset of the attributes for that resource.
 For performance reasons some attributes are excluded from the summary representation. These are available from the detailed representation.
 
 Example: When you get a list of samples, you get the summary representation of each sample.
 
-===== Request
+==== Request
 include::{snippets}/samples/by-submission/curl-request.adoc[]
 
-===== Response
+==== Response
 include::{snippets}/samples/by-submission/http-response.adoc[]
 
-==== Paging
+=== Paging
 
 Requests that return multiple items will be paginated to 20 items by default. You can specify a specific pages with the
 `?page` parameter. Page number is 1-based and in the absence of a `?page` parameter the first page is returned. You can
@@ -146,40 +146,40 @@ also set a custom page size with the `?size` parameter, up to a maximum of 500.
 
 Links will be provided for the first, last, next and previous pages, where such pages exist.
 
-===== Request
+==== Request
 
 include::{snippets}/page-example/curl-request.adoc[]
 
-===== Response
+==== Response
 
 include::{snippets}/page-example/http-response.adoc[]
 
-===== Response structure
+==== Response structure
 
 include::{snippets}/page-example/response-fields.adoc[]
 
-===== Links
+==== Links
 
 include::{snippets}/page-example/links.adoc[]
 
-=== Individual resources
+== Individual resources
 
-==== Detailed representations
+=== Detailed representations
 
 When fetching an individual resource, the response typically includes all attributes for that resource.
 Nested resources may be included under the `_embedded` key.
 
 Example: When you fetch an individual sample, you get the detailed representation.
 
-===== Request
+==== Request
 
 include::{snippets}/samples/fetch-one/curl-request.adoc[]
 
-===== Response
+==== Response
 
 include::{snippets}/samples/fetch-one/http-response.adoc[]
 
-==== Conditional requests
+=== Conditional requests
 
 Most individual resources have entity tags and modification timestamps. This can be used to
 make conditional requests, allowing clients to minimise bandwidth use and avoiding collisions with other
@@ -188,7 +188,7 @@ clients.
 The format for conditional headers is specified in https://tools.ietf.org/html/rfc7232#section-3[RFC7232 section 3].
 Note that only `If-Match`, `If-None-Match` and `If-Modified-Since` headers are supported.
 
-===== Entity tags
+==== Entity tags
 
 Where entity tags are available, `ETag` values are included in the response headers. Updates to a resource
 cause the ETag to change. You can make subsequent requests conditional on the resource currently matching or
@@ -202,8 +202,7 @@ You could `PUT`, `PATCH` or `DELETE` a resource if its `ETag` value has not chan
 include::{snippets}/conditional-delete-if-etag-match/curl-request.adoc[]
 include::{snippets}/conditional-delete-if-etag-match/http-response.adoc[]
 
-
-===== Last modified dates
+==== Last modified dates
 
 Where modification timestamps are available, `Last-Modified` values are included in the response headers. You can make
 subsequent requests conditional on the resource currently matching or not matching the last modified value you
@@ -216,16 +215,16 @@ include::{snippets}/conditional-fetch-if-modified-since/http-response.adoc[]
 The use of `ETag` is preferred over `Last-Modified`, as last modified dates are limited to a resolution of
 one second. Relying on the `Last-Modified` header is vulnerable to changes that occur in the same second.
 
-=== Search and query resources
+== Search and query resources
 
 Search resources expose a list of all the query methods available for a collection. These will be templated links
 that can be expanded to query for resources. The example below illustrates the search resources for samples.
 
-==== Request
+=== Request
 include::{snippets}/samples-search-resource/curl-request.adoc[]
-==== Response
+=== Response
 include::{snippets}/samples-search-resource/http-response.adoc[]
-==== Links
+=== Links
 include::{snippets}/samples-search-resource/links.adoc[]
 
 == Usage
@@ -304,7 +303,7 @@ include::{snippets}/create-submission/links.adoc[]
 
 `DELETE`-ing a submission will delete the submission and all resources within it e.g. studies, samples.
 
-TODO add delete example
+// TODO add delete example
 
 === Submission status
 
@@ -322,7 +321,7 @@ include::{snippets}/patch-submission-status/http-response.adoc[]
 
 include::{snippets}/patch-submission-status/links.adoc[]
 
-=== Submittable resources
+== Submittable resources
 
 Resources of these types are item resources:
 
@@ -342,13 +341,34 @@ Resources of these types are item resources:
 The methods to create and update them are common between all of these types.
 We will use sample as an example.
 
-`TODO extend to cover all resources`
+// TODO extend to cover all resources
+
+=== Sample
+
+===== Minimal requirements
+
+Fields:
+
+* alias
+* title
+* taxonId (for submitting to ENA)
+
+Attributes:
+
+* release date in the forms of:
+....
+{
+    "name": "release",
+    "value": "2017-01-01T01:01:01"
+}
+....
 
 ==== Create a sample
 
 ===== Request
 
 include::{snippets}/create-sample/curl-request.adoc[]
+
 
 ===== Response
 
