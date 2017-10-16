@@ -63,7 +63,7 @@ If you want to create a new team, then you have to send a `POST` request.
 
 ==== Example request
 
- $ curl 'http://localhost:8080/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
+ $ curl 'https://explore.api.aap.tsi.ebi.ac.uk/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
 
 ==== Example response
 
@@ -88,19 +88,19 @@ Content-Length: 768
   "managers" : null,
   "_links" : {
     "self" : {
-      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
     },
     "deactivate" : {
-      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
     },
     "get users from domain" : {
-      "href" : "http://localhost:8080/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d/users"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d/users"
     },
     "admin" : {
-      "href" : "http://localhost:8080/domains/dom-eb5bd028-a4aa-45b9-9457-7c375b55d1b3"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-eb5bd028-a4aa-45b9-9457-7c375b55d1b3"
     },
     "get all domains" : {
-      "href" : "http://localhost:8080/domains"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains"
     }
   }
 }
@@ -110,9 +110,13 @@ Content-Length: 768
 
 If you want to add a new user to a team, then you have to send a `PUT` request.
 
+NOTE: In the above URL you have to prepend your user reference with `usr-` prefix.
+
+// TODO: submit a bug for the AAP team to fix the above inconsistency and remove the note if they fixed it.
+
 ==== Example request
 
- $ curl 'http://localhost:8080/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json'
+ $ curl 'http://explore.api.aap.tsi.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json'
 
 ==== Example response
 
@@ -141,7 +145,7 @@ Content-Length: 1376
     "domains" : null,
     "_links" : {
       "self" : {
-        "href" : "http://localhost:8080/users/usr-d8749acf-6a22-4438-accc-cc8d1877ba36"
+        "href" : "http://explore.api.aap.tsi.ebi.ac.uk/users/usr-d8749acf-6a22-4438-accc-cc8d1877ba36"
       }
     }
   }, {
@@ -152,26 +156,26 @@ Content-Length: 1376
     "domains" : null,
     "_links" : {
       "self" : {
-        "href" : "http://localhost:8080/users/usr-9832620d-ec53-43a1-873d-efdc50d34ad1"
+        "href" : "http://explore.api.aap.tsi.ebi.ac.uk/users/usr-9832620d-ec53-43a1-873d-efdc50d34ad1"
       }
     }
   } ],
   "managers" : null,
   "_links" : {
     "self" : {
-      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
     },
     "deactivate" : {
-      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
     },
     "get users from domain" : {
-      "href" : "http://localhost:8080/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80/users"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80/users"
     },
     "admin" : {
-      "href" : "http://localhost:8080/domains/dom-7c3aa7d3-e9bc-43e5-818a-8971390a3102"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-7c3aa7d3-e9bc-43e5-818a-8971390a3102"
     },
     "get all domains" : {
-      "href" : "http://localhost:8080/domains"
+      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains"
     }
   }
 }
