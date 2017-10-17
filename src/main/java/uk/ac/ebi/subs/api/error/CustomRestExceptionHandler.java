@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.error;
 
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -7,8 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -29,6 +34,17 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         String error = "Malformed JSON request";
 
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), error);
+        return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
+    }
+
+    @ExceptionHandler(RepositoryConstraintViolationException.class)
+    public ResponseEntity<Object> handleRepositoryConstraintViolationException(Exception ex, WebRequest request) {
+        List<String> errors = new ArrayList<>();
+        RepositoryConstraintViolationException exception = (RepositoryConstraintViolationException) ex;
+
+        exception.getErrors().getAllErrors().forEach(error -> errors.add(error.toString()));
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage(), errors);
+
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
     }
 

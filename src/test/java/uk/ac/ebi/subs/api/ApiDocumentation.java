@@ -281,12 +281,10 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("errors").description("List of errors"),
-                                        fieldWithPath("errors[0].entity").description("Type of the entity with the error"),
-                                        fieldWithPath("errors[0].property").description("Path of the field with the error"),
-                                        fieldWithPath("errors[0].invalidValue").description("Value of the field that has caused the error"),
-                                        fieldWithPath("errors[0].message").description("Message describing the error")
-
+                                        fieldWithPath("httpStatus").description("HTTP error code description"),
+                                        fieldWithPath("status").description("HTTP error code"),
+                                        fieldWithPath("message").description("Error message"),
+                                        fieldWithPath("errors").description("List of errors")
                                 )
                         )
                 );
