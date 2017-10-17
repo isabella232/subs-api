@@ -211,11 +211,12 @@ public abstract class ApiIntegrationTest {
             assertThat(errors, notNullValue());
             assertThat(errors.length(), is(equalTo(1)));
 
+            //FIXME
             Map<String, String> expectedError = new HashMap<>();
-            expectedError.put("property", "alias");
-            expectedError.put("message", "already_exists");
-            expectedError.put("entity", "Sample");
-            expectedError.put("invalidValue", firstSample.getAlias());
+            expectedError.put("httpStatus", "BAD_REQUEST");
+            expectedError.put("message", "Validation failed");
+            expectedError.put("status", "400");
+            //expectedError.put("errors", firstSample.getAlias());
 
             Map<String, Object> errorAsMap = new HashMap<>();
             JSONObject error = errors.getJSONObject(0);

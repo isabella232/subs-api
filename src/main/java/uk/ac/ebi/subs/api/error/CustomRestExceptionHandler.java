@@ -38,13 +38,11 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(RepositoryConstraintViolationException.class)
-    public ResponseEntity<Object> handleRepositoryConstraintViolationException(Exception ex, WebRequest request) {
+    public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
         List<String> errors = new ArrayList<>();
-        RepositoryConstraintViolationException exception = (RepositoryConstraintViolationException) ex;
+        ex.getErrors().getAllErrors().forEach(error -> errors.add(error.toString()));
 
-        exception.getErrors().getAllErrors().forEach(error -> errors.add(error.toString()));
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage(), errors);
-
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), errors);
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
     }
 
