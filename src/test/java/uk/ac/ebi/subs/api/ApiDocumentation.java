@@ -24,7 +24,6 @@ import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,7 +39,14 @@ import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.repository.model.*;
+import uk.ac.ebi.subs.repository.model.Assay;
+import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Study;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -53,14 +59,26 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -189,8 +207,6 @@ public class ApiDocumentation {
 
     @Test
     public void invalidJson() throws Exception {
-
-
         this.mockMvc.perform(
                 post("/api/submissions").content("Tyger Tyger, burning bright, In the forests of the night")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -201,11 +217,11 @@ public class ApiDocumentation {
                         document("invalid-json",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                links(),
                                 responseFields(
-                                        fieldWithPath("cause").description("Cause of the error"),
-                                        fieldWithPath("message").description("Error message")
-
+                                        fieldWithPath("httpStatus").description("HTTP error code description"),
+                                        fieldWithPath("status").description("HTTP error code"),
+                                        fieldWithPath("message").description("Error message"),
+                                        fieldWithPath("errors").description("List of errors")
                                 )
                         )
                 );
@@ -218,7 +234,6 @@ public class ApiDocumentation {
 
         String jsonRepresentation = objectMapper.writeValueAsString(Arrays.asList(submission, submission));
 
-
         this.mockMvc.perform(
                 post("/api/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -229,11 +244,11 @@ public class ApiDocumentation {
                         document("json-array-instead-of-object",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                links(),
                                 responseFields(
-                                        fieldWithPath("cause").description("Cause of the error"),
-                                        fieldWithPath("message").description("Error message")
-
+                                        fieldWithPath("httpStatus").description("HTTP error code description"),
+                                        fieldWithPath("status").description("HTTP error code"),
+                                        fieldWithPath("message").description("Error message"),
+                                        fieldWithPath("errors").description("List of errors")
                                 )
                         )
                 );
