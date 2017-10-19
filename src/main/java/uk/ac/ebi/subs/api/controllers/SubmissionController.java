@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +26,7 @@ public class SubmissionController {
     @RequestMapping(path = "submissions/{id}", method = RequestMethod.OPTIONS, produces = MediaTypes.HAL_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> findSubmissionOptions() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setAllow(Stream.of(HttpMethod.GET, HttpMethod.DELETE, HttpMethod.OPTIONS).collect(Collectors.toSet()));
+        headers.setAllow(Stream.of(HttpMethod.GET, HttpMethod.DELETE, HttpMethod.OPTIONS).collect(Collectors.toCollection(LinkedHashSet::new)));
         return new ResponseEntity(headers, HttpStatus.OK);
     }
 }

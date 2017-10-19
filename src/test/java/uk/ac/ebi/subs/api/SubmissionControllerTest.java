@@ -48,7 +48,7 @@ public class SubmissionControllerTest {
     public void returnsRightHeaders() throws Exception {
         this.mockMvc.perform(options("/api/submissions/123456"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Allow", "DELETE,GET,OPTIONS"));
+                .andExpect(header().string("Allow", "GET,DELETE,OPTIONS"));
     }
 
 }
