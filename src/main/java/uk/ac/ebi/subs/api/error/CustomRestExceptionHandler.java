@@ -18,6 +18,16 @@ import java.util.List;
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
+
+    /**
+     * This method handles the HttpRequestMethodNotSupportedException
+     *
+     * @param ex
+     * @param headers
+     * @param status
+     * @param request
+     * @return
+     */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         StringBuilder builder = new StringBuilder();
@@ -29,6 +39,15 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
     }
 
+    /**
+     * This method handles the HttpMessageNotReadableException (exception for malformed json)
+     *
+     * @param ex
+     * @param headers
+     * @param status
+     * @param request
+     * @return
+     */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         String error = "Malformed JSON request";
@@ -37,6 +56,14 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
     }
 
+    /**
+     * This handles the RepositoryConstraintViolationException that gets thrown whenever a repository constrain is violated
+     * like a missing required value.
+     *
+     * @param ex
+     * @param request
+     * @return
+     */
     @ExceptionHandler(RepositoryConstraintViolationException.class)
     public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
         List<String> errors = new ArrayList<>();
