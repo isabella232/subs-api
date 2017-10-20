@@ -18,15 +18,15 @@ import java.util.List;
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-
     /**
-     * This method handles the HttpRequestMethodNotSupportedException
+     * This method handles the HttpRequestMethodNotSupportedException and returns a useful body response
+     * of type {@link ApiError}
      *
      * @param ex
      * @param headers
      * @param status
      * @param request
-     * @return
+     * @return {@link ResponseEntity}
      */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -40,13 +40,14 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * This method handles the HttpMessageNotReadableException (exception for malformed json)
+     * This method handles the HttpMessageNotReadableException (exception for malformed json) and returns
+     * a useful body response of type {@link ApiError}
      *
      * @param ex
      * @param headers
      * @param status
      * @param request
-     * @return
+     * @return {@link ResponseEntity}
      */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -58,11 +59,11 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * This handles the RepositoryConstraintViolationException that gets thrown whenever a repository constrain is violated
-     * like a missing required value.
+     * like a missing required value and returns a useful body response of type {@link ApiError}
      *
      * @param ex
      * @param request
-     * @return
+     * @return {@link ResponseEntity}
      */
     @ExceptionHandler(RepositoryConstraintViolationException.class)
     public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
