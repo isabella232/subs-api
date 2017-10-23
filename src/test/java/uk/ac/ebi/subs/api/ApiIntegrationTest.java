@@ -32,9 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public abstract class ApiIntegrationTest {
 
@@ -215,9 +220,9 @@ public abstract class ApiIntegrationTest {
             assertThat(errors, notNullValue());
             assertThat(errors.size(), equalTo(1));
 
-           assertTrue(apiErrorResponse.getHttpStatus().is4xxClientError());
-           assertThat(apiErrorResponse.getMessage(), equalTo("Validation failed"));
-           assertThat(apiErrorResponse.getStatus(), equalTo(HttpStatus.BAD_REQUEST.value()));
+           assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
+           assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
+           System.out.println(apiErrorResponse);
         }
     }
 

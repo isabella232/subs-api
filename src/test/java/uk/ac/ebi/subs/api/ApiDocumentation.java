@@ -218,10 +218,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
@@ -245,10 +246,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
@@ -281,10 +283,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );

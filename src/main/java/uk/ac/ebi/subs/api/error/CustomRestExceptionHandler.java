@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,10 @@ import java.util.List;
 
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private final String HTTP_STATUS_CODES = "/api/docs/submission_api.html#_http_status_codes";
+    private final String SUBMISSIONS = "/api/docs/submission_api.html#_submissions";
+    private final String SUBMITTABLES = "/api/docs/submission_api.html#_submittable_resources";
 
     /**
      * This method handles the HttpRequestMethodNotSupportedException and returns a useful body response
@@ -35,8 +40,8 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         builder.append(" method is not supported for this request. Supported methods are ");
         ex.getSupportedHttpMethods().forEach(httpMethod -> builder.append(httpMethod + " "));
 
-        ApiError apiError = new ApiError(HttpStatus.METHOD_NOT_ALLOWED, ex.getLocalizedMessage(), builder.toString());
-        return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
+        ApiError apiError = new ApiError(HTTP_STATUS_CODES, HttpStatus.METHOD_NOT_ALLOWED, request.getDescription(false), builder.toString());
+        return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -53,8 +58,8 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         String error = "Malformed JSON request";
 
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), error);
-        return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
+        ApiError apiError = new ApiError(HTTP_STATUS_CODES, HttpStatus.BAD_REQUEST, request.getDescription(false), error);
+        return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -68,15 +73,38 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RepositoryConstraintViolationException.class)
     public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
         List<String> errors = new ArrayList<>();
-        ex.getErrors().getAllErrors().forEach(error -> errors.add(error.toString()));
+        ex.getErrors().getAllErrors().forEach(error -> {
+            if (error.getClass().isAssignableFrom(FieldError.class)) {
+                errors.add(buildErrorString((FieldError) error));
+            } else {
+                errors.add(error.toString());
+            }
+        });
 
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), errors);
-        return new ResponseEntity<>(apiError, getContentTypeHeaders(), apiError.getHttpStatus());
+        ApiError apiError;
+
+        if (request.getDescription(false).endsWith("/api/submissions")) {
+            apiError = new ApiError(SUBMISSIONS, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
+        } else {
+            apiError = new ApiError(SUBMITTABLES, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
+        }
+        return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     private HttpHeaders getContentTypeHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaTypes.HAL_JSON);
         return headers;
+    }
+
+    private String buildErrorString(FieldError error) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(error.getDefaultMessage() + ":");
+        builder.append(" In " + error.getObjectName());
+        builder.append(" , field " + error.getField());
+        builder.append(" can't accept value [" + error.getRejectedValue() + "].");
+
+        return builder.toString();
     }
 }
