@@ -220,9 +220,8 @@ public abstract class ApiIntegrationTest {
             assertThat(errors, notNullValue());
             assertThat(errors.size(), equalTo(1));
 
-           assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
-           assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
-           System.out.println(apiErrorResponse);
+            assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
         }
     }
 

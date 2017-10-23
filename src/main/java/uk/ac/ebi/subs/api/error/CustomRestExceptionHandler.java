@@ -19,9 +19,7 @@ import java.util.List;
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final String HTTP_STATUS_CODES = "/api/docs/submission_api.html#_http_status_codes";
-    private final String SUBMISSIONS = "/api/docs/submission_api.html#_submissions";
-    private final String SUBMITTABLES = "/api/docs/submission_api.html#_submittable_resources";
+    private final String API_ERRORS = "/api/docs/submission_api.html#_errors";
 
     /**
      * This method handles the HttpRequestMethodNotSupportedException and returns a useful body response
@@ -38,9 +36,9 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         StringBuilder builder = new StringBuilder();
         builder.append(ex.getMethod());
         builder.append(" method is not supported for this request. Supported methods are ");
-        ex.getSupportedHttpMethods().forEach(httpMethod -> builder.append(httpMethod + " "));
+        builder.append(ex.getSupportedHttpMethods());
 
-        ApiError apiError = new ApiError(HTTP_STATUS_CODES, HttpStatus.METHOD_NOT_ALLOWED, request.getDescription(false), builder.toString());
+        ApiError apiError = new ApiError(API_ERRORS, HttpStatus.METHOD_NOT_ALLOWED, request.getDescription(false), builder.toString());
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
@@ -58,7 +56,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         String error = "Malformed JSON request";
 
-        ApiError apiError = new ApiError(HTTP_STATUS_CODES, HttpStatus.BAD_REQUEST, request.getDescription(false), error);
+        ApiError apiError = new ApiError(API_ERRORS, HttpStatus.BAD_REQUEST, request.getDescription(false), error);
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.BAD_REQUEST);
     }
 
@@ -81,13 +79,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
             }
         });
 
-        ApiError apiError;
-
-        if (request.getDescription(false).endsWith("/api/submissions")) {
-            apiError = new ApiError(SUBMISSIONS, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
-        } else {
-            apiError = new ApiError(SUBMITTABLES, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
-        }
+        ApiError apiError = new ApiError(API_ERRORS, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.BAD_REQUEST);
     }
 
@@ -102,8 +94,8 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
         builder.append(error.getDefaultMessage() + ":");
         builder.append(" In " + error.getObjectName());
-        builder.append(" , field " + error.getField());
-        builder.append(" can't accept value [" + error.getRejectedValue() + "].");
+        builder.append(", field " + error.getField());
+        builder.append(" can't be [" + error.getRejectedValue() + "].");
 
         return builder.toString();
     }

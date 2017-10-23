@@ -69,19 +69,28 @@ The `Authorization` header has been omitted from all further example requests, f
 
 == Errors
 
-There are several types of client errors on API calls that receive request bodies.
+This section identifies some of the error codes and messages that USI API returns.
+Currently some types of client errors on API calls receive request bodies:
 
-`TODO catch exceptions for invalid JSON/wrong type and give a clear error response`
-
-* Sending invalid JSON will result in a `400 Bad Request` response
+Sending invalid JSON will result in a `400 Bad Request` response.
 include::{snippets}/invalid-json/curl-request.adoc[]
 include::{snippets}/invalid-json/http-response.adoc[]
-* Sending the wrong type of JSON values (e.g. array where an object is expected) will result in a `400 Bad Request` response.
+
+Sending the wrong type of JSON values (e.g. array where an object is expected) will result in a `400 Bad Request` response.
 include::{snippets}/json-array-instead-of-object/curl-request.adoc[]
 include::{snippets}/json-array-instead-of-object/http-response.adoc[]
-* Sending invalid fields will result in a `400 Bad Request` response.
+
+Sending invalid fields will result in a `400 Bad Request` response.
 include::{snippets}/invalid-submission/curl-request.adoc[]
 include::{snippets}/invalid-submission/http-response.adoc[]
+
+Looking for an non existent entity will result in a `404 Not Found` response with an empty response body.
+include::{snippets}/sample-not-found/curl-request.adoc[]
+include::{snippets}/sample-not-found/http-response.adoc[]
+
+Sending an invalid Http Method for a given endpoint will result in a `405 Method Not Allowed` response.
+include::{snippets}/method-not-allowed/curl-request.adoc[]
+include::{snippets}/method-not-allowed/http-response.adoc[]
 
 All error objects have properties so that your client can tell what the problem is. There's also an error code
 so that you know what is wrong with the field.
@@ -345,7 +354,7 @@ We will use sample as an example.
 
 === Sample
 
-===== Minimal requirements
+==== Minimal requirements
 
 Fields:
 

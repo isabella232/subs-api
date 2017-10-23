@@ -257,6 +257,30 @@ public class ApiDocumentation {
 
     }
 
+    @Test
+    public void sampleNotFound() throws Exception {
+        this.mockMvc.perform(get("/api/samples/123456789"))
+                .andExpect(status().isNotFound())
+                .andDo(
+                        document("sample-not-found",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    public void methodNotAllowed() throws Exception {
+        this.mockMvc.perform(get("/api/submissions"))
+                .andExpect(status().isMethodNotAllowed())
+                .andDo(
+                        document("method-not-allowed",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setSubmitter(new Submitter());
