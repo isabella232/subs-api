@@ -218,10 +218,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
@@ -245,14 +246,39 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
 
+    }
+
+    @Test
+    public void sampleNotFound() throws Exception {
+        this.mockMvc.perform(get("/api/samples/123456789"))
+                .andExpect(status().isNotFound())
+                .andDo(
+                        document("sample-not-found",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    public void methodNotAllowed() throws Exception {
+        this.mockMvc.perform(get("/api/submissions"))
+                .andExpect(status().isMethodNotAllowed())
+                .andDo(
+                        document("method-not-allowed",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
     }
 
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
@@ -281,10 +307,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("httpStatus").description("HTTP error code description"),
-                                        fieldWithPath("status").description("HTTP error code"),
-                                        fieldWithPath("message").description("Error message"),
-                                        fieldWithPath("errors").description("List of errors")
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );

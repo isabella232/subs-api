@@ -5,35 +5,72 @@ import org.springframework.http.HttpStatus;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The payload of an API Problem
+ *
+ * Example payload:
+ *
+ */
 public class ApiError {
 
-    private HttpStatus httpStatus;
+    /**
+     * An URL to a document describing the error condition (optional).
+     */
+    private String type;
+    /**
+     * A brief title for the error condition (required and should be the same for every problem of the same {@link ApiError#type}.
+     */
+    private String title;
+    /**
+     * The HTTP status code for the current request (required).
+     */
     private int status;
-    private String message;
+    /**
+     * URI identifying the specific instance of this problem (optional).
+     */
+    private String instance;
+    /**
+     * Error details specific to this request (optional).
+     */
     private List<String> errors;
 
     public ApiError() {}
 
-    public ApiError(HttpStatus httpStatus, String message, List<String> errors) {
-        this.httpStatus = httpStatus;
+    public ApiError(HttpStatus httpStatus) {
+        this.title = httpStatus.getReasonPhrase();
         this.status = httpStatus.value();
-        this.message = message;
+    }
+
+    public ApiError(String type, HttpStatus httpStatus, String instance, List<String> errors) {
+        this.type = type;
+        this.title = httpStatus.getReasonPhrase();
+        this.status = httpStatus.value();
+        this.instance = instance;
         this.errors = errors;
     }
 
-    public ApiError(HttpStatus httpStatus, String message, String error) {
-        this.httpStatus = httpStatus;
+    public ApiError(String type, HttpStatus httpStatus, String instance, String error) {
+        this.type = type;
+        this.title = httpStatus.getReasonPhrase();
         this.status = httpStatus.value();
-        this.message = message;
+        this.instance = instance;
         this.errors = Arrays.asList(error);
     }
 
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
+    public String getType() {
+        return type;
     }
 
-    public void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public int getStatus() {
@@ -44,12 +81,12 @@ public class ApiError {
         this.status = status;
     }
 
-    public String getMessage() {
-        return message;
+    public String getInstance() {
+        return instance;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setInstance(String instance) {
+        this.instance = instance;
     }
 
     public List<String> getErrors() {
@@ -63,4 +100,5 @@ public class ApiError {
     public void setError(String error) {
         this.errors = Arrays.asList(error);
     }
+
 }
