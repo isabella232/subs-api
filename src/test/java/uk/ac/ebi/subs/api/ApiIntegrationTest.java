@@ -146,22 +146,16 @@ public abstract class ApiIntegrationTest {
 
         assertThat(sampleSecondResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
 
-        JSONArray errors = sampleSecondResponse.getBody().getObject().getJSONArray("errors");
+        ObjectMapper mapper = new ObjectMapper();
+        ApiError apiErrorResponse = mapper.readValue(sampleSecondResponse.getBody().toString(), ApiError.class);
+
+        List<String> errors = apiErrorResponse.getErrors();
 
         assertThat(errors, notNullValue());
-        assertThat(errors.length(), is(equalTo(1)));
+        assertThat(errors.size(), is(equalTo(1)));
 
-        Map<String, String> expectedError = new HashMap<>();
-        expectedError.put("property", "alias");
-        expectedError.put("message", "already_exists");
-        expectedError.put("entity", "Sample");
-        expectedError.put("invalidValue", sample.getAlias());
-
-        Map<String, Object> errorAsMap = new HashMap<>();
-        JSONObject error = errors.getJSONObject(0);
-        error.keySet().stream().forEach(key -> errorAsMap.put((String) key, error.get((String) key)));
-
-        assertThat(errorAsMap, is(equalTo(expectedError)));
+        assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
     }
 
     /**
