@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.error;
 
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -61,14 +62,14 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * This handles the RepositoryConstraintViolationException that gets thrown whenever a repository constrain is violated
+     * This method handles the {@link RepositoryConstraintViolationException} that gets thrown whenever a repository constrain is violated
      * like a missing required value and returns a useful body response of type {@link ApiError}
      *
      * @param ex
      * @param request
      * @return {@link ResponseEntity}
      */
-    @ExceptionHandler(RepositoryConstraintViolationException.class)
+    @ExceptionHandler
     public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
         List<String> errors = new ArrayList<>();
         ex.getErrors().getAllErrors().forEach(error -> {
@@ -81,6 +82,19 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
         ApiError apiError = new ApiError(API_ERRORS, HttpStatus.BAD_REQUEST, request.getDescription(false), errors);
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * This method handles the {@link ResourceNotFoundException}
+     *
+     * @param exception
+     * @param request
+     * @return {@link ResponseEntity}
+     */
+    @ExceptionHandler
+    public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest request) {
+        ApiError apiError = new ApiError(API_ERRORS, HttpStatus.NOT_FOUND, request.getDescription(false), exception.getMessage());
+        return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.NOT_FOUND);
     }
 
     private HttpHeaders getContentTypeHeaders() {
