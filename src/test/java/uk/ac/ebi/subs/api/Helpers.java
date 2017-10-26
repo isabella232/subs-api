@@ -11,8 +11,8 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,15 +50,14 @@ public class Helpers {
             s.setTaxon("Homo sapiens");
             s.setTaxonId(9606L);
             s.setTeam(generateTestTeam());
+            s.setReleaseDate(LocalDate.of(2017, Month.JANUARY, 1));
 
             Attribute cellLineType = attribute("Cell line type", "EBV-LCL cell line");
             Term ebvLclCellLine = new Term();
             ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
             cellLineType.getTerms().add(ebvLclCellLine);
 
-            Attribute releaseDate = attribute("release", "2017-01-01T01:01:01");
-
-            s.getAttributes().addAll(Arrays.asList( cellLineType, releaseDate ));
+            s.getAttributes().add(cellLineType);
         }
 
         return samples;
@@ -91,7 +90,7 @@ public class Helpers {
 
             LocalDate releaseDate = LocalDate.parse("2020-12-25");
 
-            s.setReleaseDate(java.sql.Date.valueOf(releaseDate));
+            s.setReleaseDate(releaseDate);
         }
 
         return studies;
