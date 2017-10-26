@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -171,6 +173,8 @@ public class ApiDocumentation {
     public void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         submissionEventHandler.setSubmissionEventService(fakeSubmissionEventService);
         submissionStatusEventHandler.setSubmissionEventService(fakeSubmissionEventService);
@@ -810,6 +814,7 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -866,6 +871,7 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -910,6 +916,8 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
+
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),

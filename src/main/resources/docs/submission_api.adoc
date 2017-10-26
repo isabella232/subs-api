@@ -361,16 +361,7 @@ Fields:
 * alias
 * title
 * taxonId (for submitting to ENA)
-
-Attributes:
-
-* release date in the forms of:
-....
-{
-    "name": "release",
-    "value": "2017-01-01T01:01:01"
-}
-....
+* releaseDate (only date without time, for example: "2017-12-12")
 
 ==== Create a sample
 
