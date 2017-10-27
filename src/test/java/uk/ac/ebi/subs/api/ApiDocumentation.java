@@ -287,8 +287,7 @@ public class ApiDocumentation {
 
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
-        submission.setSubmitter(new Submitter());
-        submission.getSubmitter().setEmail("alice@test.org");
+        submission.setSubmitter(null);
         submission.setTeam(null);
         return submission;
     }
