@@ -215,11 +215,6 @@ This will show you the teams you a member of:
 
 include::{snippets}/get-teams/http-response.adoc[]
 
-At present, you also need to provide a submitter object when creating a submission. In future versions this will be
-taken from your log in information, but for now you need to provide a submitter document:
-
-`{"email": "alice@example.com"}`
-
 === POSTing a submission
 
 Using the link labelled `submissions:create`, `POST` a document containing a submitter to create

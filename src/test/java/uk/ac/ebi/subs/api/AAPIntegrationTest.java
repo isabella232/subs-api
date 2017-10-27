@@ -4,6 +4,8 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.io.IOException;
 import java.util.*;
 
-import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -73,4 +77,23 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
         ));
     }
 
+    @Test
+    public void postSubmission() throws UnirestException, IOException {
+        Map<String, String> rootRels = testHelper.rootRels();
+
+        Submission submission = new Submission();
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+        JSONObject submissionResponseObject = submissionResponse.getBody().getObject();
+        JSONObject submitterObject  = submissionResponseObject.getJSONObject("submitter");
+        assertThat(submitterObject.get("email"), notNullValue());
+        assertThat(submitterObject.get("email"), is(equalTo("subs-internal@ebi.ac.uk")));
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        submissionRepository.deleteAll();
+        sampleRepository.deleteAll();
+        submissionStatusRepository.deleteAll();
+    }
 }
