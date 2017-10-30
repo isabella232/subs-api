@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,7 +26,6 @@ import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,7 +41,14 @@ import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.repository.model.*;
+import uk.ac.ebi.subs.repository.model.Assay;
+import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Study;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -53,14 +61,26 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -153,6 +173,8 @@ public class ApiDocumentation {
     public void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         submissionEventHandler.setSubmissionEventService(fakeSubmissionEventService);
         submissionStatusEventHandler.setSubmissionEventService(fakeSubmissionEventService);
@@ -189,8 +211,6 @@ public class ApiDocumentation {
 
     @Test
     public void invalidJson() throws Exception {
-
-
         this.mockMvc.perform(
                 post("/api/submissions").content("Tyger Tyger, burning bright, In the forests of the night")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -201,11 +221,12 @@ public class ApiDocumentation {
                         document("invalid-json",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                links(),
                                 responseFields(
-                                        fieldWithPath("cause").description("Cause of the error"),
-                                        fieldWithPath("message").description("Error message")
-
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
@@ -218,7 +239,6 @@ public class ApiDocumentation {
 
         String jsonRepresentation = objectMapper.writeValueAsString(Arrays.asList(submission, submission));
 
-
         this.mockMvc.perform(
                 post("/api/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -229,21 +249,45 @@ public class ApiDocumentation {
                         document("json-array-instead-of-object",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                links(),
                                 responseFields(
-                                        fieldWithPath("cause").description("Cause of the error"),
-                                        fieldWithPath("message").description("Error message")
-
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
 
     }
 
+    @Test
+    public void sampleNotFound() throws Exception {
+        this.mockMvc.perform(get("/api/samples/123456789"))
+                .andExpect(status().isNotFound())
+                .andDo(
+                        document("sample-not-found",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    public void methodNotAllowed() throws Exception {
+        this.mockMvc.perform(get("/api/submissions"))
+                .andExpect(status().isMethodNotAllowed())
+                .andDo(
+                        document("method-not-allowed",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
     private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
-        submission.setSubmitter(new Submitter());
-        submission.getSubmitter().setEmail("alice@test.org");
+        submission.setSubmitter(null);
         submission.setTeam(null);
         return submission;
     }
@@ -266,12 +310,11 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("errors").description("List of errors"),
-                                        fieldWithPath("errors[0].entity").description("Type of the entity with the error"),
-                                        fieldWithPath("errors[0].property").description("Path of the field with the error"),
-                                        fieldWithPath("errors[0].invalidValue").description("Value of the field that has caused the error"),
-                                        fieldWithPath("errors[0].message").description("Message describing the error")
-
+                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
+                                        fieldWithPath("title").description("A brief title for the error condition."),
+                                        fieldWithPath("status").description("The HTTP status code for the current request."),
+                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
+                                        fieldWithPath("errors").description("List of errors for this request.")
                                 )
                         )
                 );
@@ -770,6 +813,7 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -826,6 +870,7 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -870,6 +915,8 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
+
+                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),

@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '0.4.0-SNAPSHOT'
+version '0.5.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -28,7 +28,6 @@ apply plugin: 'application'
 
 mainClassName = "uk.ac.ebi.subs.ApiApplication"
 
-
 repositories {
     mavenLocal()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -36,12 +35,12 @@ repositories {
 }
 
 dependencies {
-    compile("uk.ac.ebi.subs:subs-repository:0.2.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:0.3.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-processing-model:0.1.1-SNAPSHOT")
 
-    compile("uk.ac.ebi.subs:subs-data-model:0.1.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-messaging:0.3.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:validator-common:0.5.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-data-model:0.2.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:validator-common:0.6.0-SNAPSHOT")
 
     compile("org.springframework.boot:spring-boot-starter-data-rest")
     compile 'org.springframework.data:spring-data-rest-hal-browser'
@@ -136,18 +135,22 @@ mongo {
     mongoVersion = "3.4.3"
 }
 
+def devDeployHostName = hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
+def testDeployHostName = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
+def prodDeployHostName = hasProperty(project.name + "ProdDeployTarget") ? getProperty(project.name + "ProdDeployTarget") : 'localhost'
+
 remotes {
     submission_dev {
         role('dev')
-        host = 'wp-np2-d0'
+        host = devDeployHostName
     }
     submission_test {
         role('test')
-        host = 'wp-np2-d1'
+        host = testDeployHostName
     }
-    mac_subs_002 {
-        role('dev2')
-        host = 'mac-subs-002'
+    submission_prod {
+        role('prod')
+        host = prodDeployHostName
     }
 }
 
@@ -215,5 +218,3 @@ private Object sshRun(File jarDeployDir) {
 task printClasspath << {
     configurations.testCompile.each { println it }
 }
-
-

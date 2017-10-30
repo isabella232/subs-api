@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import uk.ac.ebi.subs.api.error.ApiError;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
@@ -31,7 +32,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public abstract class ApiIntegrationTest {
@@ -139,22 +146,16 @@ public abstract class ApiIntegrationTest {
 
         assertThat(sampleSecondResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
 
-        JSONArray errors = sampleSecondResponse.getBody().getObject().getJSONArray("errors");
+        ObjectMapper mapper = new ObjectMapper();
+        ApiError apiErrorResponse = mapper.readValue(sampleSecondResponse.getBody().toString(), ApiError.class);
+
+        List<String> errors = apiErrorResponse.getErrors();
 
         assertThat(errors, notNullValue());
-        assertThat(errors.length(), is(equalTo(1)));
+        assertThat(errors.size(), is(equalTo(1)));
 
-        Map<String, String> expectedError = new HashMap<>();
-        expectedError.put("property", "alias");
-        expectedError.put("message", "already_exists");
-        expectedError.put("entity", "Sample");
-        expectedError.put("invalidValue", sample.getAlias());
-
-        Map<String, Object> errorAsMap = new HashMap<>();
-        JSONObject error = errors.getJSONObject(0);
-        error.keySet().stream().forEach(key -> errorAsMap.put((String) key, error.get((String) key)));
-
-        assertThat(errorAsMap, is(equalTo(expectedError)));
+        assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
     }
 
     /**
@@ -186,7 +187,7 @@ public abstract class ApiIntegrationTest {
                     .body(sample)
                     .asJson();
 
-            assertThat(samplePostResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+            assertThat(samplePostResponse.getStatus(), equalTo(HttpStatus.CREATED.value()));
 
             testSampleLocations.put(sample, samplePostResponse.getHeaders().getFirst("Location"));
         }
@@ -198,31 +199,23 @@ public abstract class ApiIntegrationTest {
 
             sample.setAlias(firstSample.getAlias());
 
-
             HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
                     .headers(testHelper.getPostHeaders())
                     .body(sample)
                     .asJson();
 
-            assertThat(samplePutResponse.getStatus(), is(equalTo(HttpStatus.BAD_REQUEST.value())));
+            assertThat(samplePutResponse.getStatus(), equalTo(HttpStatus.BAD_REQUEST.value()));
 
-            JSONArray errors = samplePutResponse.getBody().getObject().getJSONArray("errors");
+            ObjectMapper mapper = new ObjectMapper();
+            ApiError apiErrorResponse = mapper.readValue(samplePutResponse.getBody().toString(), ApiError.class);
+
+            List<String> errors = apiErrorResponse.getErrors();
 
             assertThat(errors, notNullValue());
-            assertThat(errors.length(), is(equalTo(1)));
+            assertThat(errors.size(), equalTo(1));
 
-            Map<String, String> expectedError = new HashMap<>();
-            expectedError.put("property", "alias");
-            expectedError.put("message", "already_exists");
-            expectedError.put("entity", "Sample");
-            expectedError.put("invalidValue", firstSample.getAlias());
-
-            Map<String, Object> errorAsMap = new HashMap<>();
-            JSONObject error = errors.getJSONObject(0);
-            error.keySet().stream().forEach(key -> errorAsMap.put((String) key, error.get((String) key)));
-
-            assertThat(errorAsMap, is(equalTo(expectedError)));
-
+            assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
         }
     }
 
