@@ -72,6 +72,8 @@ public class CoreSubmittableValidationHelper {
 
     public void validateAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
 
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors,"alias","required", "alias is required");
+
         validateOnlyUseOfAliasInSubmission(target, repository, errors);
 
 
