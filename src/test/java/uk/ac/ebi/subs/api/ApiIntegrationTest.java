@@ -159,6 +159,33 @@ public abstract class ApiIntegrationTest {
     }
 
     /**
+     * POSTing a sample with no alias should throw an error
+     */
+    @Test
+    public void postSampleWithNoAlias() throws IOException, UnirestException{
+        Map<String, String> rootRels = testHelper.rootRels();
+        Submission submission = Helpers.generateSubmission();
+
+        Sample sample = Helpers.generateTestClientSamples(1).get(0);
+        sample.setAlias(null);
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+        Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
+        Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
+
+        assertThat(submissionContentsRels.get("samples:create"), notNullValue());
+
+        HttpResponse<JsonNode> samplePostResponse = Unirest.post(submissionContentsRels.get("samples:create"))
+                .headers(testHelper.getPostHeaders())
+                .body(sample)
+                .asJson();
+
+        assertThat(samplePostResponse.getStatus(), equalTo(HttpStatus.BAD_REQUEST.value()));
+
+    }
+
+    /**
      * POSTing two samples with different aliases in one submission, and changing one so they have the same
      * alias should throw an error
      */
@@ -180,7 +207,7 @@ public abstract class ApiIntegrationTest {
 
         for (Sample sample : testSamples) {
 
-            sample.setSubmission(submissionLocation);
+           // sample.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> samplePostResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                     .headers(testHelper.getPostHeaders())
