@@ -217,7 +217,7 @@ include::{snippets}/get-teams/http-response.adoc[]
 
 === POSTing a submission
 
-Using the link labelled `submissions:create`, `POST` a document containing a submitter to create
+Using the link labelled `submissions:create`, `POST` an empty document to create
 a submission:
 
 include::{snippets}/create-submission/curl-request.adoc[]
@@ -226,9 +226,22 @@ If successful, this will return a JSON object with links to parts of the submiss
 
 include::{snippets}/create-submission/http-response.adoc[]
 
-ifdef::sample[]
 
-== Adding samples
+
+== Adding things to a submission
+
+The next step is to follow the `contents` link from the submission. This will give you a set of links to get things in the
+submission, or add things to it. The links returned will depend on how the server is configured, we don't expected to
+support all data types.
+
+include::{snippets}/submission-contents/curl-request.adoc[]
+
+include::{snippets}/submission-contents/http-response.adoc[]
+
+The response gives links to URLs where you can get all the items that are part of the submission, and links that you can
+use when adding items to a submission (these end with `:create`).
+
+ifdef::sample[]
 
 We'll start by adding samples. It's a good template for adding anything to a submission - while the details in the
 documents change, the process is the same across all types of document.
