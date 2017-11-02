@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
@@ -88,6 +89,23 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
         JSONObject submitterObject  = submissionResponseObject.getJSONObject("submitter");
         assertThat(submitterObject.get("email"), notNullValue());
         assertThat(submitterObject.get("email"), is(equalTo("subs-internal@ebi.ac.uk")));
+    }
+
+    @Test
+    public void testOptions() throws IOException, UnirestException {
+        Map<String, String> rootRels = testHelper.rootRels();
+        uk.ac.ebi.subs.data.Submission submission = Helpers.generateSubmission();
+
+        Sample sample = Helpers.generateTestClientSamples(1).get(0);
+        sample.setAlias(null);
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+
+        //OPTIONS calls should not require authentication
+
+        String location = submissionResponse.getHeaders().getFirst("Location");
+        HttpResponse<String> optionsResponse = Unirest.options(location).asString();
+        assertThat(optionsResponse.getStatus(),equalTo(HttpStatus.OK.value()));
     }
 
     @After
