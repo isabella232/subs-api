@@ -105,7 +105,6 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
                 .asString();
 
         assertThat(optionsResponse.getStatus(), equalTo(HttpStatus.OK.value()));
-
     }
 
     @After
