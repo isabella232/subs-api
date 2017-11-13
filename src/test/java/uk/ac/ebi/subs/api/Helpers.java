@@ -49,7 +49,6 @@ public class Helpers {
             s.setDescription("Material derived from cell line NA12878");
             s.setTaxon("Homo sapiens");
             s.setTaxonId(9606L);
-            s.setTeam(generateTestTeam());
             s.setReleaseDate(LocalDate.of(2017, Month.JANUARY, 1));
 
             Attribute cellLineType = attribute("Cell line type", "EBV-LCL cell line");
@@ -75,7 +74,6 @@ public class Helpers {
             studyType.setValue("Whole Genome Sequencing");
 
             s.setAlias("Study" + i);
-            s.setTeam(generateTestTeam());
             s.setTitle("My Sequencing Study " + i);
             s.setDescription("We sequenced some humans to discover variants linked with a disease");
 
@@ -119,7 +117,6 @@ public class Helpers {
             assays.add(a);
 
             a.setAlias("A" + i);
-            a.setTeam(generateTestTeam());
             a.setTitle("Assay " + i);
             a.setDescription("Human sequencing experiment");
 
@@ -158,7 +155,6 @@ public class Helpers {
 
 
             ad.setAlias("AD" + i);
-            ad.setTeam(generateTestTeam());
             ad.setTitle("AssayData" + i);
             ad.setDescription("Human sequencing experiment run");
 
@@ -187,9 +183,8 @@ public class Helpers {
             samples.add(s);
 
             s.setId(createId());
-
-            s.setAlias("D" + i);
             s.setTeam(generateTestTeam());
+            s.setAlias("D" + i);
             s.setTitle("Donor " + i);
             s.setDescription("Human sample donor");
             s.setTaxon("Homo sapiens");

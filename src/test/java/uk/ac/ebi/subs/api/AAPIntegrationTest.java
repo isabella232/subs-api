@@ -14,11 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.io.IOException;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -40,7 +42,7 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
     @Override
     public Map<String, String> createGetHeaders() throws UnirestException {
         final Map<String, String> getHeaders = super.createGetHeaders();
-        String jwtToken = getJWTToken(aapURL,aapUsername,appPassword);
+        String jwtToken = getJWTToken(aapURL, aapUsername, appPassword);
         getHeaders.put("Authorization", "Bearer " + jwtToken);
         return getHeaders;
     }
@@ -48,12 +50,12 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
     @Override
     public Map<String, String> createPostHeaders() throws UnirestException {
         final Map<String, String> postHeaders = super.createPostHeaders();
-        String jwtToken = getJWTToken(aapURL,aapUsername,appPassword);
+        String jwtToken = getJWTToken(aapURL, aapUsername, appPassword);
         postHeaders.put("Authorization", "Bearer " + jwtToken);
         return postHeaders;
     }
 
-    String getJWTToken (String authURL, String username, String password) throws UnirestException {
+    String getJWTToken(String authURL, String username, String password) throws UnirestException {
         final HttpResponse<String> stringHttpResponse = Unirest.get(authURL).basicAuth(username, password).asString();
         return stringHttpResponse.getBody();
     }
@@ -85,9 +87,24 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
         HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
 
         JSONObject submissionResponseObject = submissionResponse.getBody().getObject();
-        JSONObject submitterObject  = submissionResponseObject.getJSONObject("submitter");
+        JSONObject submitterObject = submissionResponseObject.getJSONObject("submitter");
         assertThat(submitterObject.get("email"), notNullValue());
         assertThat(submitterObject.get("email"), is(equalTo("subs-internal@ebi.ac.uk")));
+    }
+
+    @Test
+    public void emulateCorsPreflight() throws IOException, UnirestException {
+        Map<String, String> rootRels = testHelper.rootRels();
+
+        //OPTIONS calls should not require authentication
+
+        String teamsUrl = rootRels.get("teams");
+        HttpResponse<String> optionsResponse = Unirest.options(teamsUrl)
+                .header("Origin", "http://evil.com")
+                .header("Access-Control-Request-Method", "PUT")
+                .asString();
+
+        assertThat(optionsResponse.getStatus(), equalTo(HttpStatus.OK.value()));
     }
 
     @After
