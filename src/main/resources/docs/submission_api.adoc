@@ -293,6 +293,34 @@ include::{snippets}/get-team/links.adoc[]
 
 
 === Submissions
+==== List submissions available to user
+
+===== Request
+
+
+include::{snippets}/userSubmissions/curl-request.adoc[]
+===== Response
+
+include::{snippets}/userSubmissions/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/userSubmissions/links.adoc[]
+
+==== Summarise submission statuses
+
+===== Request
+
+
+include::{snippets}/userSubmissionStatusSummary/curl-request.adoc[]
+===== Response
+
+include::{snippets}/userSubmissionStatusSummary/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/userSubmissionStatusSummary/links.adoc[]
+
 
 ==== Create a submission
 

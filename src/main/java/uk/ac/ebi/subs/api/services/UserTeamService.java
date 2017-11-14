@@ -26,4 +26,8 @@ public class UserTeamService {
         }
         return teamList;
     }
+
+    public List<String> userTeamNames() {
+        return this.userTeams().stream().map(Team::getName).collect(Collectors.toList());
+    }
 }

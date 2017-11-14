@@ -84,7 +84,7 @@ public abstract class ApiIntegrationTest {
     public void checkRootRels() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("teams", "team"));
+        assertThat(rootRels.keySet(), hasItems("userTeams", "team"));
         assertThat(rootRels.keySet(), not(hasItems("submissions:create", "samples:create")));
     }
 

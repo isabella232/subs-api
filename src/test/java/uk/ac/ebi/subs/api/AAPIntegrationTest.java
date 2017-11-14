@@ -98,7 +98,7 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
 
         //OPTIONS calls should not require authentication
 
-        String teamsUrl = rootRels.get("teams");
+        String teamsUrl = rootRels.get("userTeams");
         HttpResponse<String> optionsResponse = Unirest.options(teamsUrl)
                 .header("Origin", "http://evil.com")
                 .header("Access-Control-Request-Method", "PUT")

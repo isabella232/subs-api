@@ -6,15 +6,11 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.subs.api.controllers.ProjectsController;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
+import uk.ac.ebi.subs.api.controllers.UserItemsController;
 
 import java.util.List;
 
@@ -38,14 +34,29 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addStatusDescriptions(links);
         addTeams(links);
         addUserProjects(links);
+        addUserSubmissions(links);
     }
 
     private void addUserProjects(List<Link> links) {
         Link userProjectsLink =
-                linkTo(methodOn(ProjectsController.class).getUserProjects(null)
+                linkTo(methodOn(UserItemsController.class).getUserProjects(null)
                 ).withRel("userProjects");
 
         links.add(userProjectsLink);
+    }
+
+    private void addUserSubmissions(List<Link> links) {
+        Link userSubmissionsLink =
+                linkTo(methodOn(UserItemsController.class).getUserSubmissions(null)
+                ).withRel("userSubmissions");
+
+        links.add(userSubmissionsLink);
+
+        Link userSubmissionStatusSummaryLink =
+                linkTo(methodOn(UserItemsController.class).getUserSubmissionStatusSummary()
+                ).withRel("userSubmissionStatusSummary");
+
+        links.add(userSubmissionStatusSummaryLink);
     }
 
     @Override
@@ -66,7 +77,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     private void addTeams(List<Link> links) {
         Link teamsLink =
                 linkTo(methodOn(TeamController.class).getTeams(null)
-                ).withRel("teams");
+                ).withRel("userTeams");
 
         links.add(teamsLink);
 
