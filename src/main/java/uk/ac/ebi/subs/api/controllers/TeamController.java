@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
@@ -29,26 +30,21 @@ public class TeamController {
 
     private SubmissionRepository submissionRepository;
     private PagedResourcesAssembler<Team> teamPagedResourcesAssembler;
+    private UserTeamService userTeamService;
+
     public TeamController(SubmissionRepository submissionRepository,
-                          PagedResourcesAssembler<Team> teamPagedResourcesAssembler) {
+                          PagedResourcesAssembler<Team> teamPagedResourcesAssembler,
+                          UserTeamService userTeamService) {
         this.submissionRepository = submissionRepository;
         this.teamPagedResourcesAssembler = teamPagedResourcesAssembler;
+        this.userTeamService = userTeamService;
     }
 
     @RequestMapping("/teams")
     public Resources<Resource<Team>> getTeams(Pageable pageable) {
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        List<Team> teamList = new ArrayList<>();
-
-        if (authentication != null && authentication.getAuthorities().size() > 0) {
-            teamList = authentication.getAuthorities().stream().map(a -> {
-                Team team = new Team();
-                team.setName(a.getAuthority().toString().replaceFirst("ROLE_", ""));
-                return team;
-            }).collect(Collectors.toList());
-
-        }
+        List<Team> teamList = userTeamService.userTeams();
 
         final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, authentication.getAuthorities().size());
         return teamPagedResourcesAssembler.toResource(teams);
