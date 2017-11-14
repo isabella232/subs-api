@@ -1323,12 +1323,11 @@ public class ApiDocumentation {
 
     @Test
     public void projectsForUser() throws Exception {
-
-        List<Project> projects = new ArrayList<>();
-        while (projects.size() < 3) {
+        for (int i = 0 ; i < 3 ; i++) {
             Submission submission = storeSubmission();
-            projects.addAll(storeProjects(submission, 1));
+            storeProjects(submission, 1);
         }
+
         this.mockMvc.perform(
                 get("/api/user/projects")
                         .accept(RestMediaTypes.HAL_JSON)
