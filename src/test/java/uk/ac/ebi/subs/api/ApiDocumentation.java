@@ -25,6 +25,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -1364,8 +1365,29 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                         fieldWithPath("Draft").description("Number of submissions in Draft")
+                                        fieldWithPath("Draft").description("Number of submissions in Draft")
 
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void studyDataTypes() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            storeSubmission();
+        }
+
+        this.mockMvc.perform(
+                get("/api/studyDataTypes")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("studyDataTypes",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("[]").description("Study data types")
                                 )
                         )
                 );
