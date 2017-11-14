@@ -1352,6 +1352,37 @@ public class ApiDocumentation {
                 );
     }
 
+    @Test
+    public void submissionsForUser() throws Exception {
+        for (int i = 0 ; i < 3 ; i++) {
+            storeSubmission();
+
+        }
+
+        this.mockMvc.perform(
+                get("/api/user/submissions")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("userSubmissions",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
+                                        paginationPageSizeDescriptor(),
+                                        paginationTotalElementsDescriptor(),
+                                        paginationTotalPagesDescriptor(),
+                                        paginationPageNumberDescriptor()
+                                )
+                        )
+                );
+    }
+
     private FieldDescriptor linksResponseField() {
         return fieldWithPath("_links").description("Links to other resources");
     }

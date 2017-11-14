@@ -6,13 +6,9 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.subs.api.controllers.ProjectsController;
+import uk.ac.ebi.subs.api.controllers.UserItemsController;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 
@@ -42,7 +38,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     private void addUserProjects(List<Link> links) {
         Link userProjectsLink =
-                linkTo(methodOn(ProjectsController.class).getUserProjects(null)
+                linkTo(methodOn(UserItemsController.class).getUserProjects(null)
                 ).withRel("userProjects");
 
         links.add(userProjectsLink);

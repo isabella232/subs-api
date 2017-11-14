@@ -40,7 +40,7 @@ public class TeamController {
         this.userTeamService = userTeamService;
     }
 
-    @RequestMapping("/teams")
+    @RequestMapping("/user/teams")
     public Resources<Resource<Team>> getTeams(Pageable pageable) {
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
