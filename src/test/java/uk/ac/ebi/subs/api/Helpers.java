@@ -5,10 +5,7 @@ import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
-import uk.ac.ebi.subs.repository.model.ProcessingStatus;
-import uk.ac.ebi.subs.repository.model.Sample;
-import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.*;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -194,6 +191,25 @@ public class Helpers {
         }
 
         return samples;
+    }
+
+    public static List<Project> generateTestProjects(int numberRequired) {
+        List<Project> projects= new ArrayList<>(numberRequired);
+
+        for (int i = 1; i <= numberRequired; i++) {
+            Project p = new Project();
+            projects.add(p);
+
+            p.setId(createId());
+            p.setTeam(generateTestTeam());
+            p.setAlias("P" + i);
+            p.setTitle("Project" + i);
+            p.setDescription("A great project");
+
+            p.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+        }
+
+        return projects;
     }
 
 

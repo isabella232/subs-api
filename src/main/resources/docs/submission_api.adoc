@@ -405,6 +405,24 @@ include::{snippets}/patch-sample/http-response.adoc[]
 
 include::{snippets}/patch-sample/links.adoc[]
 
+=== Project
+
+==== Projects available
+
+Request a list of all projects available to the logged in user
+
+===== Request
+
+include::{snippets}/userProjects/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/userProjects/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/userProjects/links.adoc[]
+
 
 
 === Status descriptions
