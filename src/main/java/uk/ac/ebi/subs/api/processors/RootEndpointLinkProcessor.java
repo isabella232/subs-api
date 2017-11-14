@@ -8,9 +8,9 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.controllers.UserItemsController;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
+import uk.ac.ebi.subs.api.controllers.UserItemsController;
 
 import java.util.List;
 
@@ -34,6 +34,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addStatusDescriptions(links);
         addTeams(links);
         addUserProjects(links);
+        addUserSubmissions(links);
     }
 
     private void addUserProjects(List<Link> links) {
@@ -42,6 +43,20 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
                 ).withRel("userProjects");
 
         links.add(userProjectsLink);
+    }
+
+    private void addUserSubmissions(List<Link> links) {
+        Link userSubmissionsLink =
+                linkTo(methodOn(UserItemsController.class).getUserSubmissions(null)
+                ).withRel("userSubmissions");
+
+        links.add(userSubmissionsLink);
+
+        Link userSubmissionStatusSummaryLink =
+                linkTo(methodOn(UserItemsController.class).getUserSubmissionStatusSummary()
+                ).withRel("userSubmissionStatusSummary");
+
+        links.add(userSubmissionStatusSummaryLink);
     }
 
     @Override
@@ -62,7 +77,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     private void addTeams(List<Link> links) {
         Link teamsLink =
                 linkTo(methodOn(TeamController.class).getTeams(null)
-                ).withRel("teams");
+                ).withRel("userTeams");
 
         links.add(teamsLink);
 

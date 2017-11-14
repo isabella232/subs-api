@@ -62,7 +62,6 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,18 +103,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
 public class ApiDocumentation {
 
-    @Value("${usi.docs.hostname:localhost}")
-    private String host;
-
-    @Value("${usi.docs.port:8080}")
-    private int port;
-
-    @Value("${usi.docs.scheme:http}")
-    private String scheme;
-
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
-
+    @Value("${usi.docs.hostname:localhost}")
+    private String host;
+    @Value("${usi.docs.port:8080}")
+    private int port;
+    @Value("${usi.docs.scheme:http}")
+    private String scheme;
     @Autowired
     private SubmissionRepository submissionRepository;
 
@@ -1235,7 +1230,7 @@ public class ApiDocumentation {
         Submission submission = storeSubmission();
 
         this.mockMvc.perform(
-                get("/api/teams")
+                get("/api/user/teams")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
@@ -1273,7 +1268,7 @@ public class ApiDocumentation {
 
                                         halLinks(),
                                         //team
-                                        linkWithRel("teams").description("Collection resource for teams"),
+                                        linkWithRel("userTeams").description("Collection resource for teams"),
                                         linkWithRel("team").description("Templated link for finding one team"),
                                         //status descriptions
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
@@ -1281,6 +1276,8 @@ public class ApiDocumentation {
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
+                                        linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
+                                        linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
                                         //profile
                                         linkWithRel("profile").description("Application level details")
                                 ),
@@ -1323,7 +1320,7 @@ public class ApiDocumentation {
 
     @Test
     public void projectsForUser() throws Exception {
-        for (int i = 0 ; i < 3 ; i++) {
+        for (int i = 0; i < 3; i++) {
             Submission submission = storeSubmission();
             storeProjects(submission, 1);
         }
@@ -1353,8 +1350,30 @@ public class ApiDocumentation {
     }
 
     @Test
+    public void submissionStatusSummaryForUser() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            storeSubmission();
+        }
+
+        this.mockMvc.perform(
+                get("/api/user/submissionStatusSummary")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("userSubmissionStatusSummary",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        // fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
+
+                                )
+                        )
+                );
+    }
+
+    @Test
     public void submissionsForUser() throws Exception {
-        for (int i = 0 ; i < 3 ; i++) {
+        for (int i = 0; i < 3; i++) {
             storeSubmission();
 
         }
