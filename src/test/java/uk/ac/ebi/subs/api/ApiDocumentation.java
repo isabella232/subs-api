@@ -1271,7 +1271,8 @@ public class ApiDocumentation {
                                         //team
                                         linkWithRel("userTeams").description("Collection resource for teams"),
                                         linkWithRel("team").description("Templated link for finding one team"),
-                                        //status descriptions
+                                        //ref data
+                                        linkWithRel("studyDataTypes").description("Collection resource for study data types"),
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
