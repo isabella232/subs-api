@@ -2,14 +2,14 @@ package uk.ac.ebi.subs.api.services;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Team;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class UserTeamService {
 
     public List<Team> userTeams() {
