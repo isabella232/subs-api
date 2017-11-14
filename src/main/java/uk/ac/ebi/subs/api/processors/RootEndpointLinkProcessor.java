@@ -12,6 +12,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.ac.ebi.subs.api.controllers.ProjectsController;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 
@@ -36,6 +37,15 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     private void addLinks(List<Link> links) {
         addStatusDescriptions(links);
         addTeams(links);
+        addUserProjects(links);
+    }
+
+    private void addUserProjects(List<Link> links) {
+        Link userProjectsLink =
+                linkTo(methodOn(ProjectsController.class).getUserProjects(null)
+                ).withRel("userProjects");
+
+        links.add(userProjectsLink);
     }
 
     @Override

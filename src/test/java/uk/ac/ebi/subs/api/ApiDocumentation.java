@@ -38,12 +38,12 @@ import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
-import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
@@ -52,6 +52,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -61,6 +62,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -122,6 +124,9 @@ public class ApiDocumentation {
 
     @Autowired
     private SampleRepository sampleRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Autowired
     private ProcessingStatusRepository processingStatusRepository;
@@ -202,6 +207,7 @@ public class ApiDocumentation {
         this.submissionStatusRepository.deleteAll();
         this.validationResultRepository.deleteAll();
         this.processingStatusRepository.deleteAll();
+        this.projectRepository.deleteAll();
     }
 
     @After
@@ -446,7 +452,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("status").description("Current status value"),
-
+                                        fieldWithPath("team").description("Team that owns this submission"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
@@ -1155,6 +1161,18 @@ public class ApiDocumentation {
         return samples;
     }
 
+    private List<Project> storeProjects(Submission sub, int numberRequired) {
+        List<Project> projects = Helpers.generateTestProjects(numberRequired);
+
+        for (Project p : projects) {
+            p.setCreatedDate(new Date());
+            p.setSubmission(sub);
+            processingStatusRepository.insert(p.getProcessingStatus());
+            projectRepository.insert(p);
+        }
+        return projects;
+    }
+
     @Test
     public void samplesSearchResource() throws Exception {
         this.mockMvc.perform(
@@ -1202,17 +1220,6 @@ public class ApiDocumentation {
                                         linkWithRel("submissions").description("Collection of submissions within this team"),
                                         linkWithRel("submissions:create").description("Collection of submissions within this team"),
                                         linkWithRel("items").description("Items owned by this team")
-                                        /*linkWithRel("analyses").description("Collection of analyses within this team"),
-                                        linkWithRel("assays").description("Collection of assays within this team"),
-                                        linkWithRel("assayData").description("Collection of assay data within this team"),
-                                        linkWithRel("egaDacs").description("Collection of DACs within this team"),
-                                        linkWithRel("egaDacPolicies").description("Collection of DAC policies within this team"),
-                                        linkWithRel("egaDatasets").description("Collection of EGA Datasets within this team"),
-                                        linkWithRel("projects").description("Collection of projects within this team"),
-                                        linkWithRel("protocols").description("Collection of protocols within this team"),
-                                        linkWithRel("samples").description("Collection of samples within this team"),
-                                        linkWithRel("sampleGroups").description("Collection of sample groups within this team"),
-                                        linkWithRel("studies").description("Collection of studies within this team")*/
                                 ),
                                 responseFields(
                                         linksResponseField(),
@@ -1223,7 +1230,7 @@ public class ApiDocumentation {
     }
 
     @Test
-    public void teams () throws Exception {
+    public void teams() throws Exception {
 
         Submission submission = storeSubmission();
 
@@ -1272,6 +1279,8 @@ public class ApiDocumentation {
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
+                                        //user projects
+                                        linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
                                         //profile
                                         linkWithRel("profile").description("Application level details")
                                 ),
@@ -1303,6 +1312,37 @@ public class ApiDocumentation {
                                 responseFields(
                                         linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
+                                        paginationPageSizeDescriptor(),
+                                        paginationTotalElementsDescriptor(),
+                                        paginationTotalPagesDescriptor(),
+                                        paginationPageNumberDescriptor()
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void projectsForUser() throws Exception {
+        for (int i = 0 ; i < 3 ; i++) {
+            Submission submission = storeSubmission();
+            storeProjects(submission, 1);
+        }
+
+        this.mockMvc.perform(
+                get("/api/user/projects")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("userProjects",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.projects").description("Projects available to current user"),
                                         paginationPageSizeDescriptor(),
                                         paginationTotalElementsDescriptor(),
                                         paginationTotalPagesDescriptor(),

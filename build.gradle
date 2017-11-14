@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '0.6.0-SNAPSHOT'
+version '0.6.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile("uk.ac.ebi.subs:subs-repository:0.4.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:0.5.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-processing-model:0.2.0-SNAPSHOT")
 
     compile("uk.ac.ebi.subs:subs-data-model:0.3.0-SNAPSHOT")
