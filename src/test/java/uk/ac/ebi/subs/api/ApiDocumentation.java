@@ -1364,7 +1364,7 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        // fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
+                                         fieldWithPath("Draft").description("Number of submissions in Draft")
 
                                 )
                         )

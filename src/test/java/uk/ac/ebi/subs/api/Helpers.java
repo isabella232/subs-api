@@ -224,13 +224,13 @@ public class Helpers {
 
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
-        Team d = new Team();
+        Team d = generateTestTeam();
         sub.setId(createId());
 
-        sub.setTeam(generateTestTeam());
+        sub.setTeam(d);
 
         sub.setSubmissionStatus(new SubmissionStatus(SubmissionStatusEnum.Draft));
-
+        sub.getSubmissionStatus().setTeam(d);
         return sub;
     }
 
