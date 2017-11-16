@@ -25,6 +25,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -1270,7 +1271,8 @@ public class ApiDocumentation {
                                         //team
                                         linkWithRel("userTeams").description("Collection resource for teams"),
                                         linkWithRel("team").description("Templated link for finding one team"),
-                                        //status descriptions
+                                        //ref data
+                                        linkWithRel("studyDataTypes").description("Collection resource for study data types"),
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
@@ -1364,8 +1366,31 @@ public class ApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                         fieldWithPath("Draft").description("Number of submissions in Draft")
+                                        fieldWithPath("Draft").description("Number of submissions in Draft")
 
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void studyDataTypes() throws Exception {
+
+        this.mockMvc.perform(
+                get("/api/studyDataTypes")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("studyDataTypes",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("content").description("Study data types and available subtypes")
                                 )
                         )
                 );

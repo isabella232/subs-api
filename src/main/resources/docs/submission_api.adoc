@@ -452,8 +452,8 @@ include::{snippets}/userProjects/http-response.adoc[]
 include::{snippets}/userProjects/links.adoc[]
 
 
-
-=== Status descriptions
+=== Reference data
+==== Status descriptions
 
 The status description resources provide information about each status used in the system, including available status
 changes and wether the resources can be changed. These resources do not accept `POST`, `PUT`, `PATCH` or `DELETE`
@@ -465,8 +465,15 @@ requests.
 
 `TODO to cover all status descriptions`
 
+==== Study data types
 
+===== Request
 
+include::{snippets}/studyDataTypes/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/studyDataTypes/http-response.adoc[]
 
 
 
