@@ -1375,9 +1375,6 @@ public class ApiDocumentation {
 
     @Test
     public void studyDataTypes() throws Exception {
-        for (int i = 0; i < 3; i++) {
-            storeSubmission();
-        }
 
         this.mockMvc.perform(
                 get("/api/studyDataTypes")
@@ -1387,8 +1384,13 @@ public class ApiDocumentation {
                         document("studyDataTypes",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
                                 responseFields(
-                                        fieldWithPath("[]").description("Study data types")
+                                        linksResponseField(),
+                                        fieldWithPath("content").description("Study data types and available subtypes")
                                 )
                         )
                 );

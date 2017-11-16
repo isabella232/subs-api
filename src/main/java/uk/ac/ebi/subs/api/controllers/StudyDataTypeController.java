@@ -1,17 +1,18 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.config.StudyDataTypeConfig;
 import uk.ac.ebi.subs.data.component.StudyDataType;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @BasePathAwareController
@@ -24,9 +25,9 @@ public class StudyDataTypeController {
     }
 
     @RequestMapping("/studyDataTypes")
-    public Collection<String> getStudyDataTypes(){
-        return studyDataTypeConfig.enabledDatatypes().stream()
-                .map(Enum::name)
-                .collect(Collectors.toList());
+    public Resource<Map<StudyDataType, Collection<String>>> getStudyDataTypes() {
+        Link self = linkTo(methodOn(this.getClass()).getStudyDataTypes()).withSelfRel();
+
+        return new Resource<>(studyDataTypeConfig.enabledDatatypes(), self);
     }
 }
