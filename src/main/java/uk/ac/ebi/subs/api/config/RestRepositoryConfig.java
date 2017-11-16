@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -20,6 +21,11 @@ import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 @Configuration
 @EnableMongoAuditing(auditorAwareRef = "auditorProvider")
 public class RestRepositoryConfig {
+
+    @Bean
+    public SpelAwareProxyProjectionFactory projectionFactory() {
+        return new SpelAwareProxyProjectionFactory();
+    }
 
     public static final String DEFAULT_USI_USER = "usi-user";
 

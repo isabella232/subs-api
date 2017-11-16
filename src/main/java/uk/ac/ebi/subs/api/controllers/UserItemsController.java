@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
@@ -11,11 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.projections.SubmissionWithStatus;
+import uk.ac.ebi.subs.repository.projections.SubmittableWithStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
-import javax.annotation.sql.DataSourceDefinition;
 import java.util.List;
 import java.util.Map;
 
@@ -28,35 +30,41 @@ public class UserItemsController {
     private SubmissionRepository submissionRepository;
     private SubmissionStatusRepository submissionStatusRepository;
     private PagedResourcesAssembler pagedResourcesAssembler;
+    private SpelAwareProxyProjectionFactory projectionFactory;
 
-    public UserItemsController(UserTeamService userTeamService, ProjectRepository projectRepository, SubmissionRepository submissionRepository, SubmissionStatusRepository submissionStatusRepository, PagedResourcesAssembler pagedResourcesAssembler) {
+    public UserItemsController(UserTeamService userTeamService, ProjectRepository projectRepository, SubmissionRepository submissionRepository, SubmissionStatusRepository submissionStatusRepository, PagedResourcesAssembler pagedResourcesAssembler, SpelAwareProxyProjectionFactory projectionFactory) {
         this.userTeamService = userTeamService;
         this.projectRepository = projectRepository;
         this.submissionRepository = submissionRepository;
         this.submissionStatusRepository = submissionStatusRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.projectionFactory = projectionFactory;
     }
 
     @RequestMapping("/user/projects")
-    public PagedResources<Resource<Project>> getUserProjects(Pageable pageable) {
+    public PagedResources<Resource<SubmittableWithStatus>> getUserProjects(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();
-        Page<Project> projects = projectRepository.submittablesInTeams(userTeamNames, pageable);
-
-        return (PagedResources<Resource<Project>>) pagedResourcesAssembler.toResource(projects);
+        return pagedResourcesAssembler.toResource(
+                projectRepository
+                        .submittablesInTeams(userTeamNames, pageable)
+                        .map(project -> projectionFactory.createProjection(SubmittableWithStatus.class, project))
+        );
     }
 
     @RequestMapping("/user/submissions")
-    public PagedResources<Resource<Submission>> getUserSubmissions(Pageable pageable) {
+    public PagedResources<Resource<SubmissionWithStatus>> getUserSubmissions(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();
-        Page<Submission> submissions = submissionRepository.findByTeamNameInOrderByCreatedByDesc(userTeamNames, pageable);
-
-        return (PagedResources<Resource<Submission>>) pagedResourcesAssembler.toResource(submissions);
+        return pagedResourcesAssembler.toResource(
+                submissionRepository
+                        .findByTeamNameInOrderByCreatedByDesc(userTeamNames, pageable)
+                        .map(submission -> projectionFactory.createProjection(SubmissionWithStatus.class, submission))
+        );
     }
 
     @RequestMapping("/user/submissionStatusSummary")
-    public Map<String,Integer> getUserSubmissionStatusSummary(){
+    public Map<String, Integer> getUserSubmissionStatusSummary() {
         List<String> userTeamNames = userTeamService.userTeamNames();
-        Map<String,Integer> statusCounts = submissionStatusRepository.submissionStatusCountsByTeam(userTeamNames);
+        Map<String, Integer> statusCounts = submissionStatusRepository.submissionStatusCountsByTeam(userTeamNames);
         return statusCounts;
     }
 }
