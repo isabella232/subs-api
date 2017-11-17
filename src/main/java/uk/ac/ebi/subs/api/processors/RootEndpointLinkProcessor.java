@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
-import uk.ac.ebi.subs.api.controllers.UserItemsController;
+import uk.ac.ebi.subs.api.controllers.UserProjectsController;
+import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     private void addUserProjects(List<Link> links) {
         Link userProjectsLink =
-                linkTo(methodOn(UserItemsController.class).getUserProjects(null)
+                linkTo(methodOn(UserProjectsController.class).getUserProjects(null)
                 ).withRel("userProjects");
 
         links.add(userProjectsLink);
@@ -57,13 +58,13 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     private void addUserSubmissions(List<Link> links) {
         Link userSubmissionsLink =
-                linkTo(methodOn(UserItemsController.class).getUserSubmissions(null)
+                linkTo(methodOn(UserSubmissionsController.class).getUserSubmissions(null)
                 ).withRel("userSubmissions");
 
         links.add(userSubmissionsLink);
 
         Link userSubmissionStatusSummaryLink =
-                linkTo(methodOn(UserItemsController.class).getUserSubmissionStatusSummary()
+                linkTo(methodOn(UserSubmissionsController.class).getUserSubmissionStatusSummary()
                 ).withRel("userSubmissionStatusSummary");
 
         links.add(userSubmissionStatusSummaryLink);
