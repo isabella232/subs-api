@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 @RestController
 @BasePathAwareController
 public class UserSubmissionsController {
@@ -74,9 +77,12 @@ public class UserSubmissionsController {
 
 
     @RequestMapping("/user/submissionStatusSummary")
-    public Map<String, Integer> getUserSubmissionStatusSummary() {
+    public Resource<Map<String, Integer>> getUserSubmissionStatusSummary() {
         List<String> userTeamNames = userTeamService.userTeamNames();
         Map<String, Integer> statusCounts = submissionStatusRepository.submissionStatusCountsByTeam(userTeamNames);
-        return statusCounts;
+
+        Link self = linkTo(methodOn(this.getClass()).getUserSubmissionStatusSummary()).withSelfRel();
+
+        return new Resource<>(statusCounts,self);
     }
 }
