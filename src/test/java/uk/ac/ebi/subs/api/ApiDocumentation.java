@@ -1365,9 +1365,13 @@ public class ApiDocumentation {
                         document("userSubmissionStatusSummary",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
                                 responseFields(
-                                        fieldWithPath("Draft").description("Number of submissions in Draft")
-
+                                        linksResponseField(),
+                                        fieldWithPath("content").description("Number of submissions for each status")
                                 )
                         )
                 );
