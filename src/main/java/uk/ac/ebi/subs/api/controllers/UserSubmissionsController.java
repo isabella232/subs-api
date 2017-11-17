@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.controllers;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
@@ -34,47 +35,30 @@ public class UserSubmissionsController {
     private UserTeamService userTeamService;
     private SubmissionRepository submissionRepository;
     private SubmissionStatusRepository submissionStatusRepository;
-    private PagedResourcesAssembler<Submission> pagedResourcesAssembler;
-    private SpelAwareProxyProjectionFactory projectionFactory;
     private SubmissionResourceProcessor submissionResourceProcessor;
-    private IdentifiableResourceSelfLinker<Submission> identifiableResourceSelfLinker;
+    private IdentifiablePageToProjectionPage<Submission,SubmissionWithStatus> identifiablePageToProjectionPage;
 
-    public UserSubmissionsController(UserTeamService userTeamService, SubmissionRepository submissionRepository, SubmissionStatusRepository submissionStatusRepository, PagedResourcesAssembler<Submission> pagedResourcesAssembler, SpelAwareProxyProjectionFactory projectionFactory, SubmissionResourceProcessor submissionResourceProcessor, IdentifiableResourceSelfLinker<Submission> identifiableResourceSelfLinker) {
+    public UserSubmissionsController(UserTeamService userTeamService, SubmissionRepository submissionRepository, SubmissionStatusRepository submissionStatusRepository, SubmissionResourceProcessor submissionResourceProcessor, IdentifiablePageToProjectionPage<Submission, SubmissionWithStatus> identifiablePageToProjectionPage) {
         this.userTeamService = userTeamService;
         this.submissionRepository = submissionRepository;
         this.submissionStatusRepository = submissionStatusRepository;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.projectionFactory = projectionFactory;
         this.submissionResourceProcessor = submissionResourceProcessor;
-        this.identifiableResourceSelfLinker = identifiableResourceSelfLinker;
+        this.identifiablePageToProjectionPage = identifiablePageToProjectionPage;
     }
 
     @RequestMapping("/user/submissions")
     public PagedResources<Resource<SubmissionWithStatus>> getUserSubmissions(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();
 
-        PagedResources<Resource<Submission>> submissionsPagedResource = pagedResourcesAssembler.toResource(
-                submissionRepository.findByTeamNameInOrderByCreatedByDesc(userTeamNames, pageable)
+        Page<Submission> page = submissionRepository.findByTeamNameInOrderByCreatedByDesc(userTeamNames, pageable);
+
+        return identifiablePageToProjectionPage.convert(
+                page,
+                pageable,
+                submissionResourceProcessor,
+                SubmissionWithStatus.class
         );
-
-        PagedResources.PageMetadata pageMetadata = submissionsPagedResource.getMetadata();
-        Collection<Link> pageLinks = submissionsPagedResource.getLinks();
-
-        Collection<Resource<SubmissionWithStatus>> submissionWithStatus = submissionsPagedResource.getContent().stream()
-                .map(resource -> identifiableResourceSelfLinker.addSelfLink(resource))
-                .map(resource -> submissionResourceProcessor.process(resource))
-                .map(resource ->
-                        new Resource<>(
-                                projectionFactory.createProjection(SubmissionWithStatus.class, resource.getContent()),
-                                resource.getLinks()
-                        )
-                )
-                .collect(Collectors.toList());
-
-        return new PagedResources<>(submissionWithStatus, pageMetadata, pageLinks);
     }
-
-
 
     @RequestMapping("/user/submissionStatusSummary")
     public Resource<Map<String, Integer>> getUserSubmissionStatusSummary() {
