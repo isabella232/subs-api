@@ -2,10 +2,6 @@ package uk.ac.ebi.subs.api.validators;
 
 
 import org.springframework.validation.Errors;
-import uk.ac.ebi.subs.data.status.StatusDescription;
-
-import java.util.List;
-import java.util.Optional;
 
 public class ValidationHelper {
 

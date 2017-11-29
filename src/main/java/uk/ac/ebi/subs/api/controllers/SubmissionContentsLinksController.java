@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
-import uk.ac.ebi.subs.api.processors.SubmissionContentsProcessor;
-import uk.ac.ebi.subs.api.services.PersistentEntityCreationHelper;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;

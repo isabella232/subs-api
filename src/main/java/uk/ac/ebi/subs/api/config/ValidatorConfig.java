@@ -4,7 +4,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.api.validators.*;
+import uk.ac.ebi.subs.api.validators.AnalysisValidator;
+import uk.ac.ebi.subs.api.validators.AssayDataValidator;
+import uk.ac.ebi.subs.api.validators.AssayValidator;
+import uk.ac.ebi.subs.api.validators.EgaDacPolicyValidator;
+import uk.ac.ebi.subs.api.validators.EgaDacValidator;
+import uk.ac.ebi.subs.api.validators.EgaDatasetValidator;
+import uk.ac.ebi.subs.api.validators.ProjectValidator;
+import uk.ac.ebi.subs.api.validators.ProtocolValidator;
+import uk.ac.ebi.subs.api.validators.SampleGroupValidator;
+import uk.ac.ebi.subs.api.validators.SampleValidator;
+import uk.ac.ebi.subs.api.validators.StudyValidator;
+import uk.ac.ebi.subs.api.validators.SubmissionDeleteValidator;
+import uk.ac.ebi.subs.api.validators.SubmissionStatusValidator;
+import uk.ac.ebi.subs.api.validators.SubmissionValidator;
+import uk.ac.ebi.subs.api.validators.SubmittableDeleteValidator;
 
 import java.util.stream.Stream;
 
