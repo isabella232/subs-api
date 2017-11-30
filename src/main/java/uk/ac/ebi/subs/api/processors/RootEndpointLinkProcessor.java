@@ -1,18 +1,23 @@
 package uk.ac.ebi.subs.api.processors;
 
+import lombok.Data;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.api.config.AapLinkConfig;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
+import uk.ac.ebi.tsc.aap.client.security.AAPWebSecurityAutoConfiguration;
 
 import java.util.List;
 
@@ -20,17 +25,20 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Component
+@Data
 public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLinksResource> {
 
     private static final Logger logger = LoggerFactory.getLogger(RootEndpointLinkProcessor.class);
 
-    public RootEndpointLinkProcessor(RepositoryEntityLinks repositoryEntityLinks, LinkHelper linkHelper) {
-        this.repositoryEntityLinks = repositoryEntityLinks;
-        this.linkHelper = linkHelper;
-    }
-
+    @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
+
+    @NonNull
     private LinkHelper linkHelper;
+
+    @NonNull
+    private AapLinkConfig aapLinkConfig;
+
 
     private void addLinks(List<Link> links) {
         addStatusDescriptions(links);
@@ -38,6 +46,16 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addUserProjects(links);
         addUserSubmissions(links);
         addStudyDataType(links);
+        addAapApiLink(links);
+    }
+
+    private void addAapApiLink(List<Link> links){
+        links.add(
+                new Link(
+                        aapLinkConfig.getUrl(),
+                        "aap-api-root"
+                )
+        );
     }
 
     private void addStudyDataType(List<Link> links) {
