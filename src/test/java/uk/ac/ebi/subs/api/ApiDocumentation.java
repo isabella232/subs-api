@@ -1286,7 +1286,8 @@ public class ApiDocumentation {
                                         linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
                                         linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
                                         //profile
-                                        linkWithRel("profile").description("Application level details")
+                                        linkWithRel("profile").description("Application level details"),
+                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API")
                                 ),
                                 responseFields(
                                         linksResponseField()
