@@ -25,7 +25,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,8 +37,10 @@ import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
 import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
@@ -64,6 +65,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -637,14 +639,9 @@ public class ApiDocumentation {
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
-
                                         fieldWithPath("studyType").description("Type of data in this study"),
-                                        fieldWithPath("publications").description("Publications for this study"),
-                                        fieldWithPath("contacts").description("Contact details for people involved in this study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
                                         fieldWithPath("projectRef").description("References to the overall project that this study is part of"),
-                                        fieldWithPath("releaseDate").description("Date at which this project will be released"),
-
 
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
@@ -1151,6 +1148,14 @@ public class ApiDocumentation {
         for (Sample s : samples) {
             s.setCreatedDate(new Date());
             s.setSubmission(sub);
+
+            Attribute cellLineType = Helpers.attribute("EBV-LCL cell line");
+            Term ebvLclCellLine = new Term();
+            ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
+            cellLineType.getTerms().add(ebvLclCellLine);
+
+            s.getAttributes().put("Cell line type", Collections.singletonList(cellLineType));
+
             processingStatusRepository.insert(s.getProcessingStatus());
             sampleRepository.insert(s);
         }

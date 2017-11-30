@@ -1,16 +1,11 @@
 package uk.ac.ebi.subs.api.validators;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.StudyDataType;
-import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
 import java.util.Objects;

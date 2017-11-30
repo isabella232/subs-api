@@ -25,7 +25,9 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by rolando on 12/06/2017.

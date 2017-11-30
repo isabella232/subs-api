@@ -1,7 +1,7 @@
 package uk.ac.ebi.subs.api.services;
 
-import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 import java.util.List;
 

@@ -7,7 +7,11 @@ import uk.ac.ebi.subs.data.status.ReleaseStatusEnum;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Configuration
