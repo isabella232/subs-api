@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '1.0.0-SNAPSHOT'
+version '1.0.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -35,6 +35,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.projectlombok:lombok:1.16.18")
     compile("uk.ac.ebi.subs:subs-processing-model:1.0.1-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-repository:1.0.1-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
