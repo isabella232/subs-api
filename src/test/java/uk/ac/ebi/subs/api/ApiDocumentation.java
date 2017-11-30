@@ -117,6 +117,7 @@ public class ApiDocumentation {
     @Autowired
     private SubmissionRepository submissionRepository;
 
+
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
 
@@ -388,7 +389,6 @@ public class ApiDocumentation {
                                 linkWithRel("egaDacs").description("Collection of DACs within this submission"),
                                 linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
                                 linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("protocols").description("Collection of protocols within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
