@@ -35,6 +35,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.projectlombok:lombok:1.16.18")
     compile("uk.ac.ebi.subs:subs-processing-model:1.0.1-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-repository:1.1.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")

@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.StudyDataType;
@@ -13,6 +14,7 @@ import java.util.TreeSet;
 
 @Component
 @ConfigurationProperties("usi.studyDataType")
+@Data
 public class StudyDataTypeConfig {
 
     private boolean sequencingEnabled = true;
@@ -66,62 +68,6 @@ public class StudyDataTypeConfig {
         }
 
         return enabledDataTypes;
-    }
-
-    public boolean isSequencingAssemblyEnabled() {
-        return sequencingAssemblyEnabled;
-    }
-
-    public void setSequencingAssemblyEnabled(boolean sequencingAssemblyEnabled) {
-        this.sequencingAssemblyEnabled = sequencingAssemblyEnabled;
-    }
-
-    public boolean isSequencingVariationEnabled() {
-        return sequencingVariationEnabled;
-    }
-
-    public void setSequencingVariationEnabled(boolean sequencingVariationEnabled) {
-        this.sequencingVariationEnabled = sequencingVariationEnabled;
-    }
-
-    public boolean isSequencingSequenceAnnotation() {
-        return sequencingSequenceAnnotation;
-    }
-
-    public void setSequencingSequenceAnnotation(boolean sequencingSequenceAnnotation) {
-        this.sequencingSequenceAnnotation = sequencingSequenceAnnotation;
-    }
-
-    public boolean isSequencingEnabled() {
-        return sequencingEnabled;
-    }
-
-    public void setSequencingEnabled(boolean sequencingEnabled) {
-        this.sequencingEnabled = sequencingEnabled;
-    }
-
-    public boolean isMetabolomicsEnabled() {
-        return metabolomicsEnabled;
-    }
-
-    public void setMetabolomicsEnabled(boolean metabolomicsEnabled) {
-        this.metabolomicsEnabled = metabolomicsEnabled;
-    }
-
-    public boolean isFunctionalGenomicsEnabled() {
-        return functionalGenomicsEnabled;
-    }
-
-    public void setFunctionalGenomicsEnabled(boolean functionalGenomicsEnabled) {
-        this.functionalGenomicsEnabled = functionalGenomicsEnabled;
-    }
-
-    public boolean isProteomicsEnabled() {
-        return proteomicsEnabled;
-    }
-
-    public void setProteomicsEnabled(boolean proteomicsEnabled) {
-        this.proteomicsEnabled = proteomicsEnabled;
     }
 }
 
