@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,7 @@ import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
-import uk.ac.ebi.tsc.aap.client.security.AAPWebSecurityAutoConfiguration;
+import uk.ac.ebi.subs.repository.model.UiSupportItem;
 
 import java.util.List;
 
@@ -47,9 +46,18 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addUserSubmissions(links);
         addStudyDataType(links);
         addAapApiLink(links);
+        addUiSupportLinks(links);
     }
 
-    private void addAapApiLink(List<Link> links){
+    private void addUiSupportLinks(List<Link> links) {
+        linkHelper.addSearchLink(links, UiSupportItem.class);
+
+        links.add(
+                repositoryEntityLinks.linkToCollectionResource(UiSupportItem.class)
+        );
+    }
+
+    private void addAapApiLink(List<Link> links) {
         links.add(
                 new Link(
                         aapLinkConfig.getUrl(),
@@ -61,7 +69,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     private void addStudyDataType(List<Link> links) {
         Link studyDataTypeLink =
                 linkTo(methodOn(StudyDataTypeController.class).getStudyDataTypes())
-                    .withRel("studyDataTypes");
+                        .withRel("studyDataTypes");
 
         links.add(studyDataTypeLink);
     }
