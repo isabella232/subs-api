@@ -394,7 +394,7 @@ public class ApiDocumentation {
                                 linkWithRel("egaDacs:create").description("Create a new DAC resource"),
                                 linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
                                 linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
-                                linkWithRel("projects").description("Collection of projects within this submission"),
+                                //linkWithRel("project").description("Projects within this submission"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
                                 linkWithRel("protocols").description("Collection of protocols within this submission"),
                                 linkWithRel("protocols:create").description("Create a new protocol resource"),

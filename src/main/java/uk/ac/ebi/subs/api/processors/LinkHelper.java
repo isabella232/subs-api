@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.processors;
 
+import lombok.Data;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -9,8 +11,10 @@ import org.springframework.hateoas.Links;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
+import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,25 +24,23 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Component
+@Data
 public class LinkHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(LinkHelper.class);
-    private List<Class<? extends StoredSubmittable>> submittablesClassList;
+
+    @NonNull private List<Class<? extends StoredSubmittable>> submittablesClassList;
 
     static final String CREATE_REL_SUFFIX = ":create";
     static final String SEARCH_REL_SUFFIX = ":search";
     static final String UPDATE_REL_SUFFIX = ":update";
     static final String DELETE_REL_SUFFIX = ":delete";
 
-    private RepositoryEntityLinks repositoryEntityLinks;
+    @NonNull private RepositoryEntityLinks repositoryEntityLinks;
+    @NonNull private ProjectRepository projectRepository;
 
     public List<Class<? extends StoredSubmittable>> getSubmittablesClassList() {
         return submittablesClassList;
-    }
-
-    public LinkHelper(List<Class<? extends StoredSubmittable>> submittablesClassList, RepositoryEntityLinks repositoryEntityLinks) {
-        this.submittablesClassList = submittablesClassList;
-        this.repositoryEntityLinks = repositoryEntityLinks;
     }
 
     public void addSubmittablesSearchLinks(Collection<Link> links){
@@ -51,7 +53,18 @@ public class LinkHelper {
         Assert.notNull(submission.getId());
 
         for (Class type : submittablesClassList){
-            this.addSubmittableCreateLink(links,type,submission);
+            if (type.equals(Project.class)){
+                this.addProjectCreateLink(links,submission);
+            }
+            else {
+                this.addSubmittableCreateLink(links, type, submission);
+            }
+        }
+    }
+
+    public void addProjectCreateLink(Collection<Link> links, Submission submission){
+        if (projectRepository.findOneBySubmissionId(submission.getId()) == null){
+            this.addSubmittableCreateLink(links,Project.class,submission);
         }
     }
 
@@ -98,11 +111,13 @@ public class LinkHelper {
     private void addSubmittablesLinksWithNamedSearchRel(Collection<Link> links, String relName, Map<String,String> expansionParams){
 
         for (Class type : submittablesClassList){
-            Link searchLink = repositoryEntityLinks.linkToSearchResource(type,relName);
-            Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
+            if (!type.equals(Project.class)){
+                Link searchLink = repositoryEntityLinks.linkToSearchResource(type, relName);
+                Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
-            Link submittablesInSubmission = searchLink.expand(expansionParams).withRel(  collectionLink.getRel() );
-            links.add(submittablesInSubmission);
+                Link submittablesInSubmission = searchLink.expand(expansionParams).withRel(collectionLink.getRel());
+                links.add(submittablesInSubmission);
+            }
         }
     }
 
