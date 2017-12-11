@@ -26,7 +26,7 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@WithMockUser(username = "usi_user", roles = {CoreValidatorTest.TEST_TEAM_1,"aap.admin"})//TODO why is the USI admin role, "aap.admin"?
+@WithMockUser(username = "usi_user", roles = {CoreValidatorTest.TEST_TEAM_1,"self.embl-ebi-subs-admin"})
 public class ProjectValidationTest {
 
     @Autowired
