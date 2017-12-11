@@ -1,10 +1,11 @@
-package uk.ac.ebi.subs.api;
+package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
+import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
 import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
@@ -51,7 +53,9 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.UiSupportItem;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.UiSupportItemRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
@@ -116,7 +120,6 @@ public class ApiDocumentation {
     private String scheme;
     @Autowired
     private SubmissionRepository submissionRepository;
-
 
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
@@ -384,25 +387,25 @@ public class ApiDocumentation {
                         links(
                                 halLinks(),
                                 linkWithRel("analyses").description("Collection of analyses within this submission"),
-                                linkWithRel("assays").description("Collection of assays within this submission"),
-                                linkWithRel("assayData").description("Collection of assay data within this submission"),
-                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
-                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
-                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("protocols").description("Collection of protocols within this submission"),
-                                linkWithRel("samples").description("Collection of samples within this submission"),
-                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
-                                linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("analyses:create").description("Create a new analysis resource"),
+                                linkWithRel("assayData").description("Collection of assay data within this submission"),
                                 linkWithRel("assayData:create").description("Create a new assay data resource"),
+                                linkWithRel("assays").description("Collection of assays within this submission"),
                                 linkWithRel("assays:create").description("Create a new assay resource"),
+                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
                                 linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
+                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
                                 linkWithRel("egaDacs:create").description("Create a new DAC resource"),
+                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
                                 linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
+                                linkWithRel("protocols").description("Collection of protocols within this submission"),
                                 linkWithRel("protocols:create").description("Create a new protocol resource"),
+                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("studies:create").description("Create a new study resource")
                         ),
                         responseFields(
@@ -1281,6 +1284,8 @@ public class ApiDocumentation {
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
+                                        linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
+                                        linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
                                         linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
@@ -1437,11 +1442,11 @@ public class ApiDocumentation {
                 );
     }
 
-    private FieldDescriptor linksResponseField() {
+    public static  FieldDescriptor linksResponseField() {
         return fieldWithPath("_links").description("Links to other resources");
     }
 
-    private LinkDescriptor selfRelLink() {
+    public static LinkDescriptor selfRelLink() {
         return linkWithRel("self").description("Canonical link for this resource");
     }
 
@@ -1453,35 +1458,35 @@ public class ApiDocumentation {
         return sub;
     }
 
-    private FieldDescriptor paginationPageNumberDescriptor() {
+    public static  FieldDescriptor paginationPageNumberDescriptor() {
         return fieldWithPath("page.number").description("The page number");
     }
 
-    private FieldDescriptor paginationTotalPagesDescriptor() {
+    public static  FieldDescriptor paginationTotalPagesDescriptor() {
         return fieldWithPath("page.totalPages").description("The total number of pages");
     }
 
-    private FieldDescriptor paginationTotalElementsDescriptor() {
+    public static  FieldDescriptor paginationTotalElementsDescriptor() {
         return fieldWithPath("page.totalElements").description("The total number of resources");
     }
 
-    private FieldDescriptor paginationPageSizeDescriptor() {
+    public static  FieldDescriptor paginationPageSizeDescriptor() {
         return fieldWithPath("page.size").description("The number of resources in this page");
     }
 
-    private LinkDescriptor nextRelLink() {
+    public static  LinkDescriptor nextRelLink() {
         return linkWithRel("next").description("Next page of this resource");
     }
 
-    private LinkDescriptor lastRelLink() {
+    public static  LinkDescriptor lastRelLink() {
         return linkWithRel("last").description("Last page for this resource");
     }
 
-    private LinkDescriptor firstRelLink() {
+    public static  LinkDescriptor firstRelLink() {
         return linkWithRel("first").description("First page for this resource");
     }
 
-    private LinkDescriptor prevRelLink() {
+    public static  LinkDescriptor prevRelLink() {
         return linkWithRel("prev").description("Previous page for this resource");
     }
 

@@ -229,6 +229,7 @@ public class Helpers {
 
 
     public final static String TEAM_NAME = "self.usi-user";
+    public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
 
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
