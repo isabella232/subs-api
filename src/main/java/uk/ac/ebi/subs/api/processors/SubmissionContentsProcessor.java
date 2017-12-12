@@ -12,6 +12,9 @@ import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @Data
 public class SubmissionContentsProcessor implements ResourceProcessor<Resource<SubmissionContents>> {
@@ -35,8 +38,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         );
 
         if (projectRepository.findOneBySubmissionId(subId) != null) {
+            Map<String,String> paramMap = new HashMap<>();
+            paramMap.put("submissionId",subId);
+
             Link fetchLink = repositoryEntityLinks
                     .linkToSearchResource(Project.class, "project-by-submission")
+                    .expand(paramMap)
                     .withRel("project");
             resource.add(fetchLink);
         }

@@ -306,12 +306,35 @@ include::{snippets}/update-sample/http-response.adoc[]
 
 Updating a document will cause it to be re-validated, as described above.
 
+ifdef::project[]
+
+== Adding a project
+
+Projects have a release date, title and description. As with samples, they are created using `POST` requests:
+
+include::{snippets}/create-project/curl-request.adoc[]
+
+This will return a response to show that the project record has been created:
+
+include::{snippets}/create-project/http-response.adoc[]
+
+A submission can only have one project, so once you have added a project to a submission the `projects:create` link
+will not be available from the submission contents endpoint:
+
+include::{snippets}/submission-contents-post-project-creation/curl-request.adoc[]
+
+include::{snippets}/submission-contents-post-project-creation/http-response.adoc[]
+
+
+endif::project[]
+
 ifdef::study[]
 
 == Adding a study
 
 Experimental data are grouped into _studies_. Studies should describe the motivation and summarise the design for the
-study. Like samples, studies are identified by an alias, and have a number of attributes.
+study. Like samples, studies are identified by an alias, and have a number of attributes. Studies should always
+reference a project.
 
 As with samples, study records are created using `POST` requests:
 

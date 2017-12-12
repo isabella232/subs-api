@@ -1,10 +1,12 @@
 package uk.ac.ebi.subs.api;
 
 
+import org.springframework.security.access.method.P;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.File;
+import uk.ac.ebi.subs.data.component.ProjectRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.component.StudyDataType;
@@ -74,6 +76,10 @@ public class Helpers {
     }
 
     public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired) {
+        return generateTestClientStudies(numberOfStudiesRequired,generateClientProject().getAlias());
+    }
+
+        public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired, String projectAlias) {
         List<uk.ac.ebi.subs.data.client.Study> studies= new ArrayList<>(numberOfStudiesRequired);
 
         for (int i = 1; i <= numberOfStudiesRequired; i++) {
@@ -88,6 +94,10 @@ public class Helpers {
             s.setDescription("We sequenced some humans to discover variants linked with a disease");
 
             s.setStudyType(StudyDataType.Sequencing);
+
+            ProjectRef projectRef = new ProjectRef();
+            projectRef.setAlias(projectAlias);
+            s.setProjectRef(projectRef);
 
             Attribute studyAbstract = new Attribute();
             studyAbstract.setValue(s.getDescription());
@@ -105,8 +115,19 @@ public class Helpers {
         return attribute;
     }
 
+    public static uk.ac.ebi.subs.data.client.Project generateClientProject() {
+        uk.ac.ebi.subs.data.client.Project project = new uk.ac.ebi.subs.data.client.Project();
+        project.setAlias("example-short-unique-name");
+        project.setTitle("Example title for our scientific project, at least 50 characters long");
+        project.setDescription("Example description for our scientific project, which must also be at least 50 characters long");
+        project.setReleaseDate(LocalDate.now());
+        return project;
+    }
+
     public static List<uk.ac.ebi.subs.data.client.Assay> generateTestClientAssays(int numberOfAssaysRequired) {
         List<uk.ac.ebi.subs.data.client.Assay> assays = new ArrayList<>(numberOfAssaysRequired);
+
+        uk.ac.ebi.subs.data.client.Project project = generateClientProject();
 
         Study study = generateTestClientStudies(1).get(0);
         StudyRef studyRef = new StudyRef();
