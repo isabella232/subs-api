@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
@@ -53,9 +52,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
-import uk.ac.ebi.subs.repository.model.UiSupportItem;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.UiSupportItemRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
@@ -68,7 +65,6 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -622,6 +618,7 @@ public class ApiDocumentation {
     @Test
     public void createStudy() throws Exception {
         Submission sub = storeSubmission();
+
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
         String jsonRepresentation = objectMapper.writeValueAsString(study);
@@ -787,12 +784,7 @@ public class ApiDocumentation {
     @Test
     public void createProject() throws Exception {
         Submission sub = storeSubmission();
-        uk.ac.ebi.subs.data.client.Project project = new uk.ac.ebi.subs.data.client.Project();
-        project.setAlias("example-short-unique-name");
-        project.setTitle("Example project title");
-        project.setDescription("Example project description");
-        project.setReleaseDate(LocalDate.now());
-
+        uk.ac.ebi.subs.data.client.Project project = Helpers.generateClientProject();
 
         String jsonRepresentation = objectMapper.writeValueAsString(project);
 
@@ -818,7 +810,6 @@ public class ApiDocumentation {
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
                                         fieldWithPath("team").description("Team this project belongs to"),
-
                                         fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -840,6 +831,101 @@ public class ApiDocumentation {
                                 )
                         )
                 );
+
+        String projectId = projectRepository.findAll().get(0).getId();
+
+        this.mockMvc.perform(
+                put("/api/projects/" + projectId ).content(jsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("update-project",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the project within the team"),
+                                        fieldWithPath("title").description("Title for the project"),
+                                        fieldWithPath("description").description("Description for the project"),
+                                        fieldWithPath("contacts").description("Contacts for this project"),
+                                        fieldWithPath("publications").description("Publications related to thisproject"),
+                                        //fieldWithPath("attributes").description("A list of attributes for the project"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        fieldWithPath("team").description("Team this project belongs to"),
+                                        fieldWithPath("releaseDate").description("Date at which this project can be released"),
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        validationresultLink(),
+                                        submissionLink(),
+                                        processingStatusLink(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("project").description("This resource"),
+                                        linkWithRel("self:update").description("This resource can be updated"),
+                                        linkWithRel("self:delete").description("This resource can be deleted"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+
+                                )
+                        )
+                );
+
+        Map<String,String> patchValues = new HashMap<>();
+        patchValues.put("title", "Example title for our scientific project, between 50 and 4000 characters long");
+        String patchJsonRepresentation = objectMapper.writeValueAsString(patchValues);
+
+        this.mockMvc.perform(
+                patch("/api/projects/" + projectId ).content(patchJsonRepresentation)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("patch-project",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the project within the team"),
+                                        fieldWithPath("title").description("Title for the project"),
+                                        fieldWithPath("description").description("Description for the project"),
+                                        fieldWithPath("contacts").description("Contacts for this project"),
+                                        fieldWithPath("publications").description("Publications related to thisproject"),
+                                        //fieldWithPath("attributes").description("A list of attributes for the project"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        fieldWithPath("team").description("Team this project belongs to"),
+                                        fieldWithPath("releaseDate").description("Date at which this project can be released"),
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        validationresultLink(),
+                                        submissionLink(),
+                                        processingStatusLink(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("project").description("This resource"),
+                                        linkWithRel("self:update").description("This resource can be updated"),
+                                        linkWithRel("self:delete").description("This resource can be deleted"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+
+                                )
+                        )
+                );
+
 
         //submission contents should now just have a link to view projects
         this.mockMvc.perform(get("/api/submissions/{submissionId}/contents", sub.getId()))
@@ -879,6 +965,8 @@ public class ApiDocumentation {
 
 
     }
+
+
 
     @Test
     public void createSample() throws Exception {

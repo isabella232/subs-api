@@ -379,6 +379,74 @@ The methods to create and update them are common between all of these types.
 We will use sample as an example.
 
 // TODO extend to cover all resources
+=== Project
+
+A submission can contain one project.
+
+==== Minimal requirements
+Fields:
+
+* title, should be at least 50 characters long
+* description, should be at least 50 characters long
+* releaseDate, in YYYY-MM-DD format, eg. `"2017-12-12"`
+
+==== Create a project
+
+===== Request
+
+include::{snippets}/create-project/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/create-project/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/create-project/links.adoc[]
+
+==== Update a project
+===== Request
+
+include::{snippets}/update-project/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/update-project/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/update-project/links.adoc[]
+
+
+==== Patch a project
+===== Request
+
+include::{snippets}/patch-project/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/patch-project/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/patch-project/links.adoc[]
+
+==== Projects available
+
+Request a list of all projects available to the logged in user
+
+===== Request
+
+include::{snippets}/userProjects/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/userProjects/http-response.adoc[]
+
+===== Links
+
+include::{snippets}/userProjects/links.adoc[]
+
 
 === Sample
 
@@ -389,7 +457,7 @@ Fields:
 * alias
 * title
 * taxonId (for submitting to ENA)
-* releaseDate (only date without time, for example: "2017-12-12")
+* releaseDate in YYYY-MM-DD foramt, e.g. `"2017-12-12"`
 
 ==== Create a sample
 
@@ -433,27 +501,9 @@ include::{snippets}/patch-sample/http-response.adoc[]
 
 include::{snippets}/patch-sample/links.adoc[]
 
-=== Project
 
-==== Projects available
-
-Request a list of all projects available to the logged in user
-
-===== Request
-
-include::{snippets}/userProjects/curl-request.adoc[]
-
-===== Response
-
-include::{snippets}/userProjects/http-response.adoc[]
-
-===== Links
-
-include::{snippets}/userProjects/links.adoc[]
-
-
-=== Reference data
-==== Status descriptions
+== Reference data
+=== Status descriptions
 
 The status description resources provide information about each status used in the system, including available status
 changes and wether the resources can be changed. These resources do not accept `POST`, `PUT`, `PATCH` or `DELETE`
@@ -465,28 +515,28 @@ requests.
 
 `TODO to cover all status descriptions`
 
-==== Study data types
+=== Study data types
 
-===== Request
+==== Request
 
 include::{snippets}/studyDataTypes/curl-request.adoc[]
 
-===== Response
+==== Response
 
 include::{snippets}/studyDataTypes/http-response.adoc[]
 
 
-==== UI Support Items
+=== UI Support Items
 
 Support items are used to populate the UI, for labels or example documents. They are read-only for most users, although
 admin users can create, edit and delete them.
 
-===== Find all support items
-====== Request
+==== Find all support items
+===== Request
 
 include::{snippets}/uiSupportItems-list/curl-request.adoc[]
 
-====== Response
+===== Response
 
 include::{snippets}/uiSupportItems-list/http-response.adoc[]
 
