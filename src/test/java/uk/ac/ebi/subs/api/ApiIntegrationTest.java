@@ -17,6 +17,8 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -24,7 +26,9 @@ import uk.ac.ebi.subs.api.error.ApiError;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
@@ -32,7 +36,6 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -116,17 +119,26 @@ public abstract class ApiIntegrationTest {
         Map<String, String> rootRels = testHelper.rootRels();
         assertThat(rootRels.keySet(), hasItems("templates"));
 
+        Template template = Template.builder().name("test-template").targetType("samples").build();
+        template
+                .add(
+                        "alias",
+                        FieldCapture.builder().fieldName("alias").build()
+                )
+                .add(
+                        "taxon id",
+                        FieldCapture.builder().fieldName("taxonId").fieldType(JsonFieldType.IntegerNumber).build()
+                )
+                .add(
+                        "taxon",
+                        FieldCapture.builder().fieldName("taxon").build()
+                );
 
-        Template template = Template
-                .builder()
-                .name("test-template")
-                .targetType("sample")
-                .build();
-
-        template.add("column1", FieldCapture.builder().displayName("column1").fieldName("field1").build());
+        template.setDefaultCapture(
+                AttributeCapture.builder().build()
+        );
 
         templateRepository.insert(template);
-
 
         HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("templates")).headers(testHelper.getGetHeaders()).asJson();
 
@@ -134,11 +146,8 @@ public abstract class ApiIntegrationTest {
         JSONObject exampleTemplateJson = templates.getJSONObject(0);
         String spreadsheetLink = exampleTemplateJson
                 .getJSONObject("_links")
-                .getJSONObject("spreadsheet")
+                .getJSONObject("spreadsheet-csv-download")
                 .getString("href");
-
-
-        System.out.println(exampleTemplateJson);
 
         Map<String,String> requestHeaders = testHelper.getGetHeaders();
         requestHeaders.put("Accept","text/csv");

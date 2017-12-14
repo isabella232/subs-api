@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.processors;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
@@ -20,14 +21,18 @@ public class TemplateResourceProcessor implements ResourceProcessor<Resource<Tem
         Template template = resource.getContent();
         String templateId = template.getId();
 
+        String baseDownloadHref = "";
+
         try {
-            resource.getLinks().add(
-                    linkTo(methodOn(TemplateController.class).templateAsSheet(templateId)
-                    ).withRel("spreadsheet")
-            );
+            Link baseDownloadLink = linkTo(methodOn(TemplateController.class).templateAsSheet(templateId)).withRel("placeholder");
+            baseDownloadHref = baseDownloadLink.getHref();
         } catch (IOException e) {
             // method is not actually invoked, so this exception can't happen
         }
+        resource.add(
+                new Link(baseDownloadHref+".csv","spreadsheet-csv-download")
+
+        );
 
         return resource;
     }
