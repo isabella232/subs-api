@@ -1471,6 +1471,8 @@ public class ApiDocumentation {
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
                                         linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
                                         linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
+                                        linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
+                                        linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
                                         linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
