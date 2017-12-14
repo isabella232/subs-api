@@ -17,7 +17,9 @@ import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
 import uk.ac.ebi.subs.repository.model.UiSupportItem;
+import uk.ac.ebi.subs.repository.model.templates.Template;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -47,13 +49,22 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addStudyDataType(links);
         addAapApiLink(links);
         addUiSupportLinks(links);
+        addTemplatesLinks(links);
     }
 
     private void addUiSupportLinks(List<Link> links) {
         linkHelper.addSearchLink(links, UiSupportItem.class);
 
         links.add(
-                repositoryEntityLinks.linkToCollectionResource(UiSupportItem.class)
+                repositoryEntityLinks.linkToCollectionResource(UiSupportItem.class).expand(new HashMap<>())
+        );
+    }
+
+    private void addTemplatesLinks(List<Link> links) {
+        linkHelper.addSearchLink(links, Template.class);
+
+        links.add(
+                repositoryEntityLinks.linkToCollectionResource(Template.class).expand(new HashMap<>())
         );
     }
 
