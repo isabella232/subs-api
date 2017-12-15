@@ -25,14 +25,14 @@ public class PersistentEntityCreationHelper {
     private HttpHeadersPreparer headersPreparer;
 
     public ResponseEntity<ResourceSupport> createPersistentEntity(
-            PersistentEntityResource payload,
+            Object payloadContent,
             RootResourceInformation resourceInformation,
             PersistentEntityResourceAssembler assembler,
             String acceptHeader
     ) {
 
-        publisher.publishEvent(new BeforeCreateEvent(payload.getContent()));
-        Object savedObject = resourceInformation.getInvoker().invokeSave(payload.getContent());
+        publisher.publishEvent(new BeforeCreateEvent(payloadContent));
+        Object savedObject = resourceInformation.getInvoker().invokeSave(payloadContent);
         publisher.publishEvent(new AfterCreateEvent(savedObject));
 
         PersistentEntityResource resource = assembler.toFullResource(savedObject);

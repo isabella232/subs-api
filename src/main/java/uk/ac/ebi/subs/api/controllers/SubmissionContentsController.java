@@ -52,7 +52,7 @@ public class SubmissionContentsController {
         submittable.setSubmission(submission);
 
         return persistentEntityCreationHelper.createPersistentEntity(
-                payload,
+                payload.getContent(),
                 resourceInformation,
                 assembler,
                 acceptHeader

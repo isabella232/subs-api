@@ -29,10 +29,11 @@ import java.util.List;
 @Component
 public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet> {
 
-    public static final MediaType MEDIA_TYPE = new MediaType("text", "csv", Charset.forName("utf-8"));
+    public static final MediaType CSV_UTF8_MEDIA_TYPE = new MediaType("text", "csv", Charset.forName("utf-8"));
+    public static final MediaType CSV_MEDIA_TYPE = new MediaType("text", "csv");
 
     public SheetCsvMessageConverter(){
-        super(MEDIA_TYPE);
+        super(CSV_MEDIA_TYPE,CSV_UTF8_MEDIA_TYPE);
     }
 
     @Override
@@ -43,7 +44,7 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
 
     @Override
     protected void writeInternal(Sheet sheet, HttpOutputMessage output) throws IOException, HttpMessageNotWritableException {
-        output.getHeaders().setContentType(MEDIA_TYPE);
+        output.getHeaders().setContentType(CSV_UTF8_MEDIA_TYPE);
         output.getHeaders().set("Content-Disposition", "attachment; filename=\"" + sheet.getSheetName() + ".csv\"");
 
         OutputStream outputStream = output.getBody();
@@ -60,9 +61,13 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
 
     @Override
     protected Sheet readInternal(Class<? extends Sheet> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        return readStream(inputMessage.getBody());
 
+    }
+
+    public Sheet readStream(InputStream inputStream) throws IOException{
         Sheet sheet = new Sheet();
-        InputStream inputStream = inputMessage.getBody();
+
         Reader in = new InputStreamReader(inputStream);
         CSVParser csvParser = CSVFormat.EXCEL.parse(in);
 
