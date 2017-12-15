@@ -42,12 +42,12 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.linksResponseField;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.paginationPageNumberDescriptor;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.paginationPageSizeDescriptor;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.paginationTotalElementsDescriptor;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.paginationTotalPagesDescriptor;
-import static uk.ac.ebi.subs.api.documentation.ApiDocumentation.selfRelLink;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageNumberDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageSizeDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalElementsDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalPagesDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
@@ -79,24 +79,9 @@ public class UiItemSupportDocumentation {
     @Before
     public void setUp() {
         clearDatabases();
-
-        objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-        MockMvcRestDocumentationConfigurer docConfig = documentationConfiguration(this.restDocumentation);
-
-        docConfig.uris()
-                .withScheme(scheme)
-                .withHost(host)
-                .withPort(port);
-
-
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(docConfig)
-                .defaultRequest(get("/").contextPath("/api"))
-                .build();
+        MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
+        this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
+        this.objectMapper = DocumentationHelper.mapper();
     }
 
     private void clearDatabases() {
