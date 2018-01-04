@@ -176,22 +176,16 @@ task('externalCiTest', type: Test) {
 
 task deployJar(type: SshTask, dependsOn: 'build') {
     doLast {
-
+        def uploadJarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
         if (gradle_env == "dev") {
-
-            File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-dev/jar")
-            sshRun(jarDeployDir)
-
+            File jarDeployFile = new File("/homes/sub_adm/tc_subs/submission-dev/jar",uploadJarFileName)
+            sshRun(jarDeployFile)
         } else if (gradle_env == "test") {
-
-            File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-test/jar")
-            sshRun(jarDeployDir)
-
+            File jarDeployFile = new File("/homes/sub_adm/tc_subs/submission-test/jar",uploadJarFileName)
+            sshRun(jarDeployFile)
         } else if (gradle_env == "dev2") {
-
-            File jarDeployDir = new File("/data/subs-api/jar")
-            sshRun(jarDeployDir)
-
+            File jarDeployFile = new File("/data/subs-api/jar",uploadJarFileName)
+            sshRun(jarDeployFile)
         }
     }
     ssh.settings {
@@ -199,20 +193,20 @@ task deployJar(type: SshTask, dependsOn: 'build') {
     }
 }
 
-private Object sshRun(File jarDeployDir) {
+private Object sshRun(File jarDeployFile) {
+    File jarDeployDir = jarDeployFile.getParentFile()
     ssh.run {
         session(remotes.role(gradle_env)) {
-            println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
-            put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
+            println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
+            put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
             println "creating symbolic link to $jar.archiveName"
-            def result = execute "ln -s -f $jarDeployDir/$jar.archiveName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+            def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
             println result
             println "updating permissions of $jarDeployDir/$jar.archiveName"
             execute "chmod u+x $jarDeployDir/*", ignoreError: false
         }
     }
 }
-
 
 task printClasspath << {
     configurations.testCompile.each { println it }

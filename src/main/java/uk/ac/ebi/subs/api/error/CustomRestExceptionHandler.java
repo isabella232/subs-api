@@ -73,7 +73,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleRepositoryConstraintViolationException(RepositoryConstraintViolationException ex, WebRequest request) {
         List<String> errors = new ArrayList<>();
         ex.getErrors().getAllErrors().forEach(error -> {
-            if (error.getClass().isAssignableFrom(FieldError.class)) {
+            if (FieldError.class.isAssignableFrom(error.getClass())) {
                 errors.add(buildErrorString((FieldError) error));
             } else {
                 errors.add(error.toString());
