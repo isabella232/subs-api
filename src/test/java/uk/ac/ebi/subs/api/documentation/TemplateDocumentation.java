@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.api.documentation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
@@ -27,8 +26,11 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.repository.model.UiSupportItem;
-import uk.ac.ebi.subs.repository.repos.UiSupportItemRepository;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
+import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
+import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -53,7 +55,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
-public class UiItemSupportDocumentation {
+public class TemplateDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -71,7 +73,7 @@ public class UiItemSupportDocumentation {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    private UiSupportItemRepository uiSupportItemRepository;
+    private TemplateRepository templateRepository;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
@@ -82,10 +84,32 @@ public class UiItemSupportDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+
+
+        Template template = Template.builder().name("test-template").targetType("samples").build();
+        template
+                .add(
+                        "alias",
+                        FieldCapture.builder().fieldName("alias").build()
+                )
+                .add(
+                        "taxon id",
+                        FieldCapture.builder().fieldName("taxonId").fieldType(JsonFieldType.IntegerNumber).build()
+                )
+                .add(
+                        "taxon",
+                        FieldCapture.builder().fieldName("taxon").build()
+                );
+
+        template.setDefaultCapture(
+                AttributeCapture.builder().build()
+        );
+
+        templateRepository.insert(template);
     }
 
     private void clearDatabases() {
-        this.uiSupportItemRepository.deleteAll();
+        this.templateRepository.deleteAll();
     }
 
     @After
@@ -94,19 +118,13 @@ public class UiItemSupportDocumentation {
     }
 
     @Test
-    public void uiSupportItem() throws Exception {
-        UiSupportItem uiSupportItem = new UiSupportItem();
-        uiSupportItem.setName("sample-label-text");
-        uiSupportItem.setValue(new TextNode("This is an example value"));
-
-        uiSupportItemRepository.insert(uiSupportItem);
-
+    public void templateList() throws Exception {
         this.mockMvc.perform(
-                get("/api/uiSupportItems")
+                get("/api/templates")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("uiSupportItems-list",
+                        document("templates-list",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -117,7 +135,7 @@ public class UiItemSupportDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.uiSupportItems").description("Support data available"),
+                                        fieldWithPath("_embedded.templates").description("Spreadsheet templates available"),
                                         paginationPageSizeDescriptor(),
                                         paginationTotalElementsDescriptor(),
                                         paginationTotalPagesDescriptor(),
@@ -127,35 +145,37 @@ public class UiItemSupportDocumentation {
 
                         )
                 );
+    }
 
-
+    @Test
+    public void templateFindByName() throws Exception {
         this.mockMvc.perform(
-                get("/api/uiSupportItems/search/findOneByName?name=sample-label-text")
+                get("/api/templates/search/findOneByName?name=test-template")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("uiSupportItems-one",
+                        document("test-template-one",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("uiSupportItem").description("Link to UI support item")
+                                        linkWithRel("template").description("Link to spreadsheet template"),
+                                        linkWithRel("spreadsheet-csv-download").description("Link to download a spreadsheet template")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("name").description("Unique name for this support item"),
-                                        fieldWithPath("value").description("JSON value/document, used to support the UI"),
+                                        fieldWithPath("name").description("Unique name for this template"),
+                                        fieldWithPath("targetType").description("The type of item to be created from spreadsheets based on this template"),
+                                        fieldWithPath("columnCaptures").description("Column names for the spreadsheet, and the definition of how to map values to JSON documents"),
+                                        fieldWithPath("defaultCapture").description("Handler for any columns in the spreadsheet that aren't expected based on the template"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
                                         fieldWithPath("lastModifiedBy").ignored()
                                 )
-
-
                         )
                 );
-
 
     }
 }

@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -16,18 +17,28 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import uk.ac.ebi.subs.api.error.ApiError;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
+import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
+import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +52,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 public abstract class ApiIntegrationTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -63,21 +75,35 @@ public abstract class ApiIntegrationTest {
     @Autowired
     protected SampleRepository sampleRepository;
 
+    @Autowired
+    protected TemplateRepository templateRepository;
+
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Before
     public void buildUp() throws URISyntaxException, UnirestException {
+        clearDbs();
+
         rootUri = "http://localhost:" + port + "/api";
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
     }
 
+    public void clearDbs() {
+        Collection<CrudRepository> repos = Arrays.asList(
+                submissionRepository,
+                submissionStatusRepository,
+                sampleRepository,
+                templateRepository
+        );
+
+        repos.forEach(CrudRepository::deleteAll);
+    }
+
     @After
     public void tearDown() throws IOException {
-        submissionRepository.deleteAll();
-        sampleRepository.deleteAll();
-        submissionStatusRepository.deleteAll();
+        clearDbs();
     }
 
     @Test
@@ -86,6 +112,50 @@ public abstract class ApiIntegrationTest {
 
         assertThat(rootRels.keySet(), hasItems("userTeams", "team"));
         assertThat(rootRels.keySet(), not(hasItems("submissions:create", "samples:create")));
+    }
+
+    @Test
+    public void downloadTemplate() throws UnirestException, IOException {
+        Map<String, String> rootRels = testHelper.rootRels();
+        assertThat(rootRels.keySet(), hasItems("templates"));
+
+        Template template = Template.builder().name("test-template").targetType("samples").build();
+        template
+                .add(
+                        "alias",
+                        FieldCapture.builder().fieldName("alias").build()
+                )
+                .add(
+                        "taxon id",
+                        FieldCapture.builder().fieldName("taxonId").fieldType(JsonFieldType.IntegerNumber).build()
+                )
+                .add(
+                        "taxon",
+                        FieldCapture.builder().fieldName("taxon").build()
+                );
+
+        template.setDefaultCapture(
+                AttributeCapture.builder().build()
+        );
+
+        templateRepository.insert(template);
+
+        HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("templates")).headers(testHelper.getGetHeaders()).asJson();
+
+        JSONArray templates = templatesResponse.getBody().getObject().getJSONObject("_embedded").getJSONArray("templates");
+        JSONObject exampleTemplateJson = templates.getJSONObject(0);
+        String spreadsheetLink = exampleTemplateJson
+                .getJSONObject("_links")
+                .getJSONObject("spreadsheet-csv-download")
+                .getString("href");
+
+        Map<String,String> requestHeaders = testHelper.getGetHeaders();
+        requestHeaders.put("Accept","text/csv");
+
+        HttpResponse<String> templateResponse = Unirest.get(spreadsheetLink).headers(requestHeaders).asString();
+        Headers responseHeaders = templateResponse.getHeaders();
+
+        assertThat(responseHeaders.getFirst("Content-Disposition"),equalTo("attachment; filename=\"test-template_template.csv\""));
     }
 
     @Test
@@ -162,7 +232,7 @@ public abstract class ApiIntegrationTest {
      * POSTing a sample with no alias should throw an error
      */
     @Test
-    public void postSampleWithNoAlias() throws IOException, UnirestException{
+    public void postSampleWithNoAlias() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
         Submission submission = Helpers.generateSubmission();
 
@@ -207,7 +277,7 @@ public abstract class ApiIntegrationTest {
 
         for (Sample sample : testSamples) {
 
-           // sample.setSubmission(submissionLocation);
+            // sample.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> samplePostResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                     .headers(testHelper.getPostHeaders())

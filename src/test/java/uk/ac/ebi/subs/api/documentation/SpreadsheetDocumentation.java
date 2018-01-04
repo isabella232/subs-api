@@ -1,10 +1,6 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,20 +18,25 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.repository.model.UiSupportItem;
-import uk.ac.ebi.subs.repository.repos.UiSupportItemRepository;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
+import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
+import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.SheetRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -52,8 +53,8 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
-public class UiItemSupportDocumentation {
+@WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
+public class SpreadsheetDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -71,10 +72,21 @@ public class UiItemSupportDocumentation {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    private UiSupportItemRepository uiSupportItemRepository;
+    private TemplateRepository templateRepository;
+
+    @Autowired
+    private SheetRepository sheetRepository;
+
+    @Autowired
+    private SubmissionRepository submissionRepository;
+
+    @Autowired
+    private SubmissionStatusRepository submissionStatusRepository;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
+    private Template template;
+    private Submission submission;
 
     @Before
     public void setUp() {
@@ -82,10 +94,44 @@ public class UiItemSupportDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+        this.submission = storeSubmission();
+
+        template = Template.builder().name("test-template").targetType("samples").build();
+        template
+                .add(
+                        "alias",
+                        FieldCapture.builder().fieldName("alias").build()
+                )
+                .add(
+                        "taxon id",
+                        FieldCapture.builder().fieldName("taxonId").fieldType(JsonFieldType.IntegerNumber).build()
+                )
+                .add(
+                        "taxon",
+                        FieldCapture.builder().fieldName("taxon").build()
+                );
+
+        template.setDefaultCapture(
+                AttributeCapture.builder().build()
+        );
+
+        templateRepository.insert(template);
     }
 
+
     private void clearDatabases() {
-        this.uiSupportItemRepository.deleteAll();
+        this.sheetRepository.deleteAll();
+        this.templateRepository.deleteAll();
+        this.submissionRepository.deleteAll();
+        this.submissionStatusRepository.deleteAll();
+    }
+
+    private Submission storeSubmission() {
+        Submission sub = Helpers.generateTestSubmission();
+
+        this.submissionStatusRepository.insert(sub.getSubmissionStatus());
+        this.submissionRepository.save(sub);
+        return sub;
     }
 
     @After
@@ -94,58 +140,44 @@ public class UiItemSupportDocumentation {
     }
 
     @Test
-    public void uiSupportItem() throws Exception {
-        UiSupportItem uiSupportItem = new UiSupportItem();
-        uiSupportItem.setName("sample-label-text");
-        uiSupportItem.setValue(new TextNode("This is an example value"));
+    public void uploadSheet() throws Exception {
+        StringBuilder csvBuffer = new StringBuilder();
 
-        uiSupportItemRepository.insert(uiSupportItem);
+        final String comma = ",";
+
+        String csv = String.join("\n",
+                String.join(comma, "alias", "taxon id", "taxon", "height", "units"), //header
+                String.join(comma, "s1", "9606", "Homo sapiens", "1.7", "meters"),
+                String.join(comma, "s2", "9606", "Homo sapiens", "1.7", "meters")
+        );
+
 
         this.mockMvc.perform(
-                get("/api/uiSupportItems")
+                post("/api/submissions/{submissionId}/contents/samples/sheets?templateName={templateName}",
+                        submission.getId(),
+                        template.getName())
+                        .contentType("text/csv")
                         .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
+                        .content(csv)
+        ).andExpect(status().isCreated())
                 .andDo(
-                        document("uiSupportItems-list",
+                        document("sheet-csv-upload",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("search").description("Search resource for UI Support items"),
-                                        linkWithRel("profile").description("Profile")
+                                        linkWithRel("sheet").description("Link to this uploaded spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.uiSupportItems").description("Support data available"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
-                                )
-
-
-                        )
-                );
-
-
-        this.mockMvc.perform(
-                get("/api/uiSupportItems/search/findOneByName?name=sample-label-text")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("uiSupportItems-one",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        selfRelLink(),
-                                        linkWithRel("uiSupportItem").description("Link to UI support item")
-                                ),
-                                responseFields(
-                                        linksResponseField(),
-                                        fieldWithPath("name").description("Unique name for this support item"),
-                                        fieldWithPath("value").description("JSON value/document, used to support the UI"),
+                                        fieldWithPath("template").description("The spreadsheet template this upload is based on"),
+                                        fieldWithPath("team").description("The team that owns this upload"),
+                                        fieldWithPath("rows").description("The spreadsheet content"),
+                                        fieldWithPath("mappings").description("The column mappings determined for this spreadsheet"),
+                                        fieldWithPath("firstRowsLimit").description("The number of rows to display when summarising this content"),
+                                        fieldWithPath("_embedded.submission").description("Submission this spreadsheet was uploaded to"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -155,7 +187,5 @@ public class UiItemSupportDocumentation {
 
                         )
                 );
-
-
     }
 }

@@ -1,11 +1,8 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,18 +21,15 @@ import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.api.handlers.SubmissionEventHandler;
-import uk.ac.ebi.subs.api.handlers.SubmissionStatusEventHandler;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.Attribute;
@@ -77,7 +71,6 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
@@ -108,13 +101,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ApiDocumentation {
 
     @Rule
-    public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
+    public final JUnitRestDocumentation restDocumentation = DocumentationHelper.jUnitRestDocumentation();
+
     @Value("${usi.docs.hostname:localhost}")
     private String host;
     @Value("${usi.docs.port:8080}")
     private int port;
     @Value("${usi.docs.scheme:http}")
     private String scheme;
+
     @Autowired
     private SubmissionRepository submissionRepository;
 
@@ -131,12 +126,6 @@ public class ApiDocumentation {
     private ProcessingStatusRepository processingStatusRepository;
 
     @Autowired
-    private SubmissionEventHandler submissionEventHandler;
-
-    @Autowired
-    private SubmissionStatusEventHandler submissionStatusEventHandler;
-
-    @Autowired
     private ValidationResultRepository validationResultRepository;
 
     private ObjectMapper objectMapper;
@@ -149,55 +138,16 @@ public class ApiDocumentation {
 
 
     private MockMvc mockMvc;
-    private SubmissionEventService fakeSubmissionEventService = new SubmissionEventService() {
-        @Override
-        public void submissionCreated(Submission submission) {
-
-        }
-
-        @Override
-        public void submissionUpdated(Submission submission) {
-
-        }
-
-        @Override
-        public void submissionDeleted(Submission submission) {
-
-        }
-
-        @Override
-        public void submissionSubmitted(Submission submission) {
-
-        }
-    };
+    private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
     @Autowired
     private SubmissionHelperService submissionHelperService;
 
     @Before
     public void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-        submissionEventHandler.setSubmissionEventService(fakeSubmissionEventService);
-        submissionStatusEventHandler.setSubmissionEventService(fakeSubmissionEventService);
-        submissionEventHandler.setSubmissionHelperService(submissionHelperService);
-
         clearDatabases();
-
-        MockMvcRestDocumentationConfigurer docConfig = documentationConfiguration(this.restDocumentation);
-
-        docConfig.uris()
-                .withScheme(scheme)
-                .withHost(host)
-                .withPort(port);
-
-
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(docConfig)
-                .defaultRequest(get("/").contextPath("/api"))
-                .build();
+        MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
+        this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
+        this.objectMapper = DocumentationHelper.mapper();
     }
 
     private void clearDatabases() {
@@ -402,8 +352,11 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource")
+                                linkWithRel("studies:create").description("Create a new study resource"),
+                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
@@ -542,7 +495,6 @@ public class ApiDocumentation {
                         )
                 ));
     }
-
 
     private void fakeProcessingStatus(Submission sub) {
         IntStream
@@ -835,7 +787,7 @@ public class ApiDocumentation {
         String projectId = projectRepository.findAll().get(0).getId();
 
         this.mockMvc.perform(
-                put("/api/projects/" + projectId ).content(jsonRepresentation)
+                put("/api/projects/" + projectId).content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -878,12 +830,12 @@ public class ApiDocumentation {
                         )
                 );
 
-        Map<String,String> patchValues = new HashMap<>();
+        Map<String, String> patchValues = new HashMap<>();
         patchValues.put("title", "Example title for our scientific project, between 50 and 4000 characters long");
         String patchJsonRepresentation = objectMapper.writeValueAsString(patchValues);
 
         this.mockMvc.perform(
-                patch("/api/projects/" + projectId ).content(patchJsonRepresentation)
+                patch("/api/projects/" + projectId).content(patchJsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -955,8 +907,10 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource")
+                                linkWithRel("studies:create").description("Create a new study resource"),
+                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
@@ -965,8 +919,6 @@ public class ApiDocumentation {
 
 
     }
-
-
 
     @Test
     public void createSample() throws Exception {
@@ -1154,16 +1106,15 @@ public class ApiDocumentation {
                 );
     }
 
-
     private uk.ac.ebi.subs.data.Submission badClientSubmission() {
         return new uk.ac.ebi.subs.data.Submission();
     }
 
-    private ContentModifyingOperationPreprocessor maskEmbedded() {
+    public ContentModifyingOperationPreprocessor maskEmbedded() {
         return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
     }
 
-    private ContentModifyingOperationPreprocessor maskLinks() {
+    public ContentModifyingOperationPreprocessor maskLinks() {
         return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
     }
 
@@ -1256,7 +1207,6 @@ public class ApiDocumentation {
 
     }
 
-
     @Test
     public void sampleList() throws Exception {
         Submission sub = storeSubmission();
@@ -1272,18 +1222,18 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink(),
-                                        nextRelLink(),
-                                        firstRelLink(),
-                                        lastRelLink()
+                                        DocumentationHelper.selfRelLink(),
+                                        DocumentationHelper.nextRelLink(),
+                                        DocumentationHelper.firstRelLink(),
+                                        DocumentationHelper.lastRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.samples").description("Samples within the submission"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationPageSizeDescriptor(),
+                                        DocumentationHelper.paginationTotalElementsDescriptor(),
+                                        DocumentationHelper.paginationTotalPagesDescriptor(),
+                                        DocumentationHelper.paginationPageNumberDescriptor()
                                 )
                         )
                 );
@@ -1298,7 +1248,7 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink(),
+                                        DocumentationHelper.selfRelLink(),
                                         processingStatusLink(),
                                         submissionLink(),
                                         validationresultLink(),
@@ -1309,7 +1259,7 @@ public class ApiDocumentation {
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
                                 ),
                                 responseFields( //TODO fill out the descriptions
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("alias").description(""),
                                         fieldWithPath("title").description(""),
                                         fieldWithPath("description").description(""),
@@ -1383,7 +1333,7 @@ public class ApiDocumentation {
 
                                 ),
                                 responseFields(
-                                        linksResponseField()
+                                        DocumentationHelper.linksResponseField()
                                 )
                         )
                 );
@@ -1411,7 +1361,7 @@ public class ApiDocumentation {
                                         linkWithRel("items").description("Items owned by this team")
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("name").description("Name of this team")
                                 )
                         )
@@ -1471,6 +1421,8 @@ public class ApiDocumentation {
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
                                         linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
                                         linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
+                                        linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
+                                        linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
                                         linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
@@ -1480,7 +1432,7 @@ public class ApiDocumentation {
                                         linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API")
                                 ),
                                 responseFields(
-                                        linksResponseField()
+                                        DocumentationHelper.linksResponseField()
                                 )
                         )
                 );
@@ -1502,15 +1454,15 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink()
+                                        DocumentationHelper.selfRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationPageSizeDescriptor(),
+                                        DocumentationHelper.paginationTotalElementsDescriptor(),
+                                        DocumentationHelper.paginationTotalPagesDescriptor(),
+                                        DocumentationHelper.paginationPageNumberDescriptor()
                                 )
                         )
                 );
@@ -1533,15 +1485,15 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink()
+                                        DocumentationHelper.selfRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.projects").description("Projects available to current user"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationPageSizeDescriptor(),
+                                        DocumentationHelper.paginationTotalElementsDescriptor(),
+                                        DocumentationHelper.paginationTotalPagesDescriptor(),
+                                        DocumentationHelper.paginationPageNumberDescriptor()
                                 )
                         )
                 );
@@ -1563,10 +1515,10 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink()
+                                        DocumentationHelper.selfRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("content").description("Number of submissions for each status")
                                 )
                         )
@@ -1586,10 +1538,10 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink()
+                                        DocumentationHelper.selfRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("content").description("Study data types and available subtypes")
                                 )
                         )
@@ -1613,26 +1565,18 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        selfRelLink()
+                                        DocumentationHelper.selfRelLink()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
+                                        DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationPageSizeDescriptor(),
+                                        DocumentationHelper.paginationTotalElementsDescriptor(),
+                                        DocumentationHelper.paginationTotalPagesDescriptor(),
+                                        DocumentationHelper.paginationPageNumberDescriptor()
                                 )
                         )
                 );
-    }
-
-    public static  FieldDescriptor linksResponseField() {
-        return fieldWithPath("_links").description("Links to other resources");
-    }
-
-    public static LinkDescriptor selfRelLink() {
-        return linkWithRel("self").description("Canonical link for this resource");
     }
 
     private Submission storeSubmission() {
@@ -1641,38 +1585,6 @@ public class ApiDocumentation {
         this.submissionStatusRepository.insert(sub.getSubmissionStatus());
         this.submissionRepository.save(sub);
         return sub;
-    }
-
-    public static  FieldDescriptor paginationPageNumberDescriptor() {
-        return fieldWithPath("page.number").description("The page number");
-    }
-
-    public static  FieldDescriptor paginationTotalPagesDescriptor() {
-        return fieldWithPath("page.totalPages").description("The total number of pages");
-    }
-
-    public static  FieldDescriptor paginationTotalElementsDescriptor() {
-        return fieldWithPath("page.totalElements").description("The total number of resources");
-    }
-
-    public static  FieldDescriptor paginationPageSizeDescriptor() {
-        return fieldWithPath("page.size").description("The number of resources in this page");
-    }
-
-    public static  LinkDescriptor nextRelLink() {
-        return linkWithRel("next").description("Next page of this resource");
-    }
-
-    public static  LinkDescriptor lastRelLink() {
-        return linkWithRel("last").description("Last page for this resource");
-    }
-
-    public static  LinkDescriptor firstRelLink() {
-        return linkWithRel("first").description("First page for this resource");
-    }
-
-    public static  LinkDescriptor prevRelLink() {
-        return linkWithRel("prev").description("Previous page for this resource");
     }
 
     private LinkDescriptor submissionLink() {
@@ -1687,7 +1599,7 @@ public class ApiDocumentation {
         return linkWithRel("validationResult").description("Result of the validation of this record");
     }
 
-    private class MaskElement implements ContentModifier {
+    protected class MaskElement implements ContentModifier {
 
         private String keyToRemove;
 
