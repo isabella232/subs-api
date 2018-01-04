@@ -22,6 +22,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.Assert;
@@ -351,8 +352,11 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource")
+                                linkWithRel("studies:create").description("Create a new study resource"),
+                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
@@ -903,8 +907,10 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
+                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource")
+                                linkWithRel("studies:create").description("Create a new study resource"),
+                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
@@ -1104,11 +1110,11 @@ public class ApiDocumentation {
         return new uk.ac.ebi.subs.data.Submission();
     }
 
-    private ContentModifyingOperationPreprocessor maskEmbedded() {
+    public ContentModifyingOperationPreprocessor maskEmbedded() {
         return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
     }
 
-    private ContentModifyingOperationPreprocessor maskLinks() {
+    public ContentModifyingOperationPreprocessor maskLinks() {
         return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
     }
 
@@ -1593,7 +1599,7 @@ public class ApiDocumentation {
         return linkWithRel("validationResult").description("Result of the validation of this record");
     }
 
-    private class MaskElement implements ContentModifier {
+    protected class MaskElement implements ContentModifier {
 
         private String keyToRemove;
 

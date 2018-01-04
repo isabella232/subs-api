@@ -153,7 +153,7 @@ public class SpreadsheetDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/contents/samples/sheets/{templateName}",
+                post("/api/submissions/{submissionId}/contents/samples/sheets?templateName={templateName}",
                         submission.getId(),
                         template.getName())
                         .contentType("text/csv")

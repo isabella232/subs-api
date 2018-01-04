@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import uk.ac.ebi.subs.api.converters.SheetCsvMessageConverter;
 import uk.ac.ebi.subs.api.services.PersistentEntityCreationHelper;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -54,12 +55,12 @@ public class SheetsController {
     @NonNull
     private SheetCsvMessageConverter sheetCsvMessageConverter;
 
-    @RequestMapping(path = "/submissions/{submissionId}/contents/{targetType}/{repository}/{templateName}", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
+    @RequestMapping(path = "/submissions/{submissionId}/contents/{targetType}/{repository}", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
     public ResponseEntity<ResourceSupport> uploadCsv(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("targetType") String targetType,
             @PathVariable @P("repository") String repository,
-            @PathVariable @P("templateName") String templateName,
+            @RequestParam @P("templateName") String templateName,
             PersistentEntityResourceAssembler assembler,
             RootResourceInformation resourceInformation,
             @RequestHeader(value = "Accept", required = false) String acceptHeader,
@@ -89,6 +90,8 @@ public class SheetsController {
         sheet.setTeam(submission.getTeam());
 
         //todo validate the sheet!
+        //todo process the sheet!
+        //todo can we return a projection here?
 
         sheet.setTemplate(template);
 
