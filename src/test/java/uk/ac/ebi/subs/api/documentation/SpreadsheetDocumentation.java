@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
@@ -23,6 +25,8 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
@@ -31,6 +35,8 @@ import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+
+import java.util.List;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -141,8 +147,6 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
-        StringBuilder csvBuffer = new StringBuilder();
-
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -172,6 +176,8 @@ public class SpreadsheetDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
+                                        fieldWithPath("headerRowIndex").description("Index of the row thought to contain the column headers"),
+                                        fieldWithPath("status").description("Current status of the sheet"),
                                         fieldWithPath("template").description("The spreadsheet template this upload is based on"),
                                         fieldWithPath("team").description("The team that owns this upload"),
                                         fieldWithPath("rows").description("The spreadsheet content"),
@@ -183,9 +189,11 @@ public class SpreadsheetDocumentation {
                                         fieldWithPath("createdBy").ignored(),
                                         fieldWithPath("lastModifiedBy").ignored()
                                 )
-
-
                         )
                 );
+
+        List<Sheet> sheets = sheetRepository.findAll();
+        Sheet sheet = sheets.get(0);
+        Assert.assertEquals(SheetStatusEnum.Draft, sheet.getStatus());
     }
 }
