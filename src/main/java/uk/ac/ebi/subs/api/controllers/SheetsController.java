@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +56,7 @@ public class SheetsController {
     @NonNull
     private SheetCsvMessageConverter sheetCsvMessageConverter;
 
+    @PreAuthorizeSubmissionIdTeamName
     @RequestMapping(path = "/submissions/{submissionId}/contents/{targetType}/{repository}", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
     public ResponseEntity<ResourceSupport> uploadCsv(
             @PathVariable @P("submissionId") String submissionId,
@@ -90,54 +92,18 @@ public class SheetsController {
         sheet.setTeam(submission.getTeam());
 
         //todo validate the sheet!
-        //todo process the sheet!
         //todo can we return a projection here?
 
         sheet.setTemplate(template);
 
-//        sheetHelper.beforeCreate(sheet);
-
-        return persistentEntityCreationHelper.createPersistentEntity(
+        ResponseEntity<ResourceSupport> resourceSupportResponseEntity = persistentEntityCreationHelper.createPersistentEntity(
                 sheet,
                 resourceInformation,
                 assembler,
                 acceptHeader
         );
 
-
+        return resourceSupportResponseEntity;
     }
-/*
-    @RequestMapping(path = "/sheets/{sheetId}/convert", method = RequestMethod.POST)
-    public ResponseEntity convertSample(@PathVariable String sheetId)  {
-
-        Sheet sheet = sheetRepository.findOne(sheetId);
-
-        sheetHelper.parse(sheet)
-                .map(JSONObject::toString)
-                .map(json -> {
-                    try {
-                        return objectMapper.readValue(json, Sample.class);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }) //ENSURE Aliases set
-                .forEach(sample -> sampleRepo.save(sample)); //BEFORE SAVE, AFTER SAVE LIFECYCLE
-
-        return new ResponseEntity(HttpStatus.CREATED);
-
-    }
-
-*/
-    /**
-     * Consider a command approach here (instead of REST)
-     *
-     * user commands:
-     *  - change header row (
-     *  - ignore column
-     *  - ignore row
-     *  - set this column to that mapping
-     *  - change template
-     *
-     */
 
 }
