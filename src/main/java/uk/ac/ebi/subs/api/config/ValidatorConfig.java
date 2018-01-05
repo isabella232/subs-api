@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.config;
 
+import lombok.Data;
+import lombok.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
@@ -14,6 +16,7 @@ import uk.ac.ebi.subs.api.validators.ProjectValidator;
 import uk.ac.ebi.subs.api.validators.ProtocolValidator;
 import uk.ac.ebi.subs.api.validators.SampleGroupValidator;
 import uk.ac.ebi.subs.api.validators.SampleValidator;
+import uk.ac.ebi.subs.api.validators.SheetValidator;
 import uk.ac.ebi.subs.api.validators.StudyValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionDeleteValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionStatusValidator;
@@ -24,6 +27,7 @@ import java.util.stream.Stream;
 
 
 @Configuration
+@Data
 /**
  * Frontend validator configuration.
  * Using manual linking of validators as the automatic discovery described
@@ -39,39 +43,23 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
     private static final String BEFORE_LINK_SAVE = "beforeLinkSave";
     private static final String BEFORE_DELETE = "beforeDelete";
 
-    public ValidatorConfig(AnalysisValidator analysisValidator, AssayValidator assayValidator, AssayDataValidator assayDataValidator, EgaDacValidator egaDacValidator, EgaDacPolicyValidator egaDacPolicyValidator, EgaDatasetValidator egaDatasetValidator, ProjectValidator projectValidator, ProtocolValidator protocolValidator, SampleValidator sampleValidator, SampleGroupValidator sampleGroupValidator, StudyValidator studyValidator, SubmissionValidator submissionValidator, SubmissionDeleteValidator submissionDeleteValidator, SubmittableDeleteValidator submittableDeleteValidator, SubmissionStatusValidator submissionStatusValidator) {
-        this.analysisValidator = analysisValidator;
-        this.assayValidator = assayValidator;
-        this.assayDataValidator = assayDataValidator;
-        this.egaDacValidator = egaDacValidator;
-        this.egaDacPolicyValidator = egaDacPolicyValidator;
-        this.egaDatasetValidator = egaDatasetValidator;
-        this.projectValidator = projectValidator;
-        this.protocolValidator = protocolValidator;
-        this.sampleValidator = sampleValidator;
-        this.sampleGroupValidator = sampleGroupValidator;
-        this.studyValidator = studyValidator;
-        this.submissionValidator = submissionValidator;
-        this.submissionDeleteValidator = submissionDeleteValidator;
-        this.submittableDeleteValidator = submittableDeleteValidator;
-        this.submissionStatusValidator = submissionStatusValidator;
-    }
 
-    private AnalysisValidator analysisValidator;
-    private AssayValidator assayValidator;
-    private AssayDataValidator assayDataValidator;
-    private EgaDacValidator egaDacValidator;
-    private EgaDacPolicyValidator egaDacPolicyValidator;
-    private EgaDatasetValidator egaDatasetValidator;
-    private ProjectValidator projectValidator;
-    private ProtocolValidator protocolValidator;
-    private SampleValidator sampleValidator;
-    private SampleGroupValidator sampleGroupValidator;
-    private StudyValidator studyValidator;
-    private SubmissionValidator submissionValidator;
-    private SubmissionDeleteValidator submissionDeleteValidator;
-    private SubmittableDeleteValidator submittableDeleteValidator;
-    private SubmissionStatusValidator submissionStatusValidator;
+   @NonNull private AnalysisValidator analysisValidator;
+   @NonNull private AssayValidator assayValidator;
+   @NonNull private AssayDataValidator assayDataValidator;
+   @NonNull private EgaDacValidator egaDacValidator;
+   @NonNull private EgaDacPolicyValidator egaDacPolicyValidator;
+   @NonNull private EgaDatasetValidator egaDatasetValidator;
+   @NonNull private ProjectValidator projectValidator;
+   @NonNull private ProtocolValidator protocolValidator;
+   @NonNull private SampleValidator sampleValidator;
+   @NonNull private SampleGroupValidator sampleGroupValidator;
+   @NonNull private StudyValidator studyValidator;
+   @NonNull private SubmissionValidator submissionValidator;
+   @NonNull private SubmissionDeleteValidator submissionDeleteValidator;
+   @NonNull private SubmittableDeleteValidator submittableDeleteValidator;
+   @NonNull private SubmissionStatusValidator submissionStatusValidator;
+   @NonNull private SheetValidator sheetValidator;
 
 
     @Override
@@ -90,7 +78,9 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
                 sampleGroupValidator,
                 studyValidator,
 
-                submissionValidator
+                submissionValidator,
+
+                sheetValidator
 
         );
 
@@ -104,6 +94,8 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
         eventListener.addValidator(BEFORE_DELETE, submissionDeleteValidator);
 
         eventListener.addValidator(BEFORE_DELETE, submittableDeleteValidator);
+
+        eventListener.addValidator(BEFORE_DELETE,sheetValidator);
     }
 
 }
