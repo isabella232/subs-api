@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -37,23 +37,23 @@ import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.replacePattern;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageNumberDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageSizeDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalElementsDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalPagesDescriptor;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
 @RunWith(SpringRunner.class)
@@ -89,7 +89,6 @@ public class SpreadsheetDocumentation {
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
 
-    private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private Template template;
     private Submission submission;
@@ -99,10 +98,9 @@ public class SpreadsheetDocumentation {
         clearDatabases();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
-        this.objectMapper = DocumentationHelper.mapper();
         this.submission = storeSubmission();
 
-        template = Template.builder().name("test-template").targetType("samples").build();
+        template = Template.builder().name("default-sample-template").targetType("samples").build();
         template
                 .add(
                         "alias",
@@ -147,6 +145,11 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
+        Sheet sheet = uploadCsvAsSheet();
+        Assert.assertEquals(SheetStatusEnum.Draft, sheet.getStatus());
+    }
+
+    private Sheet uploadCsvAsSheet() throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -166,7 +169,8 @@ public class SpreadsheetDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("sheet-csv-upload",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(
+                                        prettyPrint()                                ),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -193,7 +197,79 @@ public class SpreadsheetDocumentation {
                 );
 
         List<Sheet> sheets = sheetRepository.findAll();
-        Sheet sheet = sheets.get(0);
-        Assert.assertEquals(SheetStatusEnum.Draft, sheet.getStatus());
+        return sheets.get(0);
+    }
+
+    @Test
+    public void patchSheetStatus() throws Exception {
+        Sheet sheet = uploadCsvAsSheet();
+
+        this.mockMvc.perform(
+                patch("/api/sheets/{sheetId}", sheet.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .content("{\"status\": \"Submitted\"}")
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("sheet-patch-status",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink(),
+                                        linkWithRel("sheet").description("Link to this uploaded spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with")
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("headerRowIndex").description("Index of the row thought to contain the column headers"),
+                                        fieldWithPath("status").description("Current status of the sheet"),
+                                        fieldWithPath("template").description("The spreadsheet template this upload is based on"),
+                                        fieldWithPath("team").description("The team that owns this upload"),
+                                        fieldWithPath("rows").description("The spreadsheet content"),
+                                        fieldWithPath("mappings").description("The column mappings determined for this spreadsheet"),
+                                        fieldWithPath("firstRowsLimit").description("The number of rows to display when summarising this content"),
+                                        fieldWithPath("_embedded.submission").description("Submission this spreadsheet was uploaded to"),
+                                        fieldWithPath("createdDate").ignored(),
+                                        fieldWithPath("lastModifiedDate").ignored(),
+                                        fieldWithPath("createdBy").ignored(),
+                                        fieldWithPath("lastModifiedBy").ignored()
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void patchSheetContents() throws Exception {
+        Sheet sheet = uploadCsvAsSheet();
+
+        this.mockMvc.perform(
+                patch("/api/sheets/{sheetId}", sheet.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .content("{\"headerRowIndex\": 1}")
+        ).andExpect(status().isBadRequest())
+                .andDo(
+                        document("sheet-patch-content",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    public void deleteSheet() throws Exception {
+        Sheet sheet = uploadCsvAsSheet();
+
+        this.mockMvc.perform(
+                delete("/api/sheets/{sheetId}", sheet.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isNoContent())
+                .andDo(
+                        document("sheet-delete",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
     }
 }
