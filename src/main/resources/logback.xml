@@ -10,6 +10,19 @@
         </filter>
     </appender>
 
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>subs-api.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>subs-api-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>40</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d %p [%c] - &lt;%m&gt;%n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="log4j.logger.org.springframework.security" level="INFO"/>
     <logger name="org.springframework.security" level="INFO"/>
 
