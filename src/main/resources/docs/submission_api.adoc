@@ -515,7 +515,7 @@ This is currently available for samples.
 . Select the same template, upload to the API. This will give you a sheet document
 . Review results
 .. If happy with the results, change the sheet status to Submitted.
-.. If you are not happy with the results, delete the uploaded sheet entry modify your spreadsheet and re-upload it
+.. If you are not happy with the results, delete the uploaded sheet entry, modify your spreadsheet and re-upload it
 
 === Uploading a CSV file
 

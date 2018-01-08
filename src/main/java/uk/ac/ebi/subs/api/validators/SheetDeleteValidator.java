@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.validators;
 
 import lombok.Data;
 import lombok.NonNull;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -26,6 +27,10 @@ public class SheetDeleteValidator implements Validator {
         Sheet sheet = (Sheet)target;
 
         Sheet storedSheet = sheetRepository.findOne(sheet.getId());
+
+        if (sheet == null) {
+            throw new ResourceNotFoundException();
+        }
 
         if (!storedSheet.getStatus().equals(SheetStatusEnum.Draft)){
             SubsApiErrors.resource_locked.addError(errors);
