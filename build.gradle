@@ -137,31 +137,31 @@ mongo {
 remotes {
     dev {
         role('dev')
-        host = getProperty(project.name + "DevDeployTarget")
+        host = hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
     }
     test {
         role('test')
-        host = getProperty(project.name + "TestDeployTarget")
+        host = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
     }
     prodHH1 {
         role('prod')
         role('prodHH')
-        host = getProperty(project.name + "ProdHH1DeployTarget")
+        host = hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
     }
     prodHH2 {
         role('prod')
         role('prodHH')
-        host = getProperty(project.name + "ProdHH2DeployTarget")
+        host = hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
     }
     prodHX1 {
         role('prod')
         role('prodHX')
-        host = getProperty(project.name + "ProdHX1DeployTarget")
+        host = hasProperty(project.name + "ProdHX1DeployTarget") ? getProperty(project.name + "ProdHX1DeployTarget") : 'localhost'
     }
     prodHX2 {
         role('prod')
         role('prodHX')
-        host = getProperty(project.name + "ProdHX2DeployTarget")
+        host = hasProperty(project.name + "ProdHX2DeployTarget") ? getProperty(project.name + "ProdHX2DeployTarget") : 'localhost'
     }
 }
 
