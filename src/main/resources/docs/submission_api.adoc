@@ -1,10 +1,8 @@
 = Submission API Documentation
 :doctype: book
-:icons: font
 :source-highlighter: highlightjs
-:toc: left
-:toclevels: 4
 :sectlinks:
+:docinfo: shared
 
 == Overview
 

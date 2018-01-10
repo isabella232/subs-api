@@ -1,6 +1,6 @@
 = Documentation
+:docinfo: shared
 :doctype: article
-:icons: font
 
 == What are you looking for?
  * <<Developer documentation>>

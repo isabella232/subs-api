@@ -1,8 +1,8 @@
 aap: 
   enabled: true
-  password: ${aapPassword}
+  password: foo
   url: "https://explore.api.aap.tsi.ebi.ac.uk/auth"
-  username: ${aapUsername}
+  username: bar
 jwt:
   certificate: public.der
 server: 

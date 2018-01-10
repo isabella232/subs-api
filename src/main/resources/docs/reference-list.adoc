@@ -1,0 +1,11 @@
+:showtitle!:
+:docinfo: private
+* <<reference/overview.adoc,Overview>>
+* Submissions
+* Teams
+* Projects
+* Samples
+* Studies
+* Assays
+* Assay data
+* Validation results

@@ -1,0 +1,48 @@
+= Overview
+:docinfo: shared
+This describes the resources that make up the EMBL-EBI submissions API.
+If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
+
+All API access is over HTTP, and accessed from `http://submission-dev.ebi.ac.uk/api`.
+All data is sent and received as JSON.
+
+`TODO URL and support e-mail address are provisional`
+
+== HTTP Verbs
+
+This API aims to use appropriate HTTP verbs for each action
+
+
+[cols=2*,options="header"]
+|===
+|Verb
+|Description
+
+
+|`GET`|Used for retrieving resources
+|`POST`|Used for creating resources
+|`PUT`|Used to entirely replace resources
+|`PATCH`|Used to partially modify a resource
+|`DELETE`|Used for deleting resources
+|`OPTIONS`|Can be used to determine which verbs can be used for a resource
+|`HEAD`|Returns whether a resource is available
+|===
+
+== HTTP status codes
+
+[cols=2*,options="header"]
+|===
+|Status code
+|Description
+
+
+|`200 OK`|The request completed successfully
+|`201 Created`|Returned after successfully creating a new resource with a `POST` request
+|`204 No Content`|Returned after a request successfully deleted a resource.
+|`304 Not Modified`|Returned in response to a conditional `GET` request, when the resource has not been modified
+|`400 Bad Request`|The request was malformed. The response body will include an error providing further information
+|`401 Unauthorized`|The request did not include an `Authorization` header
+|`403 Forbidden`|You are not permitted to access this resource
+|`405 Method Not Allowed`|The request used a method that is not permitted
+|`412 Precondition Failed`|Returned in response to a conditional `PATCH`, `PUT` or `DELETE`, when the condition did not match the resource state
+|===
