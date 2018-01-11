@@ -1,5 +1,6 @@
 = Overview
 :docinfo: shared
+:toc: auto
 
 This describes the resources that make up the EMBL-EBI submissions API.
 If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].

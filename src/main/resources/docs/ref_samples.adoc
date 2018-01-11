@@ -1,5 +1,6 @@
-= Sample
+= Samples
 :docinfo: shared
+:toc: auto
 
 == Minimal requirements
 

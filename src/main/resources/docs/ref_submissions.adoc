@@ -1,5 +1,6 @@
 = Submissions
 :docinfo: shared
+:toc: auto
 
 == List submissions available to user
 
