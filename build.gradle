@@ -134,22 +134,34 @@ mongo {
     mongoVersion = "3.4.3"
 }
 
-def devDeployHostName = hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
-def testDeployHostName = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
-def prodDeployHostName = hasProperty(project.name + "ProdDeployTarget") ? getProperty(project.name + "ProdDeployTarget") : 'localhost'
-
 remotes {
-    submission_dev {
+    dev {
         role('dev')
-        host = devDeployHostName
+        host = project.hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
     }
-    submission_test {
+    test {
         role('test')
-        host = testDeployHostName
+        host = project.hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
     }
-    submission_prod {
+    prodHH1 {
         role('prod')
-        host = prodDeployHostName
+        role('prodHH')
+        host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
+    }
+    prodHH2 {
+        role('prod')
+        role('prodHH')
+        host = project.hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
+    }
+    prodHX1 {
+        role('prod')
+        role('prodHX')
+        host = project.hasProperty(project.name + "ProdHX1DeployTarget") ? getProperty(project.name + "ProdHX1DeployTarget") : 'localhost'
+    }
+    prodHX2 {
+        role('prod')
+        role('prodHX')
+        host = project.hasProperty(project.name + "ProdHX2DeployTarget") ? getProperty(project.name + "ProdHX2DeployTarget") : 'localhost'
     }
 }
 
@@ -176,27 +188,19 @@ task('externalCiTest', type: Test) {
 
 task deployJar(type: SshTask, dependsOn: 'build') {
     doLast {
-        def uploadJarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
-        if (gradle_env == "dev") {
-            File jarDeployFile = new File("/homes/sub_adm/tc_subs/submission-dev/jar",uploadJarFileName)
-            sshRun(jarDeployFile)
-        } else if (gradle_env == "test") {
-            File jarDeployFile = new File("/homes/sub_adm/tc_subs/submission-test/jar",uploadJarFileName)
-            sshRun(jarDeployFile)
-        } else if (gradle_env == "dev2") {
-            File jarDeployFile = new File("/data/subs-api/jar",uploadJarFileName)
-            sshRun(jarDeployFile)
-        }
+        sshRun()
     }
     ssh.settings {
         knownHosts = allowAnyHosts
     }
 }
 
-private Object sshRun(File jarDeployFile) {
-    File jarDeployDir = jarDeployFile.getParentFile()
+private Object sshRun() {
     ssh.run {
         session(remotes.role(gradle_env)) {
+            def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
+            File jarDeployFile = new File("/homes/sub_adm/tc_subs/$remote.name/jar",jarFileName)
+            File jarDeployDir = jarDeployFile.getParentFile()
             println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
             put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
             println "creating symbolic link to $jar.archiveName"
