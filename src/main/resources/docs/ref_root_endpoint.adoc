@@ -1,0 +1,16 @@
+== Root endpoint
+:docinfo: shared
+
+You can issue a `GET` request to the root endpoint to get all the entry points into the API.
+
+=== Request
+
+include::{snippets}/root-endpoint/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/root-endpoint/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/root-endpoint/links.adoc[]

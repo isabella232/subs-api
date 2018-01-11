@@ -1,187 +1,20 @@
-= How to submit data programatically
-:doctype: book
-:icons: font
-:source-highlighter: highlightjs
-:toc: left
-:toclevels: 4
-:sectlinks:
-
-== Overview
-
-This document will take you through the steps required to submit descriptive data (often called "metadata") using the
-https://www.ebi.ac.uk[EMBL-EBI] submission system. EMBL-EBI provide a https://en.wikipedia.org/wiki/HATEOAS[hypermedia]
-https://en.wikipedia.org/wiki/Representational_state_transfer[REST API] to accept descriptive data from submitters using
-standard HTTP requests.
-
-The examples in this walkthrough use https://en.wikipedia.org/wiki/CURL[curl] to interact with the server, but you can
-use the API with any programming language.
-
-The submission process follows these steps:
-
- 1. Create a submission
- 2. Add documents describing your data to the submission (samples, studies, etc...)
- 3. Get feedback and amend documents if necessary
- 4. Tell us the submission is ready to go
-
-At this point we will send the data to the appropriate archive or archives. They will send reports on their progress
-with your data and accessions back to us.
-
-This guide assumes some familiarity with REST APIs and the HTTP protocol.
-
-== Authorization and authentication
-
-This section describes how to get an authorisation token (AAP token) and what to do with it.
-
-=== How to get a token
-
-You can obtain a AAP token by executing the following curl command.
-
-==== Example request
-
- $ curl -u <your_aap_username>:<your_aap_password> https://explore.api.aap.tsi.ebi.ac.uk/auth
-
-The response will contains your AAP token. By default, the token is valid for 1 hour.
-
-==== Example response
-
-....
-eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIxNzEsImp0aSI6IlNWUndCYWlubTA1MFlEZHJaWFRMbWciLCJpYXQiOjE1MDc4MTg1NzEsInN1YiI6InVzci0wZmRhM2YzZS0wM2I1LTQzOTgtOGRjOS02ZmU4MWVkMzNhOTciLCJlbWFpbCI6Imthcm9seUBlYmkuYWMudWsiLCJuaWNrbmFtZSI6ImthcmVsIiwibmFtZSI6Ikthcm9seSBFcmRvcyIsImRvbWFpbnMiOlsiYWFwLXVzZXJzLWRvbWFpbiJdfQ.MnLeqmPdxGMy7ln3mlMFqhdNVDrf0uvilbe2pqngper56sjUYUOMnzvCK6ht2Q65P25VdJAA_nSOQJ03ZEqnp2ZB0urGpCY_sK0JV834ZSe1atLKww7wa2Ntq5EJakUfxrma9lHLTylGxJzYc3ej1s8pTE5Jj6tprvcV5s3eNEmYFUJL9RwhKmDA9-5E7TfOVYvEQSMw7IqXMiVSSQNU1o_dfalp-PYlqer9mTR2MPIMAaA2wdr7jKVDXzI7zKlprIRLVyJAiEPIeWzNYN8FC2RdigwqbcBt9UTTDrwDH5Op3fAJPrYWNpRD4-wV8mn5DWzd7cNm6dMqwm1C12WEg
-....
-
-=== How to use the obtained token
-
-You need to add this token as an `Authorization` header to all of your API requests.
-
-==== Example request
-
- $ curl -i -X GET -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer <your_aap_token>" https://submissionexampleurl.test.com/api/teams
-
-
-=== How to setup a team
-
-If you want to create a new team, then you have to send a `POST` request.
-
-==== Example request
-
- $ curl 'https://explore.api.aap.tsi.ebi.ac.uk/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
-
-==== Example response
-
-....
-HTTP/1.1 201 Created
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Cache-Control: no-cache, no-store, max-age=0, must-revalidate
-Pragma: no-cache
-Expires: 0
-X-Frame-Options: DENY
-X-Application-Context: application:integration-test:0
-Content-Type: application/hal+json;charset=utf-8
-Content-Length: 768
-
-{
-  "domainReference" : "dom-de00a819-dfe4-4516-8ad8-0c8d571e162d",
-  "domainName" : "self.new domain",
-  "domainDesc" : "new domain Desc",
-  "isActive" : "Y",
-  "users" : null,
-  "managers" : null,
-  "_links" : {
-    "self" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
-    },
-    "deactivate" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
-    },
-    "get users from domain" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d/users"
-    },
-    "admin" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-eb5bd028-a4aa-45b9-9457-7c375b55d1b3"
-    },
-    "get all domains" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains"
-    }
-  }
-}
-....
-
-=== How to add a user to a team
-
-If you want to add a new user to a team, then you have to send a `PUT` request.
-
-NOTE: In the above URL you have to prepend your user reference with `usr-` prefix.
-
-// TODO: submit a bug for the AAP team to fix the above inconsistency and remove the note if they fixed it.
-
-==== Example request
-
- $ curl 'http://explore.api.aap.tsi.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json'
-
-==== Example response
-
-....
-HTTP/1.1 200 OK
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Cache-Control: no-cache, no-store, max-age=0, must-revalidate
-Pragma: no-cache
-Expires: 0
-X-Frame-Options: DENY
-X-Application-Context: application:integration-test:0
-Content-Type: application/hal+json;charset=utf-8
-Content-Length: 1376
-
-{
-  "domainReference" : "dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80",
-  "domainName" : "wonderland",
-  "domainDesc" : "Drink me",
-  "isActive" : "N",
-  "users" : [ {
-    "userReference" : "usr-d8749acf-6a22-4438-accc-cc8d1877ba36",
-    "userName" : "karo",
-    "email" : "karo@example.com",
-    "mobile" : null,
-    "domains" : null,
-    "_links" : {
-      "self" : {
-        "href" : "http://explore.api.aap.tsi.ebi.ac.uk/users/usr-d8749acf-6a22-4438-accc-cc8d1877ba36"
-      }
-    }
-  }, {
-    "userReference" : "usr-9832620d-ec53-43a1-873d-efdc50d34ad1",
-    "userName" : "ajay",
-    "email" : "ajay@example.com",
-    "mobile" : null,
-    "domains" : null,
-    "_links" : {
-      "self" : {
-        "href" : "http://explore.api.aap.tsi.ebi.ac.uk/users/usr-9832620d-ec53-43a1-873d-efdc50d34ad1"
-      }
-    }
-  } ],
-  "managers" : null,
-  "_links" : {
-    "self" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
-    },
-    "deactivate" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
-    },
-    "get users from domain" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80/users"
-    },
-    "admin" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains/dom-7c3aa7d3-e9bc-43e5-818a-8971390a3102"
-    },
-    "get all domains" : {
-      "href" : "http://explore.api.aap.tsi.ebi.ac.uk/domains"
-    }
-  }
-}
-....
+= Getting started
+:docinfo: shared
 
 == Fetch the API root
+
+We recommend that you start from the root endpoint and follow the _links_ given in the `_links` section of the
+response, instead of hard-coding each API endpoint. This will insulate you from future changes to the submission system
+architecture or URL structure.
+
+include::{snippets}/root-endpoint/curl-request.adoc[]
+
+This will return a list of links, in http://stateless.co/hal_specification.html[HAL JSON] format:
+
+include::{snippets}/root-endpoint/http-response.adoc[]
+
+You don't need to worry about most of those links for now, we'll learn about them as we go.
+
 
 We recommend that you start from the root endpoint and follow the _links_ given in the `_links` section of the
 response, instead of hard-coding each API endpoint. This will insulate you from future changes to the submission system
@@ -225,8 +58,6 @@ include::{snippets}/create-submission/curl-request.adoc[]
 If successful, this will return a JSON object with links to parts of the submission:
 
 include::{snippets}/create-submission/http-response.adoc[]
-
-
 
 == Adding things to a submission
 

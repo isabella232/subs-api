@@ -1,0 +1,23 @@
+= UI Support Items
+:docinfo: shared
+
+Support items are used to populate the UI, for labels or example documents. They are read-only for most users, although
+admin users can create, edit and delete them.
+
+== Find all support items
+=== Request
+
+include::{snippets}/uiSupportItems-list/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/uiSupportItems-list/http-response.adoc[]
+
+=== Find one support item by name
+==== Request
+
+include::{snippets}/uiSupportItems-one/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/uiSupportItems-one/http-response.adoc[]

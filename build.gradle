@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id "org.asciidoctor.convert" version "1.5.2"
+    id "org.asciidoctor.convert" version "1.5.3"
     id 'com.sourcemuse.mongo' version '1.0.0'
 
 }
@@ -101,11 +101,28 @@ if (gradle_env == "test") {
 }
 
 asciidoctor {
-    attributes 'snippets': snippetsDir
-    sourceDir file('src/main/resources/docs')
-    attributes (asciiDoctorIncludes);
-    backends 'html5'
     inputs.dir snippetsDir
+    sourceDir file('src/main/resources/docs')
+    attributes (
+            'snippets': snippetsDir,
+            'toc': 'auto',
+            'toc-title': 'Contents',
+            'toclevels': 1,
+            'doctype': 'book',
+            'icons': 'font',
+            'source-highlighter': 'highlightjs',
+            'sectlinks': '',
+            'sectanchors': '',
+            'docinfodir': file('src/main/resources/docs/common'),
+            'study': '1',
+            'sample': '1',
+            'assay':' 1',
+            'assayData': '1',
+            'project':'1'
+    )
+
+    backends 'html5'
+
     dependsOn testsMakesDocs
 }
 

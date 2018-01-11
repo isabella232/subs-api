@@ -1,20 +1,11 @@
 = Documentation
+:docinfo: shared
 :doctype: article
-:icons: font
 
-== What are you looking for?
- * <<Developer documentation>>
- * <<Website documentation>>
- * <<Frequently asked questions>>
+This is documentation for the submission service API. You can use it to submit
+your scientific data to the public archives at EMBL-EBI.
 
-== Developer documentation
- * <<how_to_submit_data_programatically.adoc#,How to submit data programatically>>
- * <<submission_api.adoc#,API reference documentation>>
-
-== Website documentation
- * _TODO_
-
-== Frequently asked questions
- * _TODO_
-
+The documentation is organised into reference material, that aims to document
+each resource in detail, and guides that walk you through the steps
+required to submit data using the API.
 
