@@ -5,3 +5,37 @@
         src="https://code.jquery.com/jquery-3.2.1.min.js"
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
+<script>
+    $( document ).ready(function() {
+        $("#references").load("reference-list.html #content");
+        $("#guides").hide().load("guides-list.html #content");
+
+        $("#refsSelector").click(function(){
+            $(this).addClass("selected");
+            $("#guidesSelector").removeClass("selected");
+            $("#guides").hide();
+            $("#references").show();
+        });
+
+        $("#guidesSelector").click(function(){
+            $(this).addClass("selected");
+            $("#refsSelector").removeClass("selected");
+            $("#guides").show();
+            $("#references").hide();
+        });
+
+    });
+</script>
+<!--
+TODO update style+code so that this looks and behaves
+more like that the github rest api docs https://developer.github.com/v3/
+-->
+<div id="title">
+    <h1 class="mainTitle">Submission REST API Documentation</h1>
+    <ul>
+        <li id="refsSelector" class="selected">Reference</li>
+        <li id="guidesSelector">Guides</li>
+    </ul>
+    <div id="references"></div>
+    <div id="guides"></div>
+</div>

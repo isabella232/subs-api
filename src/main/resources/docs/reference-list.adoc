@@ -1,11 +1,11 @@
 :showtitle!:
 :docinfo: private
-* <<reference/overview.adoc,Overview>>
-* Submissions
-* Teams
-* Projects
-* Samples
-* Studies
-* Assays
-* Assay data
-* Validation results
+* <<ref_overview.adoc#,Overview>>
+* <<ref_submissions.adoc#,Submissions>>
+* <<ref_teams.adoc#,Teams>>
+* <<ref_projects.adoc#,Projects>>
+* <<ref_samples.adoc#,Samples>>
+* <<ref_studies.adoc#,Studies>>
+* <<ref_assays.adoc#,Assays>>
+* <<ref_assay_data.adoc#,Assay data>>
+* <<ref_validation_results.adoc#,Validation results>>

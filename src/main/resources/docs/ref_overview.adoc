@@ -1,0 +1,122 @@
+= Overview
+:docinfo: shared
+
+This describes the resources that make up the EMBL-EBI submissions API.
+If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
+
+All API access is over HTTP, and accessed from `http://submission-dev.ebi.ac.uk/api`.
+All data is sent and received as JSON.
+
+`TODO URL and support e-mail address are provisional`
+
+== HTTP Verbs
+
+This API aims to use appropriate HTTP verbs for each action
+
+
+[cols=2*,options="header"]
+|===
+|Verb
+|Description
+
+
+|`GET`|Used for retrieving resources
+|`POST`|Used for creating resources
+|`PUT`|Used to entirely replace resources
+|`PATCH`|Used to partially modify a resource
+|`DELETE`|Used for deleting resources
+|`OPTIONS`|Can be used to determine which verbs can be used for a resource
+|`HEAD`|Returns whether a resource is available
+|===
+
+== HTTP status codes
+
+[cols=2*,options="header"]
+|===
+|Status code
+|Description
+
+
+|`200 OK`|The request completed successfully
+|`201 Created`|Returned after successfully creating a new resource with a `POST` request
+|`204 No Content`|Returned after a request successfully deleted a resource.
+|`304 Not Modified`|Returned in response to a conditional `GET` request, when the resource has not been modified
+|`400 Bad Request`|The request was malformed. The response body will include an error providing further information
+|`401 Unauthorized`|The request did not include an `Authorization` header
+|`403 Forbidden`|You are not permitted to access this resource
+|`405 Method Not Allowed`|The request used a method that is not permitted
+|`412 Precondition Failed`|Returned in response to a conditional `PATCH`, `PUT` or `DELETE`, when the condition did not match the resource state
+|===
+
+== Authentication
+
+`TODO, pending implementation details from the AAP team`. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
+requests to the submissions API.
+
+[source,bash]
+----
+$ curl 'http://submission-dev.ebi.ac.uk/api' -i -H 'Accept: application/hal+json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
+----
+
+The `Authorization` header has been omitted from all further example requests, for brevity.
+
+== Errors
+
+This section identifies some of the error codes and messages that USI API returns.
+Currently some types of client errors on API calls receive request bodies:
+
+Sending invalid JSON will result in a `400 Bad Request` response.
+include::{snippets}/invalid-json/curl-request.adoc[]
+include::{snippets}/invalid-json/http-response.adoc[]
+
+Sending the wrong type of JSON values (e.g. array where an object is expected) will result in a `400 Bad Request` response.
+include::{snippets}/json-array-instead-of-object/curl-request.adoc[]
+include::{snippets}/json-array-instead-of-object/http-response.adoc[]
+
+Sending invalid fields will result in a `400 Bad Request` response.
+include::{snippets}/invalid-submission/curl-request.adoc[]
+include::{snippets}/invalid-submission/http-response.adoc[]
+
+Looking for an non existent entity will result in a `404 Not Found` response with an empty response body.
+include::{snippets}/sample-not-found/curl-request.adoc[]
+include::{snippets}/sample-not-found/http-response.adoc[]
+
+Sending an invalid Http Method for a given endpoint will result in a `405 Method Not Allowed` response.
+include::{snippets}/method-not-allowed/curl-request.adoc[]
+include::{snippets}/method-not-allowed/http-response.adoc[]
+
+All error objects have properties so that your client can tell what the problem is. There's also an error code
+so that you know what is wrong with the field.
+
+[cols=2*,options="header"]
+|===
+|Error name
+|Description
+
+|missing_field |This means a required field has not been set
+|invalid |This means the contens of this field are invalid
+|resource_locked |The resource cannot be changed
+|already_exists |Another resource with the same value already exists
+
+|===
+
+== Hypermedia
+
+This API uses hypermedia, and resources include links to other resources in their responses. Responses are in
+http://stateless.co/hal_specification.html[HAL] format. Links can be found beneath the `_links` key. API users should
+not build links themselves, but should use these links to navigate between resources. Clients should discover resources
+and available actions by consuming the `_links`.
+
+Links may be returned in templated form, requiring expansion prior to use. This is primarily true for search resources.
+Templated links follow https://tools.ietf.org/html/rfc6570[RFC6570].
+
+Link naming follows a consistent pattern.
+
+* Each resource includes a `self` link. This is the canonical link to the resource, although there may be others
+* Individual resources are named with the type name, e.g. `submission`
+* Collection resources are named with the plural of the type name in camel case, e.g. `submissions`, `assayData`
+* Search resources are named with the plural of the type name in camel case, with a `:search` suffix, e.g. `submissions:search`
+* Where a collection resource accepts `POST` requests to create a new resource, a link will have the `:create` suffix, e.g. `submissions:create`
+* Please note that you may not be able to `GET` or `HEAD` a collection resource, even if you can `POST` to it.
+* Where an individual resource accepts `PUT` or `PATCH` requests, a link will have the `:update` suffix, e.g. `self:update`
+* Where an individual resource accepts `DELETE` requests, a link will have the `:delete` suffix, e.g. `self:delete`

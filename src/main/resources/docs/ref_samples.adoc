@@ -1,0 +1,53 @@
+= Sample
+:docinfo: shared
+
+== Minimal requirements
+
+Fields:
+
+* alias
+* title
+* taxonId (for submitting to ENA)
+* releaseDate in YYYY-MM-DD foramt, e.g. `"2017-12-12"`
+
+== Create a sample
+
+=== Request
+
+include::{snippets}/create-sample/curl-request.adoc[]
+
+
+=== Response
+
+include::{snippets}/create-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/create-sample/links.adoc[]
+
+
+== Update a sample
+=== Request
+
+include::{snippets}/update-sample/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/update-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/update-sample/links.adoc[]
+
+== Patch a sample
+=== Request
+
+include::{snippets}/patch-sample/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/patch-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/patch-sample/links.adoc[]

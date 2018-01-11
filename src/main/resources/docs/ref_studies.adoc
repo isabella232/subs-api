@@ -1,0 +1,14 @@
+= Studies
+:docinfo: shared
+
+TODO
+
+== Study data types
+
+=== Request
+
+include::{snippets}/studyDataTypes/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/studyDataTypes/http-response.adoc[]

@@ -1,3 +1,5 @@
 :showtitle!:
 :docinfo: private
-* placeholder
+* <<guide_overview.adoc#,Overview>>
+* <<guide_getting_started.adoc#,Getting started>>
+* <<guide_authorization_and_authentication.adoc#,Logging in - authorization and authentication>>

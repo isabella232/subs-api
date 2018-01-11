@@ -1,0 +1,25 @@
+= Spreadsheets and templates
+:docinfo: shared
+
+== Templates
+
+Templates help users provide bulk data (e.g. sampeles, assays), using familiar tools.
+Users can download spreadsheets by using the `spreadsheet-csv-download` link in their browser.
+
+=== Find all templates
+==== Request
+
+include::{snippets}/templates-list/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/templates-list/http-response.adoc[]
+
+==== Find one template by name
+===== Request
+
+include::{snippets}/test-template-one/curl-request.adoc[]
+
+===== Response
+
+include::{snippets}/test-template-one/http-response.adoc[]

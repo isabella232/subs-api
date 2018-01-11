@@ -109,9 +109,9 @@ asciidoctor {
     sourceDir file('src/main/resources/docs')
     attributes (
             'snippets': snippetsDir,
-            'toc': 'preamble',
+            'toc': 'auto',
             'toc-title': 'Contents',
-            'toclevels': 2,
+            'toclevels': 1,
             'doctype': 'book',
             'icons': 'font',
             'source-highlighter': 'highlightjs',
