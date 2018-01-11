@@ -1,4 +1,70 @@
 <style>
+    #title {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 0;
+        margin-bottom: 0;
+        max-width: 62.5em;
+        padding-left: .9375em;
+        padding-right: .9375em;
+        border-bottom: 1px solid #ddddd8;
+    }
+    #title ul {
+         display: block;
+         position: absolute;
+         right: 0;
+         bottom: 0;
+         border: none;
+    }
+
+    #title ul li {
+        margin-left: 16px;
+        display: inline-block;
+        width: auto;
+    }
+
+    #title ul a {
+        padding: 0 0 8px;
+    }
+
+    #title ul a.selected {
+        background-color: #f4f4f4;
+    }
+
+    .column {
+        float: right;
+        padding: 15px;
+    }
+    .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+    .menu {
+        width: 25%;
+        background-color: #f4f4f43b;
+        color: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        margin-top: 10px;
+        padding: 0;
+    }
+    .page-content {
+        width: 75%;
+    }
+    .menu ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    .menu li {
+        margin: 0;
+        color: #666;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
 
 </style>
 <script
@@ -6,18 +72,20 @@
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
 <script>
-    $( document ).ready(function() {
+    $(document).ready(function () {
+        $("#header").appendTo("#page-container");
+        $("#content").appendTo("#page-container");
         $("#references").load("reference-list.html #content");
         $("#guides").hide().load("guides-list.html #content");
 
-        $("#refsSelector").click(function(){
+        $("#refsSelector").click(function () {
             $(this).addClass("selected");
             $("#guidesSelector").removeClass("selected");
             $("#guides").hide();
             $("#references").show();
         });
 
-        $("#guidesSelector").click(function(){
+        $("#guidesSelector").click(function () {
             $(this).addClass("selected");
             $("#refsSelector").removeClass("selected");
             $("#guides").show();
@@ -31,11 +99,16 @@ TODO update style+code so that this looks and behaves
 more like that the github rest api docs https://developer.github.com/v3/
 -->
 <div id="title">
-    <h1 class="mainTitle">Submission REST API Documentation</h1>
+    <h3>Submission REST API Documentation</h3>
     <ul>
-        <li id="refsSelector" class="selected">Reference</li>
-        <li id="guidesSelector">Guides</li>
+        <li><a class="selected" id="refsSelector">Reference</a></li>
+        <li><a id="guidesSelector">Guides</a></li>
     </ul>
-    <div id="references"></div>
-    <div id="guides"></div>
+</div>
+<div class="clearfix">
+    <div id="topics" class="column menu">
+        <div id="references"></div>
+        <div id="guides"></div>
+    </div>
+    <div id="page-container" class="column page-content"></div>
 </div>
