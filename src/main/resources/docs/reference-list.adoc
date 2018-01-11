@@ -4,11 +4,21 @@
 * <<ref_root_endpoint.adoc#,Root endpoint>>
 * <<ref_submissions.adoc#,Submissions>>
 * <<ref_teams.adoc#,Teams>>
+ifdef::project[]
 * <<ref_projects.adoc#,Projects>>
+endif::project[]
+ifdef::sample[]
 * <<ref_samples.adoc#,Samples>>
+endif::sample[]
+ifdef::study[]
 * <<ref_studies.adoc#,Studies>>
+endif::study[]
+ifdef::assay[]
 * <<ref_assays.adoc#,Assays>>
+endif::assay[]
+ifdef::assayData[]
 * <<ref_assay_data.adoc#,Assay data>>
+endif::assayData[]
 * <<ref_validation_results.adoc#,Validation results>>
 * <<ref_ui_support.adoc#,UI Support>>
 * <<ref_spreadsheets_and_templates.adoc#,Spreadsheets and templates>>
