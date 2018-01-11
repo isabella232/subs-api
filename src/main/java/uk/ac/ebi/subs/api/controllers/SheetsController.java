@@ -85,6 +85,10 @@ public class SheetsController {
             throw new ResourceNotFoundException();
         }
 
+        if (targetType == null || !targetType.equals(template.getTargetType())){
+            throw new ResourceNotFoundException();
+        }
+
         //it should be possible to use Sheet directly, but the converter doesn't seem to be picked up by Spring
         Sheet sheet = sheetCsvMessageConverter.readStream(inputStream);
 
