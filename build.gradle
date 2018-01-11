@@ -15,10 +15,6 @@ plugins {
 
 }
 
-asciidoctorj {
-    version = '1.5.5'
-}
-
 group 'uk.ac.ebi.subs'
 version '1.3.0-SNAPSHOT'
 
@@ -118,7 +114,11 @@ asciidoctor {
             'sectlinks': '',
             'sectanchors': '',
             'docinfodir': file('src/main/resources/docs/common'),
-            'study':'1',sample:'1',assay:'1',assayData:'1', project:'1'
+            'study': '1',
+            'sample': '1',
+            'assay':' 1',
+            'assayData': '1',
+            'project':'1'
     )
 
     backends 'html5'
