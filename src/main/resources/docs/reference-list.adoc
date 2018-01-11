@@ -1,6 +1,7 @@
 :showtitle!:
 :docinfo: private
 * <<ref_overview.adoc#,Overview>>
+* <<ref_root_endpoint.adoc#,Root endpoint>>
 * <<ref_submissions.adoc#,Submissions>>
 * <<ref_teams.adoc#,Teams>>
 * <<ref_projects.adoc#,Projects>>
@@ -9,3 +10,5 @@
 * <<ref_assays.adoc#,Assays>>
 * <<ref_assay_data.adoc#,Assay data>>
 * <<ref_validation_results.adoc#,Validation results>>
+* <<ref_ui_support.adoc#,UI Support>>
+* <<ref_spreadsheets_and_templates.adoc#,Spreadsheets and templates>>

@@ -23,3 +23,67 @@ include::{snippets}/test-template-one/curl-request.adoc[]
 ===== Response
 
 include::{snippets}/test-template-one/http-response.adoc[]
+
+== Spreadsheet upload
+
+Users can supply information by downloading a spreadsheet template, filling in the data and uploading the completed spreadsheet.
+
+This is currently available for samples.
+
+.Steps to upload a spreadsheet
+. Select a template
+. Download template file
+. Open template in spreadsheet software (e.g. LibreOffice or Excel)
+. Save spreadsheet in `.csv` format
+. Select the same template, upload to the API. This will give you a sheet document
+. Review results
+.. If happy with the results, change the sheet status to Submitted.
+.. If you are not happy with the results, delete the uploaded sheet entry, modify your spreadsheet and re-upload it
+
+=== Uploading a CSV file
+
+We'll use a small csv file in this example:
+
+.my-samples.csv
+[source,csv]
+alias,taxon id,taxon,height,units
+s1,9606,Homo sapiens,1.7,meters
+s2,9606,Homo sapiens,1.7,meters
+
+==== Request
+
+include::{snippets}/sheet-csv-upload/curl-request.adoc[]
+
+NOTE: If using curl, you can use the --data-binary parameter to pass file contents more efficiently:
+[source,bash]
+----
+$ curl 'https://submission.ebi.ac.uk/api/submissions/544ce6a6-0535-4840-9d58-43bf694292e1/contents/samples/sheets?templateName=default-sample-template' -i -X POST -H 'Content-Type: text/csv' -H 'Accept: application/hal+json' --data-binary "@my-samples.csv"
+----
+
+==== Response
+
+include::{snippets}/sheet-csv-upload/http-response.adoc[]
+
+==== Links
+
+include::{snippets}/sheet-csv-upload/links.adoc[]
+
+=== Changing the status of an uploaded sheet
+
+==== Request
+
+include::{snippets}/sheet-patch-status/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/sheet-patch-status/http-response.adoc[]
+
+=== Deleting a sheet
+
+==== Request
+
+include::{snippets}/sheet-delete/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/sheet-delete/http-response.adoc[]
