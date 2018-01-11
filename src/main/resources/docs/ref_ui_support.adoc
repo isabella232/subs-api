@@ -1,5 +1,6 @@
 = UI Support Items
 :docinfo: shared
+:toc: auto
 
 Support items are used to populate the UI, for labels or example documents. They are read-only for most users, although
 admin users can create, edit and delete them.

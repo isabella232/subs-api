@@ -1,5 +1,6 @@
 = Authorization and authentication
 :docinfo: shared
+:toc: auto
 
 == Authorization and authentication
 

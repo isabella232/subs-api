@@ -1,6 +1,5 @@
-= Documentation
+= Welcome!
 :docinfo: shared
-:doctype: article
 
 This is documentation for the submission service API. You can use it to submit
 your scientific data to the public archives at EMBL-EBI.

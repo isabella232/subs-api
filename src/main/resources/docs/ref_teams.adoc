@@ -1,5 +1,6 @@
 = Teams
 :docinfo: shared
+:toc: auto
 
 `TODO there isn't a proper entry point for teams yet. If you know the team name, you can access it
 through this endpoint. Teams cannot be created or deleted through this API, they are controlled

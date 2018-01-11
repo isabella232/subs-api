@@ -105,7 +105,6 @@ asciidoctor {
     sourceDir file('src/main/resources/docs')
     attributes (
             'snippets': snippetsDir,
-            'toc': 'auto',
             'toc-title': 'Contents',
             'toclevels': 1,
             'doctype': 'book',

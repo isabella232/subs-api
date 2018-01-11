@@ -1,5 +1,6 @@
 = Getting started
 :docinfo: shared
+:toc: auto
 
 == Fetch the API root
 
