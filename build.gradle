@@ -211,6 +211,15 @@ task deployJar(type: SshTask, dependsOn: 'build') {
     }
 }
 
+task testSsh(type: SshTask) {
+    doLast {
+        sshTestRun()
+    }
+    ssh.settings {
+        knownHosts = allowAnyHosts
+    }
+}
+
 private Object sshRun() {
     ssh.run {
         session(remotes.role(gradle_env)) {
@@ -224,6 +233,14 @@ private Object sshRun() {
             println result
             println "updating permissions of $jarDeployDir/$jar.archiveName"
             execute "chmod u+x $jarDeployDir/*", ignoreError: false
+        }
+    }
+}
+
+private Object sshTestRun(){
+    ssh.run {
+        session(remotes.role(gradle_env)){
+            println "started ssh session"
         }
     }
 }
