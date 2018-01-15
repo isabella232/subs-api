@@ -13,6 +13,7 @@ more like that the github rest api docs https://developer.github.com/v3/
 
             $("#header").appendTo("#page-container");
             $("#content").appendTo("#page-container");
+
             $("#references").load("reference-list.html #content", function() {
                 $('#references li a').each(function () {
                     if (this.href == loc) {
@@ -22,6 +23,7 @@ more like that the github rest api docs https://developer.github.com/v3/
                     }
                 });
             });
+
             $("#guides").hide().load("guides-list.html #content", function() {
                 $('#guides li a').each(function () {
                     if (this.href == loc) {
@@ -61,7 +63,7 @@ more like that the github rest api docs https://developer.github.com/v3/
                 </h3>
                 <ul>
                     <li>
-                        <a id="refsSelector">Reference</a>
+                        <a id="refsSelector" class="selected">Reference</a>
                     </li>
                     <li>
                         <a id="guidesSelector">Guides</a>
