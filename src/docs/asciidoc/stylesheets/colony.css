@@ -310,7 +310,7 @@ b.button:before { content: "["; padding: 0 3px 0 2px; }
 
 b.button:after { content: "]"; padding: 0 2px 0 3px; }
 
-#header, #content, #footnotes, #footer { width: 100%; margin-left: auto; margin-right: auto; margin-top: 0; margin-bottom: 0; max-width: 62.5em; *zoom: 1; position: relative; padding-left: 1.5em; padding-right: 1.5em; }
+#header, #content, #footnotes, #footer { width: 100%; margin-left: auto; margin-right: auto; margin-top: 0; margin-bottom: 0; max-width: 62.5em; *zoom: 1; position: relative;}
 #header:before, #header:after, #content:before, #content:after, #footnotes:before, #footnotes:after, #footer:before, #footer:after { content: " "; display: table; }
 #header:after, #content:after, #footnotes:after, #footer:after { clear: both; }
 
@@ -714,23 +714,11 @@ p.tableblock.header { color: #6d6e71; }
 .literalblock pre, .listingblock pre { background: #eeeeee; }
 
 /** Customisation for subs-api **/
-#title {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 0;
-  margin-bottom: 0;
-  max-width: 62.5em;
-  position: relative;
-  padding-left: .9375em;
-  padding-right: .9375em;
-
-}
 #title ul {
   display: block;
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 15px;
+  bottom: 8px;
   border: none;
 }
 
@@ -745,7 +733,8 @@ p.tableblock.header { color: #6d6e71; }
 }
 
 #title ul a.selected {
-  background-color: #f4f4f4;
+  border-bottom: 2px solid #ba3925;
+  padding: 10px
 }
 
 #title h3 a, #title ul a {
@@ -753,17 +742,13 @@ p.tableblock.header { color: #6d6e71; }
   text-decoration: none;
 }
 
-.column {
-  float: right;
-  padding: 15px;
-}
 .clearfix::after {
   content: "";
   clear: both;
   display: table;
 }
+
 .menu {
-  width: 25%;
   background-color: #f4f4f43b;
   color: #ffffff;
   border: 1px solid #e5e5e5;
@@ -772,17 +757,49 @@ p.tableblock.header { color: #6d6e71; }
   margin-top: 10px;
   padding: 6px;
 }
-.page-content {
-  width: 75%;
-}
+
 .menu ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
+
 .menu li {
   margin: 0;
   color: #666;
  /*  border-bottom: 1px solid #eee; */
   font-size: 14px;
+}
+
+.menu li a.active {
+  color: #ba3925;
+}
+
+#topics #content {
+  margin: 0;
+}
+
+#topics #content ul li {
+  border-bottom: 1px solid #ccc;
+  padding: 8px 10px;
+}
+
+#topics #content ul li.active {
+  border-bottom: 1px solid #ba3925;
+}
+
+#topics #content ul li:last-child {
+  border-bottom: none;
+}
+
+#topics #content ul li p {
+  margin: 0;
+}
+
+#title ul a {
+  color: #333;
+}
+
+#title ul a.selected {
+  color: #ba3925;
 }
