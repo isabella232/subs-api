@@ -111,7 +111,7 @@ public class CoreSubmittableValidationHelper {
         submittable.setCreatedBy(storedVersion.getCreatedBy());
     }
 
-    private void validateIfDuplicate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+    public void validateIfDuplicate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
 
         StoredSubmittable submittable = repository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(target.getTeam().getName(), target.getAlias());
 

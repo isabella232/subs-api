@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.rest.core.ValidationErrors;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -22,16 +23,19 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @WithMockUser(username="usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
 public class CoreValidatorTest {
-
 
     public static final String TEST_TEAM_1 = "testTeam1";
     @Autowired
@@ -47,33 +51,49 @@ public class CoreValidatorTest {
     Submission submission;
     Submitter submitter;
 
-    @Test
-    public void itemMustHaveConsistentArchive(){
+    @Before
+    public void setUp() {
+        tearDown();
 
+        team = Team.build(TEST_TEAM_1);
+        submitter = Submitter.build("bob@ebi.ac.uk");
+
+        submission = new Submission();
+        submission.setId("sub1");
+        submission.setTeam(team);
+        submission.setSubmitter(submitter);
+
+        submissionRepository.insert(submission);
+
+        sampleUnderValidation = new Sample();
+        sampleUnderValidation.setAlias("testSample1");
+        sampleUnderValidation.setTeam(team);
+        sampleUnderValidation.setId("ts1");
+        sampleUnderValidation.setSubmission(submission);
+
+        errors = new BeanPropertyBindingResult(sampleUnderValidation, "sample");
     }
 
     @Test
-    public void newUseOfAliasInSubmissionIsGood(){
+    public void newUseOfAliasInSubmissionIsGood() {
         coreSubmittableValidationHelper.validateOnlyUseOfAliasInSubmission(sampleUnderValidation,sampleRepository,errors);
 
         assertThat(errors.getErrorCount(), is(equalTo(0)));
-
     }
 
     @Test
-    public void updateUseOfAliasInSubmissionIsGood(){
+    public void updateUseOfAliasInSubmissionIsGood() {
         sampleRepository.insert(sampleUnderValidation);
 
         coreSubmittableValidationHelper.validateOnlyUseOfAliasInSubmission(sampleUnderValidation,sampleRepository,errors);
 
         assertThat(errors.getErrorCount(), is(equalTo(0)));
-
     }
 
     @Test
-    public void twoCopiesOfAliasInSubmissionIsBad(){
+    public void twoCopiesOfAliasInSubmissionIsBad() {
         Sample sampleWithSameAlias = new Sample();
-        BeanUtils.copyProperties(sampleUnderValidation,sampleWithSameAlias);
+        BeanUtils.copyProperties(sampleUnderValidation, sampleWithSameAlias);
         sampleWithSameAlias.setId("iwasherefirst");
 
         sampleRepository.insert(sampleWithSameAlias);
@@ -88,41 +108,31 @@ public class CoreValidatorTest {
         FieldError error=errors.getFieldError("alias");
 
         assertThat(error.getDefaultMessage(),is(equalTo(SubsApiErrors.already_exists.name())));
-
     }
 
+    @Test
+    public void twoCopiesOfSubmittableInSameTeamIsBad() {
+        Sample originalSample = new Sample();
+        originalSample.setAlias("alias-" + UUID.randomUUID());
+        originalSample.setTeam(team);
 
-    @Before
-    public void setUp(){
-        tearDown();
+        Errors errors = new BeanPropertyBindingResult(originalSample, "sample");
 
-        team = Team.build(TEST_TEAM_1);
-        submitter = Submitter.build("bob@ebi.ac.uk");
+        // OK scenario
+        coreSubmittableValidationHelper.validateIfDuplicate(originalSample, sampleRepository, errors);
+        assertFalse(errors.hasErrors());
 
-        submission = new Submission();
-        submission.setId("sub1");
-        submission.setTeam(team);
-        submission.setSubmitter(submitter);
+        sampleRepository.insert(originalSample);
 
-        submissionRepository.insert(submission);
-
-
-        sampleUnderValidation = new Sample();
-        sampleUnderValidation.setAlias("testSample1");
-        sampleUnderValidation.setTeam(team);
-        sampleUnderValidation.setId("ts1");
-        sampleUnderValidation.setSubmission(submission);
-
-        errors = new BeanPropertyBindingResult(sampleUnderValidation, "sample");
+        // Not OK scenario
+        coreSubmittableValidationHelper.validateIfDuplicate(originalSample, sampleRepository, errors);
+        assertTrue(errors.hasErrors());
     }
 
     @After
-    public void tearDown(){
-
+    public void tearDown() {
      submissionRepository.deleteAll();
      sampleRepository.deleteAll();
     }
-
-
 
 }
