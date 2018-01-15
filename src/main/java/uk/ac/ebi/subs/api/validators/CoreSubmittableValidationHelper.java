@@ -7,9 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
-import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
@@ -25,42 +23,34 @@ import java.util.Optional;
  */
 @Component
 public class CoreSubmittableValidationHelper {
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private SubmissionRepository submissionRepository;
-    private List<StatusDescription> processingStatuses;
-    private List<StatusDescription> releaseStatuses;
     private OperationControlService operationControlService;
 
     @Autowired
-    public CoreSubmittableValidationHelper(
-            SubmissionRepository submissionRepository,
-            List<StatusDescription> processingStatuses,
-            List<StatusDescription> releaseStatuses,
-            OperationControlService operationControlService) {
-        this.submissionRepository = submissionRepository;
-        this.processingStatuses = processingStatuses;
-        this.releaseStatuses = releaseStatuses;
+    public CoreSubmittableValidationHelper(OperationControlService operationControlService) {
         this.operationControlService = operationControlService;
     }
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+        logger.info("validating {}", target);
         StoredSubmittable storedVersion = null;
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
 
-        if (errors.hasErrors()){
+        if (errors.hasErrors()) {
             return;
         }
 
         if (target.getId() != null) {
-            storedVersion = (StoredSubmittable) repository.findOne(target.getId());
+            storedVersion = repository.findOne(target.getId());
         }
 
         this.validateAlias(target,repository,errors);
 
         this.validate(target, storedVersion, errors);
+
+        this.validateIfDuplicate(target, repository, errors);
     }
 
     public void validateAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
@@ -68,8 +58,6 @@ public class CoreSubmittableValidationHelper {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors,"alias","required", "alias is required");
 
         validateOnlyUseOfAliasInSubmission(target, repository, errors);
-
-
     }
 
     public void validateOnlyUseOfAliasInSubmission(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
@@ -77,10 +65,7 @@ public class CoreSubmittableValidationHelper {
             return;
         }
 
-        List<? extends StoredSubmittable> itemsInSubmissionWithSameAlias = repository.findBySubmissionIdAndAlias
-                (target.getSubmission().getId(),
-                        target.getAlias()
-                );
+        List<? extends StoredSubmittable> itemsInSubmissionWithSameAlias = repository.findBySubmissionIdAndAlias(target.getSubmission().getId(), target.getAlias());
 
         Optional<? extends StoredSubmittable> itemWithSameAliasDifferentId = itemsInSubmissionWithSameAlias.stream()
                 .filter(item -> !item.getId().equals(target.getId()))
@@ -89,14 +74,10 @@ public class CoreSubmittableValidationHelper {
         if (itemWithSameAliasDifferentId.isPresent()) {
             SubsApiErrors.already_exists.addError(errors, "alias");
         }
-
     }
 
-
     public void validate(StoredSubmittable target, StoredSubmittable storedVersion, Errors errors) {
-        logger.info("validate {}", target);
-        StoredSubmittable submittable = (StoredSubmittable) target;
-
+        StoredSubmittable submittable = target;
 
         if (submittable.getSubmission() != null && !operationControlService.isUpdateable(submittable.getSubmission())) {
             SubsApiErrors.resource_locked.addError(errors);
@@ -110,7 +91,6 @@ public class CoreSubmittableValidationHelper {
 
         if (storedVersion != null) {
             validateAgainstStoredVersion(errors, submittable, storedVersion);
-
         }
     }
 
@@ -123,11 +103,20 @@ public class CoreSubmittableValidationHelper {
                 errors
         );
 
-        /*Yes, this is stupid
+        /* Yes, this is stupid
          * Spring Data Auditing is set for this object, but it doesn't maintain the createdDate on save
          */
 
         submittable.setCreatedDate(storedVersion.getCreatedDate());
         submittable.setCreatedBy(storedVersion.getCreatedBy());
+    }
+
+    private void validateIfDuplicate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+
+        StoredSubmittable submittable = repository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(target.getTeam().getName(), target.getAlias());
+
+        if (submittable != null) {
+            SubsApiErrors.already_exists.addError(errors);
+        }
     }
 }
