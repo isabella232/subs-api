@@ -102,7 +102,6 @@ if (gradle_env == "test") {
 
 asciidoctor {
     inputs.dir snippetsDir
-    sourceDir file('src/main/resources/docs')
     attributes (
             'snippets': snippetsDir,
             'toc-title': 'Contents',
@@ -110,17 +109,18 @@ asciidoctor {
             'doctype': 'book',
             'icons': 'font',
             'source-highlighter': 'highlightjs',
-            'sectlinks': '',
-            'sectanchors': '',
-            'docinfodir': file('src/main/resources/docs/common'),
-            'study': '1',
-            'sample': '1',
-            'assay':' 1',
-            'assayData': '1',
-            'project':'1'
+            'stylesheet': 'colony.css',
+            'stylesdir': 'stylesheets',
+            'linkcss': ''
     )
-
+    attributes asciiDoctorIncludes
     backends 'html5'
+
+    resources {
+        from(sourceDir) {
+            include 'stylesheets/**/*.css'
+        }
+    }
 
     dependsOn testsMakesDocs
 }
