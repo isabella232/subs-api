@@ -3,11 +3,16 @@ package uk.ac.ebi.subs.api.validators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
@@ -26,10 +31,12 @@ public class CoreSubmittableValidationHelper {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private OperationControlService operationControlService;
+    private ProcessingStatusRepository statusRepository;
 
     @Autowired
-    public CoreSubmittableValidationHelper(OperationControlService operationControlService) {
+    public CoreSubmittableValidationHelper(OperationControlService operationControlService, ProcessingStatusRepository statusRepository) {
         this.operationControlService = operationControlService;
+        this.statusRepository = statusRepository;
     }
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
@@ -112,11 +119,23 @@ public class CoreSubmittableValidationHelper {
     }
 
     public void validateIfDuplicate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+        if (target.getAlias() == null || target.getSubmission().getTeam() == null && target.getSubmission().getTeam().getName() == null) {
+            return;
+        }
 
-        StoredSubmittable submittable = repository.findFirstByTeamNameAndAliasOrderByCreatedDateDesc(target.getTeam().getName(), target.getAlias());
+        List<Submittable> results = repository.findByTeamNameAndAliasOrderByCreatedDateDesc(target.getSubmission().getTeam().getName(), target.getAlias(), new PageRequest(0,50)).getContent();
 
-        if (submittable != null) {
-            SubsApiErrors.already_exists.addError(errors);
+        Optional<? extends Submittable> itemWithSameAliasDifferentId = results.stream()
+                .filter(item -> !item.getId().equals(target.getId()))
+                .findAny();
+
+        if (itemWithSameAliasDifferentId.isPresent()) {
+            Submittable submittable = itemWithSameAliasDifferentId.get();
+            ProcessingStatus status = statusRepository.findBySubmittableId(submittable.getId());
+
+            if (!status.getStatus().equals(ProcessingStatusEnum.Completed)) {
+                SubsApiErrors.already_exists_and_not_completed.addError(errors);
+            }
         }
     }
 }

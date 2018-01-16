@@ -24,10 +24,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Helpers {
 
@@ -127,7 +124,7 @@ public class Helpers {
     public static List<uk.ac.ebi.subs.data.client.Assay> generateTestClientAssays(int numberOfAssaysRequired) {
         List<uk.ac.ebi.subs.data.client.Assay> assays = new ArrayList<>(numberOfAssaysRequired);
 
-        uk.ac.ebi.subs.data.client.Project project = generateClientProject();
+        //uk.ac.ebi.subs.data.client.Project project = generateClientProject();
 
         Study study = generateTestClientStudies(1).get(0);
         StudyRef studyRef = new StudyRef();
@@ -135,7 +132,6 @@ public class Helpers {
         studyRef.setTeam(TEAM_NAME);
 
         List<uk.ac.ebi.subs.data.client.Sample> samples = generateTestClientSamples(numberOfAssaysRequired);
-
 
         for (int i = 1; i <= numberOfAssaysRequired; i++) {
             uk.ac.ebi.subs.data.client.Assay a = new uk.ac.ebi.subs.data.client.Assay();
@@ -266,5 +262,10 @@ public class Helpers {
 
     private static String createId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String getRandomAlias() {
+        Random random = new Random();
+        return String.format("%04d", random.nextInt(10000));
     }
 }
