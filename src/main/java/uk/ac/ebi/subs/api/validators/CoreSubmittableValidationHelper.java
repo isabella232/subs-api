@@ -57,7 +57,7 @@ public class CoreSubmittableValidationHelper {
 
         this.validate(target, storedVersion, errors);
 
-        this.validateIfDuplicate(target, repository, errors);
+        this.validateIfDuplicateWithinTeamAsDraft(target, repository, errors);
     }
 
     public void validateAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
@@ -118,8 +118,8 @@ public class CoreSubmittableValidationHelper {
         submittable.setCreatedBy(storedVersion.getCreatedBy());
     }
 
-    public void validateIfDuplicate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
-        if (target.getAlias() == null || target.getSubmission().getTeam() == null && target.getSubmission().getTeam().getName() == null) {
+    public void validateIfDuplicateWithinTeamAsDraft(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+        if (target.getAlias() == null || target.getSubmission() == null || target.getSubmission().getTeam() == null || target.getSubmission().getTeam().getName() == null) {
             return;
         }
 

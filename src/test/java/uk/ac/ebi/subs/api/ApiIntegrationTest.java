@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -51,6 +52,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 public abstract class ApiIntegrationTest {
@@ -220,9 +222,13 @@ public abstract class ApiIntegrationTest {
         ApiError apiErrorResponse = mapper.readValue(sampleSecondResponse.getBody().toString(), ApiError.class);
 
         List<String> errors = apiErrorResponse.getErrors();
-
         assertThat(errors, notNullValue());
-        assertThat(errors.size(), is(equalTo(1)));
+
+        Optional<String> optionalError = errors.stream()
+                .filter(error -> error.contains("already_exists: In Sample, field alias can't be "))
+                .findAny();
+
+        assertTrue(optionalError.isPresent());
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
         assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
@@ -309,7 +315,12 @@ public abstract class ApiIntegrationTest {
             List<String> errors = apiErrorResponse.getErrors();
 
             assertThat(errors, notNullValue());
-            assertThat(errors.size(), equalTo(1));
+
+            Optional<String> optionalError = errors.stream()
+                    .filter(error -> error.contains("already_exists: In Sample, field alias can't be "))
+                    .findAny();
+
+            assertTrue(optionalError.isPresent());
 
             assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
             assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
@@ -327,6 +338,7 @@ public abstract class ApiIntegrationTest {
     public void sampleVersions() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
 
+        //TODO check this test
 
         int numberOfSubmissions = 5;
 
