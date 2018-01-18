@@ -254,7 +254,7 @@ Content-Length: 1376
 }
 ....
 
-== You need to request a new token
+== You need to request a new token!
 
 Each token includes all the details about who you are, and which teams you are a member of. You have now created a new
 team and added yourself to it since you requested your first token, so that first token is out of date. You should
