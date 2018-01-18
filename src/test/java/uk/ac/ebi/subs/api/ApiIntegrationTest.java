@@ -25,6 +25,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import uk.ac.ebi.subs.api.error.ApiError;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
+import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
@@ -32,8 +34,11 @@ import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -53,10 +58,10 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.ac.ebi.subs.api.Helpers.generateTestSamples;
 
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 public abstract class ApiIntegrationTest {
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @LocalServerPort
@@ -70,21 +75,25 @@ public abstract class ApiIntegrationTest {
 
     @Autowired
     protected SubmissionRepository submissionRepository;
-
     @Autowired
     protected SubmissionStatusRepository submissionStatusRepository;
-
     @Autowired
     protected SampleRepository sampleRepository;
-
     @Autowired
     protected TemplateRepository templateRepository;
+    @Autowired
+    protected ValidationResultRepository validationResultRepository;
+    @Autowired
+    protected ProcessingStatusRepository processingStatusRepository;
 
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
+    @Autowired
+    private SubmittableHelperService submittableHelperService;
+
     @Before
-    public void buildUp() throws URISyntaxException, UnirestException {
+    public void buildUp() throws UnirestException {
         clearDbs();
 
         rootUri = "http://localhost:" + port + "/api";
@@ -93,14 +102,14 @@ public abstract class ApiIntegrationTest {
     }
 
     public void clearDbs() {
-        Collection<CrudRepository> repos = Arrays.asList(
+        Arrays.asList(
                 submissionRepository,
                 submissionStatusRepository,
                 sampleRepository,
-                templateRepository
-        );
-
-        repos.forEach(CrudRepository::deleteAll);
+                templateRepository,
+                validationResultRepository,
+                processingStatusRepository
+        ).forEach(CrudRepository::deleteAll);
     }
 
     @After
@@ -173,13 +182,6 @@ public abstract class ApiIntegrationTest {
         SubmissionStatus submissionStatus = submissionStatuses.get(0);
         assertThat(submissionStatus.getStatus(), notNullValue());
         assertThat(submissionStatus.getStatus(), equalTo("Draft"));
-    }
-
-    @Test
-    public void submissionWithSamples() throws IOException, UnirestException {
-        Map<String, String> rootRels = testHelper.rootRels();
-
-        String submissionLocation = testHelper.submissionWithSamples(rootRels);
     }
 
     /**
@@ -336,34 +338,38 @@ public abstract class ApiIntegrationTest {
      */
     @Test
     public void sampleVersions() throws IOException, UnirestException {
-        Map<String, String> rootRels = testHelper.rootRels();
+        uk.ac.ebi.subs.repository.model.Submission submission;
+        Team testTeam = Helpers.generateTestTeam();
 
-        //TODO check this test
 
         int numberOfSubmissions = 5;
 
-        Submission submission = Helpers.generateSubmission();
-        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
+        List<uk.ac.ebi.subs.repository.model.Sample> sampleList = generateTestSamples(2);
 
+        // At this point we are bypassing our API validation checks and inserting the objects directly into the DB,
+        // this is for test purposes only and the DB must be cleared afterwards.
         for (int i = 0; i < numberOfSubmissions; i++) {
-            HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+            submission = Helpers.generateSubmission();
+            submission.setTeam(testTeam);
 
-            String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
-            Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
-            Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
-            assertThat(submissionContentsRels.get("samples:create"), notNullValue());
+            SubmissionStatus submissionStatus = new SubmissionStatus(SubmissionStatusEnum.Draft);
+            submission.setSubmissionStatus(submissionStatus);
+            submissionStatusRepository.insert(submissionStatus);
 
-            //add samples to the submission
-            for (Sample sample : testSamples) {
+            submissionRepository.insert(submission);
 
-                sample.setSubmission(submissionLocation);
+            HttpResponse<JsonNode> submissionResponse = Unirest.get(rootUri + "/submissions/" + submission.getId())
+                            .headers(testHelper.getGetHeaders()).asJson();
+            assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
-                HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
-                        .headers(testHelper.getPostHeaders())
-                        .body(sample)
-                        .asJson();
+            for (uk.ac.ebi.subs.repository.model.Sample sample : sampleList) {
+                sample.setSubmission(submission);
+                submittableHelperService.setupNewSubmittable(sample);
+                sampleRepository.insert(sample);
 
-                assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+                HttpResponse<JsonNode> sampleResponse = Unirest.get(rootUri + "/samples/" + sample.getId())
+                        .headers(testHelper.getGetHeaders()).asJson();
+                assertEquals(HttpStatus.OK.value(), sampleResponse.getStatus());
             }
         }
 
@@ -385,7 +391,7 @@ public abstract class ApiIntegrationTest {
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(teamSamples.length(), is(equalTo(testSamples.size())));
+        assertThat(teamSamples.length(), is(equalTo(sampleList.size())));
 
         for (int i = 0; i < teamSamples.length(); i++) {
             JSONObject teamSample = teamSamples.getJSONObject(i);
