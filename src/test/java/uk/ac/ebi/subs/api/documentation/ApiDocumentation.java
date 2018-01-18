@@ -3,7 +3,6 @@ package uk.ac.ebi.subs.api.documentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +21,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.operation.preprocess.ContentModifier;
 import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.Assert;
@@ -49,9 +47,11 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
-import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
+import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
@@ -112,23 +112,22 @@ public class ApiDocumentation {
 
     @Autowired
     private SubmissionRepository submissionRepository;
-
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
-
     @Autowired
     private SampleRepository sampleRepository;
-
     @Autowired
     private ProjectRepository projectRepository;
-
     @Autowired
     private ProcessingStatusRepository processingStatusRepository;
-
     @Autowired
     private ValidationResultRepository validationResultRepository;
-
-    private ObjectMapper objectMapper;
+    @Autowired
+    private AssayRepository assayRepository;
+    @Autowired
+    private AssayDataRepository assayDataRepository;
+    @Autowired
+    private StudyRepository studyRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -136,11 +135,9 @@ public class ApiDocumentation {
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
-
+    private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
-    @Autowired
-    private SubmissionHelperService submissionHelperService;
 
     @Before
     public void setUp() {
@@ -148,20 +145,6 @@ public class ApiDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
-    }
-
-    private void clearDatabases() {
-        this.submissionRepository.deleteAll();
-        this.sampleRepository.deleteAll();
-        this.submissionStatusRepository.deleteAll();
-        this.validationResultRepository.deleteAll();
-        this.processingStatusRepository.deleteAll();
-        this.projectRepository.deleteAll();
-    }
-
-    @After
-    public void tearDown() {
-        clearDatabases();
     }
 
     @Test
@@ -238,13 +221,6 @@ public class ApiDocumentation {
                                 preprocessResponse(prettyPrint())
                         )
                 );
-    }
-
-    private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
-        uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
-        submission.setSubmitter(null);
-        submission.setTeam(null);
-        return submission;
     }
 
     @Test
@@ -494,77 +470,6 @@ public class ApiDocumentation {
                                 linkWithRel("submission").description("This submission")
                         )
                 ));
-    }
-
-    private void fakeProcessingStatus(Submission sub) {
-        IntStream
-                .rangeClosed(1, 10)
-                .mapToObj(Integer::valueOf)
-                .forEach(index ->
-                        storeProcessingStatus(
-                                sub,
-                                Sample.class,
-                                "sample" + index,
-                                "SAMEAFAKE0000" + index,
-                                Archive.BioSamples,
-                                ProcessingStatusEnum.Completed
-                        )
-                );
-
-        storeProcessingStatus(
-                sub,
-                Study.class,
-                "study",
-                null,
-                Archive.Ena,
-                ProcessingStatusEnum.Dispatched
-        );
-
-        IntStream
-                .rangeClosed(1, 10)
-                .mapToObj(Integer::valueOf)
-                .forEach(index ->
-                        storeProcessingStatus(
-                                sub,
-                                Assay.class,
-                                "assay" + index,
-                                null,
-                                Archive.Ena,
-                                ProcessingStatusEnum.Dispatched
-                        )
-                );
-
-        IntStream
-                .rangeClosed(1, 10)
-                .mapToObj(Integer::valueOf)
-                .forEach(index ->
-                        storeProcessingStatus(
-                                sub,
-                                AssayData.class,
-                                "assayData" + index,
-                                null,
-                                Archive.Ena,
-                                ProcessingStatusEnum.Dispatched
-                        )
-                );
-    }
-
-    private void storeProcessingStatus(
-            Submission sub,
-            Class<? extends StoredSubmittable> type,
-            String alias,
-            String accession,
-            Archive archive,
-            ProcessingStatusEnum processingStatusEnum
-    ) {
-        ProcessingStatus status = new ProcessingStatus();
-        status.setSubmissionId(sub.getId());
-        status.setAccession(accession);
-        status.setArchive(archive.name());
-        status.setSubmittableType(type.getSimpleName());
-
-        status.setStatus(processingStatusEnum);
-        processingStatusRepository.insert(status);
     }
 
     @Test
@@ -1106,18 +1011,6 @@ public class ApiDocumentation {
                 );
     }
 
-    private uk.ac.ebi.subs.data.Submission badClientSubmission() {
-        return new uk.ac.ebi.subs.data.Submission();
-    }
-
-    public ContentModifyingOperationPreprocessor maskEmbedded() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
-    }
-
-    public ContentModifyingOperationPreprocessor maskLinks() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
-    }
-
     @Test
     public void pageExample() throws Exception {
 
@@ -1280,38 +1173,6 @@ public class ApiDocumentation {
                         ));
     }
 
-    private List<Sample> storeSamples(Submission sub, int numberRequired) {
-        List<Sample> samples = Helpers.generateTestSamples(numberRequired);
-
-        for (Sample s : samples) {
-            s.setCreatedDate(new Date());
-            s.setSubmission(sub);
-
-            Attribute cellLineType = Helpers.attribute("EBV-LCL cell line");
-            Term ebvLclCellLine = new Term();
-            ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
-            cellLineType.getTerms().add(ebvLclCellLine);
-
-            s.getAttributes().put("Cell line type", Collections.singletonList(cellLineType));
-
-            processingStatusRepository.insert(s.getProcessingStatus());
-            sampleRepository.insert(s);
-        }
-        return samples;
-    }
-
-    private List<Project> storeProjects(Submission sub, int numberRequired) {
-        List<Project> projects = Helpers.generateTestProjects(numberRequired);
-
-        for (Project p : projects) {
-            p.setCreatedDate(new Date());
-            p.setSubmission(sub);
-            processingStatusRepository.insert(p.getProcessingStatus());
-            projectRepository.insert(p);
-        }
-        return projects;
-    }
-
     @Test
     public void samplesSearchResource() throws Exception {
         this.mockMvc.perform(
@@ -1442,7 +1303,6 @@ public class ApiDocumentation {
     public void submissionsByTeam() throws Exception {
 
         Submission sub = storeSubmission();
-
 
         this.mockMvc.perform(
                 get("/api/submissions/search/by-team?teamName={teamName}", sub.getTeam().getName())
@@ -1579,6 +1439,142 @@ public class ApiDocumentation {
                 );
     }
 
+    private void clearDatabases() {
+        this.submissionRepository.deleteAll();
+        this.sampleRepository.deleteAll();
+        this.submissionStatusRepository.deleteAll();
+        this.validationResultRepository.deleteAll();
+        this.processingStatusRepository.deleteAll();
+        this.projectRepository.deleteAll();
+        this.assayRepository.deleteAll();
+        this.assayDataRepository.deleteAll();
+        this.studyRepository.deleteAll();
+    }
+
+    /* Test Helper Methods */
+
+    private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
+        uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
+        submission.setSubmitter(null);
+        submission.setTeam(null);
+        return submission;
+    }
+
+    private void fakeProcessingStatus(Submission sub) {
+        IntStream
+                .rangeClosed(1, 10)
+                .mapToObj(Integer::valueOf)
+                .forEach(index ->
+                        storeProcessingStatus(
+                                sub,
+                                Sample.class,
+                                "sample" + index,
+                                "SAMEAFAKE0000" + index,
+                                Archive.BioSamples,
+                                ProcessingStatusEnum.Completed
+                        )
+                );
+
+        storeProcessingStatus(
+                sub,
+                Study.class,
+                "study",
+                null,
+                Archive.Ena,
+                ProcessingStatusEnum.Dispatched
+        );
+
+        IntStream
+                .rangeClosed(1, 10)
+                .mapToObj(Integer::valueOf)
+                .forEach(index ->
+                        storeProcessingStatus(
+                                sub,
+                                Assay.class,
+                                "assay" + index,
+                                null,
+                                Archive.Ena,
+                                ProcessingStatusEnum.Dispatched
+                        )
+                );
+
+        IntStream
+                .rangeClosed(1, 10)
+                .mapToObj(Integer::valueOf)
+                .forEach(index ->
+                        storeProcessingStatus(
+                                sub,
+                                AssayData.class,
+                                "assayData" + index,
+                                null,
+                                Archive.Ena,
+                                ProcessingStatusEnum.Dispatched
+                        )
+                );
+    }
+
+    private void storeProcessingStatus(
+            Submission sub,
+            Class<? extends StoredSubmittable> type,
+            String alias,
+            String accession,
+            Archive archive,
+            ProcessingStatusEnum processingStatusEnum
+    ) {
+        ProcessingStatus status = new ProcessingStatus();
+        status.setSubmissionId(sub.getId());
+        status.setAccession(accession);
+        status.setArchive(archive.name());
+        status.setSubmittableType(type.getSimpleName());
+
+        status.setStatus(processingStatusEnum);
+        processingStatusRepository.insert(status);
+    }
+
+    private uk.ac.ebi.subs.data.Submission badClientSubmission() {
+        return new uk.ac.ebi.subs.data.Submission();
+    }
+
+    public ContentModifyingOperationPreprocessor maskEmbedded() {
+        return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
+    }
+
+    public ContentModifyingOperationPreprocessor maskLinks() {
+        return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
+    }
+
+    private List<Sample> storeSamples(Submission sub, int numberRequired) {
+        List<Sample> samples = Helpers.generateTestSamples(numberRequired);
+
+        for (Sample s : samples) {
+            s.setCreatedDate(new Date());
+            s.setSubmission(sub);
+
+            Attribute cellLineType = Helpers.attribute("EBV-LCL cell line");
+            Term ebvLclCellLine = new Term();
+            ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
+            cellLineType.getTerms().add(ebvLclCellLine);
+
+            s.getAttributes().put("Cell line type", Collections.singletonList(cellLineType));
+
+            processingStatusRepository.insert(s.getProcessingStatus());
+            sampleRepository.insert(s);
+        }
+        return samples;
+    }
+
+    private List<Project> storeProjects(Submission sub, int numberRequired) {
+        List<Project> projects = Helpers.generateTestProjects(numberRequired);
+
+        for (Project p : projects) {
+            p.setCreatedDate(new Date());
+            p.setSubmission(sub);
+            processingStatusRepository.insert(p.getProcessingStatus());
+            projectRepository.insert(p);
+        }
+        return projects;
+    }
+
     private Submission storeSubmission() {
         Submission sub = Helpers.generateTestSubmission();
 
@@ -1629,5 +1625,4 @@ public class ApiDocumentation {
 
         }
     }
-
 }
