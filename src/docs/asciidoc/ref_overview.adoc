@@ -98,6 +98,7 @@ so that you know what is wrong with the field.
 |invalid |This means the contens of this field are invalid
 |resource_locked |The resource cannot be changed
 |already_exists |Another resource with the same value already exists
+|already_exists_and_not_completed |Another resource with the same alias already exists within the same team and is not 'Completed'
 
 |===
 
