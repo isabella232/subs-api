@@ -111,7 +111,9 @@ asciidoctor {
             'source-highlighter': 'highlightjs',
             'stylesheet': 'colony.css',
             'stylesdir': 'stylesheets',
-            'linkcss': ''
+            'linkcss': '',
+            'sectlinks': '',
+            'sectanchors': ''
     )
     attributes asciiDoctorIncludes
     backends 'html5'
