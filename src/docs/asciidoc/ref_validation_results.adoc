@@ -15,7 +15,7 @@ You cannot make changes to validation results, they are only changed when you up
 You can get validation results for any submittable, by following the `validationResult` link:
 
 === Request
-include::{snippets}/get-validation-result/http-request.adoc[]
+include::{snippets}/get-validation-result/curl-request.adoc[]
 
 === Response
 include::{snippets}/get-validation-result/http-response.adoc[]
