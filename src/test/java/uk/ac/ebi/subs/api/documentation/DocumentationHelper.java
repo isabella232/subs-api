@@ -77,6 +77,15 @@ public class DocumentationHelper {
         return docConfig;
     }
 
+    protected static HeaderAddingPreprocessor addHeader(String headerName, String headerValue){
+        HeaderAddingPreprocessor preprocessor = new HeaderAddingPreprocessor();
+        preprocessor.addHeader(headerName,headerValue);
+        return preprocessor;
+    }
+
+    protected static HeaderAddingPreprocessor addAuthTokenHeader(){
+        return DocumentationHelper.addHeader("Authorization","Bearer $TOKEN");
+    }
 
     protected static FieldDescriptor linksResponseField() {
         return fieldWithPath("_links").description("Links to other resources");
