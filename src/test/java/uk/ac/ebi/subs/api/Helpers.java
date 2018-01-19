@@ -1,7 +1,5 @@
 package uk.ac.ebi.subs.api;
 
-
-import org.springframework.security.access.method.P;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.Attribute;
@@ -27,6 +25,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class Helpers {
@@ -44,10 +43,6 @@ public class Helpers {
         Submitter u = new Submitter();
         u.setEmail("test@test.org");
         return u;
-    }
-
-    public static List<Sample> generateTestSamples() {
-        return generateTestSamples(2);
     }
 
     public static List<uk.ac.ebi.subs.data.client.Sample> generateTestClientSamples(int numberOfSamplesRequired) {
@@ -127,15 +122,12 @@ public class Helpers {
     public static List<uk.ac.ebi.subs.data.client.Assay> generateTestClientAssays(int numberOfAssaysRequired) {
         List<uk.ac.ebi.subs.data.client.Assay> assays = new ArrayList<>(numberOfAssaysRequired);
 
-        uk.ac.ebi.subs.data.client.Project project = generateClientProject();
-
         Study study = generateTestClientStudies(1).get(0);
         StudyRef studyRef = new StudyRef();
         studyRef.setAlias(study.getAlias());
         studyRef.setTeam(TEAM_NAME);
 
         List<uk.ac.ebi.subs.data.client.Sample> samples = generateTestClientSamples(numberOfAssaysRequired);
-
 
         for (int i = 1; i <= numberOfAssaysRequired; i++) {
             uk.ac.ebi.subs.data.client.Assay a = new uk.ac.ebi.subs.data.client.Assay();
@@ -200,7 +192,6 @@ public class Helpers {
         return assayData;
     }
 
-
     public static List<Sample> generateTestSamples(int numberOfSamplesRequired) {
         List<Sample> samples = new ArrayList<>(numberOfSamplesRequired);
 
@@ -241,13 +232,11 @@ public class Helpers {
         return projects;
     }
 
-
     public static Team generateTestTeam() {
         Team d = new Team();
         d.setName(TEAM_NAME);
         return d;
     }
-
 
     public final static String TEAM_NAME = "self.usi-user";
     public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
@@ -266,5 +255,10 @@ public class Helpers {
 
     private static String createId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String getRandomAlias() {
+        Random random = new Random();
+        return String.format("%04d", random.nextInt(10000));
     }
 }
