@@ -7,7 +7,7 @@ If you have any queries or requests, please contact our mailto:submission-help@e
 
 == Accessing the service
 
-The submission API is available from `https://submission-dev.ebi.ac.uk/api`.
+The submission API is available from `https://submission.ebi.ac.uk/api`.
 
 We also have test and development versions of the API, available at these addresses:
 
