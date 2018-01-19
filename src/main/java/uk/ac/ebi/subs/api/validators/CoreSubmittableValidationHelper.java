@@ -123,19 +123,15 @@ public class CoreSubmittableValidationHelper {
             return;
         }
 
-        List<Submittable> results = repository.findByTeamNameAndAliasOrderByCreatedDateDesc(target.getSubmission().getTeam().getName(), target.getAlias(), new PageRequest(0,50)).getContent();
+        List<StoredSubmittable> results = repository.findByTeamNameAndAliasOrderByCreatedDateDesc(target.getSubmission().getTeam().getName(), target.getAlias(), new PageRequest(0,50)).getContent();
 
-        Optional<? extends Submittable> itemWithSameAliasDifferentId = results.stream()
+        Optional<? extends StoredSubmittable> itemWithSameAliasDifferentId = results.stream()
                 .filter(item -> !item.getId().equals(target.getId()))
+                .filter(item -> !item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Completed.name()))
                 .findAny();
 
         if (itemWithSameAliasDifferentId.isPresent()) {
-            Submittable submittable = itemWithSameAliasDifferentId.get();
-            ProcessingStatus status = statusRepository.findBySubmittableId(submittable.getId());
-
-            if (!status.getStatus().equals(ProcessingStatusEnum.Completed)) {
-                SubsApiErrors.already_exists_and_not_completed.addError(errors);
-            }
+            SubsApiErrors.already_exists_and_not_completed.addError(errors);
         }
     }
 }
