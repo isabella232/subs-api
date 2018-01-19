@@ -64,6 +64,8 @@ The `Authorization` header has been omitted from all further example requests, f
 == Errors
 
 This section identifies some of the error codes and messages that USI API returns.
+
+=== HTTP Status Codes
 Currently some types of client errors on API calls receive request bodies:
 
 Sending invalid JSON will result in a `400 Bad Request` response.
@@ -85,6 +87,8 @@ include::{snippets}/sample-not-found/http-response.adoc[]
 Sending an invalid Http Method for a given endpoint will result in a `405 Method Not Allowed` response.
 include::{snippets}/method-not-allowed/curl-request.adoc[]
 include::{snippets}/method-not-allowed/http-response.adoc[]
+
+=== Error messages
 
 All error objects have properties so that your client can tell what the problem is. There's also an error code
 so that you know what is wrong with the field.
