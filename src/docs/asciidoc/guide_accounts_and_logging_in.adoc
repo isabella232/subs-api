@@ -261,6 +261,12 @@ team and added yourself to it since you requested your first token, so that firs
 request a new one, as you did before. The new one will include the team you just created. You can use this new token
 to access the submissions API.
 
+== Development servers
+
+We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
+rather than the main server, please use this version of AAP: https://explore.aap.tsi.ebi.ac.uk
+
+
 == Wrapping up
 
 You have now created an AAP account and team. You are now ready to log in to the submission API.
