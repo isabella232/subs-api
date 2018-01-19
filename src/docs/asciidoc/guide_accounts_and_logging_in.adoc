@@ -49,12 +49,12 @@ NOTE: The token is valid for 1 hour.
 == How to use the obtained token
 
 You need to add this token as an `Authorization` header to all of your API requests.
-The format is `Authorization: Bearer <your_aap_token>`
+The format is `Authorization: Bearer $TOKEN`
 
 === Example request
 [source,bash]
 ----
- $ curl -i -X GET -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer <your_aap_token>" https://submissionexampleurl.test.com/api/teams
+ $ curl -i -X GET -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://submissionexampleurl.test.com/api/teams
 ----
 == Don't copy and paste your token
 
@@ -188,7 +188,7 @@ Once you have both identifiers, you can add the user to the team.
 
 [source,bash]
 ----
- $ curl 'http://api.aai.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer <your_aap_token>' -H 'Accept: application/hal+json'
+ $ curl 'http://api.aai.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer $TOKEN' -H 'Accept: application/hal+json'
 ----
 
 ==== Example response
