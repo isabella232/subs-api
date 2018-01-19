@@ -3,17 +3,22 @@
 :toc: auto
 
 This describes the resources that make up the EMBL-EBI submissions API.
-If you have any queries or requests, please contact mailto:subs-help@ebi.ac.uk[support].
+If you have any queries or requests, please contact our mailto:submission-help@ebi.ac.uk[helpdesk].
 
-All API access is over HTTP, and accessed from `http://submission-dev.ebi.ac.uk/api`.
-All data is sent and received as JSON.
+== Accessing the service
 
-`TODO URL and support e-mail address are provisional`
+The submission API is available from `https://submission-dev.ebi.ac.uk/api`.
+
+We also have test and development versions of the API, available at these addresses:
+
+ * `https://submission-test.ebi.ac.uk/api` - this used for testing the next version of the API, but should be fairly stable
+ * `https://submission-dev.ebi.ac.uk/api` - this has the latest changes, but it less likely to work
+
+All API access is over HTTPS. All data is sent and received as JSON.
 
 == HTTP Verbs
 
 This API aims to use appropriate HTTP verbs for each action
-
 
 [cols=2*,options="header"]
 |===
@@ -31,6 +36,8 @@ This API aims to use appropriate HTTP verbs for each action
 |===
 
 == HTTP status codes
+
+We will use the response status code to show the outcome of each HTTP request.
 
 [cols=2*,options="header"]
 |===
@@ -51,15 +58,10 @@ This API aims to use appropriate HTTP verbs for each action
 
 == Authentication
 
-`TODO, pending implementation details from the AAP team`. Get a https://jwt.io/[JWT] token from AAP. Include it as the Authorization header in
-requests to the submissions API.
+Authentication and authorization decisions are made based on a https://jwt.io/[JWT] token, provided as a HTTP request
+header. This is described in the guide to <<guide_accounts_and_logging_in.adoc#Accounts and logging in>>.
 
-[source,bash]
-----
-$ curl 'http://submission-dev.ebi.ac.uk/api' -i -H 'Accept: application/hal+json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ'
-----
-
-The `Authorization` header has been omitted from all further example requests, for brevity.
+All examples of accessing the API will use `$TOKEN` as a placeholder for your real token.
 
 == Errors
 
