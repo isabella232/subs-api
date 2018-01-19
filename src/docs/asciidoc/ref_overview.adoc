@@ -59,13 +59,13 @@ We will use the response status code to show the outcome of each HTTP request.
 == Authentication
 
 Authentication and authorization decisions are made based on a https://jwt.io/[JWT] token, provided as a HTTP request
-header. This is described in the guide to <<guide_accounts_and_logging_in.adoc#Accounts and logging in>>.
+header. This is described in the guide to <<guide_accounts_and_logging_in.adoc#,Accounts and logging in>>.
 
 All examples of accessing the API will use `$TOKEN` as a placeholder for your real token.
 
 == Errors
 
-This section identifies some of the error codes and messages that USI API returns.
+This section identifies some of the error codes and messages that the submission API returns.
 
 === HTTP Status Codes
 Currently some types of client errors on API calls receive request bodies:
