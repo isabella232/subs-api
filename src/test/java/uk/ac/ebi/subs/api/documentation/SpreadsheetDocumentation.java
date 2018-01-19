@@ -1,6 +1,5 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,22 +36,21 @@ import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.replacePattern;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
@@ -169,8 +167,7 @@ public class SpreadsheetDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("sheet-csv-upload",
-                                preprocessRequest(
-                                        prettyPrint()                                ),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -212,7 +209,7 @@ public class SpreadsheetDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("sheet-patch-status",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -251,7 +248,7 @@ public class SpreadsheetDocumentation {
         ).andExpect(status().isBadRequest())
                 .andDo(
                         document("sheet-patch-content",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint())
                         )
                 );
@@ -267,7 +264,7 @@ public class SpreadsheetDocumentation {
         ).andExpect(status().isNoContent())
                 .andDo(
                         document("sheet-delete",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint())
                         )
                 );

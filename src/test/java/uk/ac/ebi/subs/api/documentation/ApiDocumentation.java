@@ -82,6 +82,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
 /**
  * Use this class to create document snippets. Ascii docotor will weave them into html documents,
@@ -157,7 +158,7 @@ public class ApiDocumentation {
         ).andExpect(status().isBadRequest())
                 .andDo(
                         document("invalid-json",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("type").description("An URL to a document describing the error condition."),
@@ -185,7 +186,7 @@ public class ApiDocumentation {
         ).andExpect(status().isBadRequest())
                 .andDo(
                         document("json-array-instead-of-object",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("type").description("An URL to a document describing the error condition."),
@@ -205,7 +206,7 @@ public class ApiDocumentation {
                 .andExpect(status().isNotFound())
                 .andDo(
                         document("sample-not-found",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint())
                         )
                 );
@@ -217,7 +218,7 @@ public class ApiDocumentation {
                 .andExpect(status().isMethodNotAllowed())
                 .andDo(
                         document("method-not-allowed",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint())
                         )
                 );
@@ -238,7 +239,7 @@ public class ApiDocumentation {
         ).andExpect(status().isBadRequest())
                 .andDo(
                         document("invalid-submission",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("type").description("An URL to a document describing the error condition."),
@@ -267,7 +268,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-submission",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -305,7 +306,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
@@ -353,7 +354,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-report",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links"),
@@ -374,7 +375,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-submission-status",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -407,7 +408,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "page-progress-reports",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks(),
                                 linkWithRel("self").description("This resource list"),
@@ -429,7 +430,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "summary-progress-reports",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -443,7 +444,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "type-summary-progress-reports",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -459,7 +460,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-reports",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links")
@@ -488,7 +489,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-study",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -541,7 +542,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-assay",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -596,7 +597,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-assay-data",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -653,7 +654,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-project",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -699,7 +700,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("update-project",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -747,7 +748,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-project",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -789,7 +790,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents-post-project-creation",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
@@ -841,7 +842,7 @@ public class ApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-sample",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -898,7 +899,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("update-sample",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -944,7 +945,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-sample",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -991,7 +992,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-validation-result",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -1026,7 +1027,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "page-example",
-                        preprocessRequest(prettyPrint()),
+                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                         preprocessResponse(maskEmbedded(), prettyPrint()),
 
                         links(halLinks(),
@@ -1065,7 +1066,7 @@ public class ApiDocumentation {
         ).andExpect(status().isNotModified())
                 .andDo(
                         document("conditional-fetch-etag-get-if-none-match",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()
                                 )
                         )
@@ -1078,7 +1079,7 @@ public class ApiDocumentation {
         ).andExpect(status().isPreconditionFailed())
                 .andDo(
                         document("conditional-delete-if-etag-match",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()
                                 )
                         )
@@ -1091,7 +1092,7 @@ public class ApiDocumentation {
         ).andExpect(status().isNotModified())
                 .andDo(
                         document("conditional-fetch-if-modified-since",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()
                                 )
                         )
@@ -1111,7 +1112,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/by-submission",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1137,7 +1138,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/fetch-one",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1181,7 +1182,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples-search-resource",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1212,7 +1213,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-team",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1240,7 +1241,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-teams",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         linkWithRel("self").description("This resource list")
@@ -1267,7 +1268,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("root-endpoint",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
 
@@ -1310,7 +1311,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("submissions/by-team",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1341,7 +1342,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userProjects",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1371,7 +1372,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissionStatusSummary",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1394,7 +1395,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("studyDataTypes",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1421,7 +1422,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissions",
-                                preprocessRequest(prettyPrint()),
+                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),

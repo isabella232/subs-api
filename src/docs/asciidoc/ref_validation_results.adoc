@@ -1,3 +1,27 @@
 = Validation results
 :docinfo: shared
 :toc: auto
+
+== Overview
+
+Validation results provide feedback on the documents you have submitted. They are updated each time you create or change
+a document. The results take a little time to generate, so we provide a status to inform you if the validation process
+has finished.
+
+You cannot make changes to validation results, they are only changed when you update the documents in the submission.
+
+== Fetch validation results for a single document
+
+You can get validation results for any submittable, by following the `validationResult` link:
+
+=== Request
+include::{snippets}/get-validation-result/curl-request.adoc[]
+
+=== Response
+include::{snippets}/get-validation-result/http-response.adoc[]
+
+== Fetch validation results for all documents in a submission
+
+You can get all the validation results for a submission, by following the `validationResults` from the submission.
+
+
