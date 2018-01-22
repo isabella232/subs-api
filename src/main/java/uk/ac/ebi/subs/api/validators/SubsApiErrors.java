@@ -41,7 +41,7 @@ public enum SubsApiErrors {
         missing_field.doRejectIfEmptyOrWhitespace(errors, field);
     }
 
-    private void doRejectIfEmptyOrWhitespace(Errors errors, String field){
+    private void doRejectIfEmptyOrWhitespace(Errors errors, String field) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, field, this.name(), this.name());
     }
 
