@@ -3,8 +3,9 @@
 # Compiled class file
 *.class
 
-# Log file
+# Log files
 *.log
+LOG_HOME_IS_UNDEFINED
 
 # BlueJ files
 *.ctxt

@@ -31,12 +31,10 @@ public class CoreSubmittableValidationHelper {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private OperationControlService operationControlService;
-    private ProcessingStatusRepository statusRepository;
 
     @Autowired
-    public CoreSubmittableValidationHelper(OperationControlService operationControlService, ProcessingStatusRepository statusRepository) {
+    public CoreSubmittableValidationHelper(OperationControlService operationControlService) {
         this.operationControlService = operationControlService;
-        this.statusRepository = statusRepository;
     }
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
@@ -131,7 +129,7 @@ public class CoreSubmittableValidationHelper {
                 .findAny();
 
         if (itemWithSameAliasDifferentId.isPresent()) {
-            SubsApiErrors.already_exists_and_not_completed.addError(errors);
+            SubsApiErrors.already_exists_and_not_completed.addError(errors, "alias");
         }
     }
 }
