@@ -38,6 +38,7 @@ import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -341,10 +343,9 @@ public abstract class ApiIntegrationTest {
         uk.ac.ebi.subs.repository.model.Submission submission;
         Team testTeam = Helpers.generateTestTeam();
 
-
         int numberOfSubmissions = 5;
 
-        List<uk.ac.ebi.subs.repository.model.Sample> sampleList = generateTestSamples(2);
+        List<uk.ac.ebi.subs.repository.model.Sample> sampleList = generateTestSamples(2, false);
 
         // At this point we are bypassing our API validation checks and inserting the objects directly into the DB,
         // this is for test purposes only and the DB must be cleared afterwards.
@@ -364,8 +365,9 @@ public abstract class ApiIntegrationTest {
 
             for (uk.ac.ebi.subs.repository.model.Sample sample : sampleList) {
                 sample.setSubmission(submission);
-                submittableHelperService.setupNewSubmittable(sample);
-                sampleRepository.insert(sample);
+                submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
+                submittableHelperService.processingStatusAndValidationResultSetUp(sample);
+                sampleRepository.save(sample);
 
                 HttpResponse<JsonNode> sampleResponse = Unirest.get(rootUri + "/samples/" + sample.getId())
                         .headers(testHelper.getGetHeaders()).asJson();

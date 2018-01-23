@@ -137,7 +137,7 @@ public class CoreValidatorTest {
         Sample originalSample = createSampleWithAlias(alias);
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(originalSample);
         submittableHelperService.processingStatusAndValidationResultSetUp(originalSample);
-        sampleRepository.insert(originalSample);
+        sampleRepository.save(originalSample);
 
         Sample duplicateSample = createSampleWithAlias(alias);
         Errors errors = new BeanPropertyBindingResult(duplicateSample, "sample");
