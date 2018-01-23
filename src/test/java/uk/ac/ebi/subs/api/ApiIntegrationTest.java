@@ -38,6 +38,7 @@ import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -341,10 +343,8 @@ public abstract class ApiIntegrationTest {
         uk.ac.ebi.subs.repository.model.Submission submission;
         Team testTeam = Helpers.generateTestTeam();
 
-
         int numberOfSubmissions = 5;
-
-        List<uk.ac.ebi.subs.repository.model.Sample> sampleList = generateTestSamples(2);
+        int numberOfSamples = 2;
 
         // At this point we are bypassing our API validation checks and inserting the objects directly into the DB,
         // this is for test purposes only and the DB must be cleared afterwards.
@@ -362,10 +362,11 @@ public abstract class ApiIntegrationTest {
                             .headers(testHelper.getGetHeaders()).asJson();
             assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
-            for (uk.ac.ebi.subs.repository.model.Sample sample : sampleList) {
+            for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
                 sample.setSubmission(submission);
-                submittableHelperService.setupNewSubmittable(sample);
-                sampleRepository.insert(sample);
+                submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
+                submittableHelperService.processingStatusAndValidationResultSetUp(sample);
+                sampleRepository.save(sample);
 
                 HttpResponse<JsonNode> sampleResponse = Unirest.get(rootUri + "/samples/" + sample.getId())
                         .headers(testHelper.getGetHeaders()).asJson();
@@ -391,7 +392,7 @@ public abstract class ApiIntegrationTest {
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(teamSamples.length(), is(equalTo(sampleList.size())));
+        assertThat(teamSamples.length(), is(equalTo(numberOfSamples)));
 
         for (int i = 0; i < teamSamples.length(); i++) {
             JSONObject teamSample = teamSamples.getJSONObject(i);

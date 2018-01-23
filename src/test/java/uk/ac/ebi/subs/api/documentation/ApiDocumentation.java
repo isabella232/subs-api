@@ -711,9 +711,8 @@ public class ApiDocumentation {
                                         fieldWithPath("publications").description("Publications related to thisproject"),
                                         //fieldWithPath("attributes").description("A list of attributes for the project"),
                                         fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        // FIXME
-                                        //fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        //fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
                                         fieldWithPath("team").description("Team this project belongs to"),
                                         fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -760,9 +759,8 @@ public class ApiDocumentation {
                                         fieldWithPath("publications").description("Publications related to thisproject"),
                                         //fieldWithPath("attributes").description("A list of attributes for the project"),
                                         fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        // FIXME
-                                        //fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        //fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
                                         fieldWithPath("team").description("Team this project belongs to"),
                                         fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -908,9 +906,8 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        // FIXME
-                                        //fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        //fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this project will be released"),
@@ -954,9 +951,8 @@ public class ApiDocumentation {
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        // FIXME
-                                        //fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        //fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this project will be released"),

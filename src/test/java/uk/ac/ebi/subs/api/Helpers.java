@@ -193,6 +193,10 @@ public class Helpers {
     }
 
     public static List<Sample> generateTestSamples(int numberOfSamplesRequired) {
+        return generateTestSamples(numberOfSamplesRequired, true);
+    }
+
+    public static List<Sample> generateTestSamples(int numberOfSamplesRequired, boolean createProcessingStatus) {
         List<Sample> samples = new ArrayList<>(numberOfSamplesRequired);
 
         for (int i = 1; i <= numberOfSamplesRequired; i++) {
@@ -207,7 +211,9 @@ public class Helpers {
             s.setTaxon("Homo sapiens");
             s.setTaxonId(9606L);
 
-            s.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+            if (createProcessingStatus) {
+                s.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+            }
         }
 
         return samples;

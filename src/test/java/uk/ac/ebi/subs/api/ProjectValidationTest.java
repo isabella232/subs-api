@@ -60,7 +60,7 @@ public class ProjectValidationTest {
         p.setSubmission(sub);
         submittableHelperService.setupNewSubmittable(p);
 
-        projectRepository.insert(p);
+        projectRepository.save(p);
     }
 
     @After
