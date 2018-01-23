@@ -174,7 +174,7 @@ public abstract class ApiIntegrationTest {
         Map<String, String> rootRels = testHelper.rootRels();
 
         Submission submission = Helpers.generateSubmission();
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        testHelper.postSubmission(rootRels, submission);
 
         List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
         assertThat(submissionStatuses, notNullValue());

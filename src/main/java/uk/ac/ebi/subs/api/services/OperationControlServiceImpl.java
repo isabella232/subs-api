@@ -1,8 +1,5 @@
 package uk.ac.ebi.subs.api.services;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -17,9 +14,6 @@ import java.util.Map;
 @Service
 public class OperationControlServiceImpl implements OperationControlService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OperationControlService.class);
-
-
     private Map<String, StatusDescription> submissionStatusDescriptionMap;
     private Map<String, StatusDescription> processingStatusDescriptionMap;
 
@@ -31,7 +25,6 @@ public class OperationControlServiceImpl implements OperationControlService {
         this.submissionStatusDescriptionMap = submissionStatusDescriptionMap;
         this.processingStatusDescriptionMap = processingStatusDescriptionMap;
     }
-
 
     @Override
     public boolean isUpdateable(Submission submission) {
@@ -46,10 +39,12 @@ public class OperationControlServiceImpl implements OperationControlService {
     public boolean isUpdateable(StoredSubmittable storedSubmittable) {
         Assert.notNull(storedSubmittable);
         Assert.notNull(storedSubmittable.getSubmission());
-        Assert.notNull(storedSubmittable.getProcessingStatus());
 
-
-        return this.isUpdateable(storedSubmittable.getProcessingStatus()) && this.isUpdateable(storedSubmittable.getSubmission());
+        if (storedSubmittable.getProcessingStatus() != null) {
+            return this.isUpdateable(storedSubmittable.getProcessingStatus()) && this.isUpdateable(storedSubmittable.getSubmission());
+        } else {
+            return this.isUpdateable(storedSubmittable.getSubmission());
+        }
     }
 
     public boolean isUpdateable(ProcessingStatus processingStatus){

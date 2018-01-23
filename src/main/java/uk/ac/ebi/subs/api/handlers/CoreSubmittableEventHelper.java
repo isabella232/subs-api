@@ -22,31 +22,29 @@ public class CoreSubmittableEventHelper {
     private SubmittableHelperService submittableHelperService;
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
-
     /**
-     * Give submittables an ID and draft status on creation
+     * Give submittable an ID and set Team from submission.
      *
      * @param submittable
      */
     @HandleBeforeCreate
     public void addDependentObjectsToSubmittable(StoredSubmittable submittable) {
-        submittableHelperService.setupNewSubmittable(submittable);
+        submittableHelperService.uuidAndTeamFromSubmissionSetUp(submittable);
     }
 
-    // Validation of created submittables
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
+        submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
+    }
+
+    @HandleBeforeSave
+    public void beforeSave(StoredSubmittable storedSubmittable) {
+        submittableHelperService.setTeamFromSubmission(storedSubmittable);
     }
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
         submittableValidationDispatcher.validateUpdate(storedSubmittable);
-    }
-
-
-    @HandleBeforeSave
-    public void beforeSave(StoredSubmittable storedSubmittable) {
-        submittableHelperService.setTeamFromSubmission(storedSubmittable);
     }
 }
