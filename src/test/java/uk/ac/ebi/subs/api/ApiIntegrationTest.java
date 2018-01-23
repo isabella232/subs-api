@@ -344,8 +344,7 @@ public abstract class ApiIntegrationTest {
         Team testTeam = Helpers.generateTestTeam();
 
         int numberOfSubmissions = 5;
-
-        List<uk.ac.ebi.subs.repository.model.Sample> sampleList = generateTestSamples(2, false);
+        int numberOfSamples = 2;
 
         // At this point we are bypassing our API validation checks and inserting the objects directly into the DB,
         // this is for test purposes only and the DB must be cleared afterwards.
@@ -363,7 +362,7 @@ public abstract class ApiIntegrationTest {
                             .headers(testHelper.getGetHeaders()).asJson();
             assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
-            for (uk.ac.ebi.subs.repository.model.Sample sample : sampleList) {
+            for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
                 sample.setSubmission(submission);
                 submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
                 submittableHelperService.processingStatusAndValidationResultSetUp(sample);
@@ -393,7 +392,7 @@ public abstract class ApiIntegrationTest {
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(teamSamples.length(), is(equalTo(sampleList.size())));
+        assertThat(teamSamples.length(), is(equalTo(numberOfSamples)));
 
         for (int i = 0; i < teamSamples.length(); i++) {
             JSONObject teamSample = teamSamples.getJSONObject(i);
