@@ -22,7 +22,6 @@ public class CoreSubmittableEventHelper {
     private SubmittableHelperService submittableHelperService;
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
-
     /**
      * Give submittable an ID and set Team from submission.
      *
@@ -39,14 +38,13 @@ public class CoreSubmittableEventHelper {
         submittableValidationDispatcher.validateCreate(storedSubmittable);
     }
 
-    @HandleAfterSave
-    public void validateOnSave(StoredSubmittable storedSubmittable) {
-        submittableValidationDispatcher.validateUpdate(storedSubmittable);
-    }
-
-
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
         submittableHelperService.setTeamFromSubmission(storedSubmittable);
+    }
+
+    @HandleAfterSave
+    public void validateOnSave(StoredSubmittable storedSubmittable) {
+        submittableValidationDispatcher.validateUpdate(storedSubmittable);
     }
 }

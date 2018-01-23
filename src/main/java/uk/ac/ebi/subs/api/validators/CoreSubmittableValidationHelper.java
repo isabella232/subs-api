@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Base validator for submitted items
@@ -123,13 +124,15 @@ public class CoreSubmittableValidationHelper {
 
         List<StoredSubmittable> results = repository.findByTeamNameAndAliasOrderByCreatedDateDesc(target.getSubmission().getTeam().getName(), target.getAlias(), new PageRequest(0,50)).getContent();
 
-        Optional<? extends StoredSubmittable> itemWithSameAliasDifferentId = results.stream()
+        List<? extends StoredSubmittable> itemsWithSameAliasDifferentId = results.stream()
                 .filter(item -> !item.getId().equals(target.getId()))
-                .filter(item -> !item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Completed.name()))
-                .findAny();
+                .collect(Collectors.toList());
 
-        if (itemWithSameAliasDifferentId.isPresent()) {
-            SubsApiErrors.already_exists_and_not_completed.addError(errors, "alias");
+        boolean duplicateItem = itemsWithSameAliasDifferentId.stream()
+                .anyMatch(item -> item.getProcessingStatus() == null || !item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Completed.name()));
+
+        if (duplicateItem) {
+            SubsApiErrors.already_exists_and_not_completed.addError(errors);
         }
     }
 }

@@ -19,9 +19,9 @@ import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -29,9 +29,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
-/**
- * Created by rolando on 12/06/2017.
- */
 @RunWith(SpringRunner.class)
 @ActiveProfiles({"SubmittableValidationDispatcherTest","basic_auth"})
 @SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -47,12 +44,14 @@ public class SubmittableHandlerTest {
 
     @Autowired
     private SubmissionRepository submissionRepository;
-
-    @Autowired
-    SubmissionStatusRepository submissionStatusRepository;
-
     @Autowired
     private SampleRepository sampleRepository;
+    @Autowired
+    private StudyRepository studyRepository;
+    @Autowired
+    private SubmissionStatusRepository submissionStatusRepository;
+    @Autowired
+    private ValidationResultRepository validationResultRepository;
 
     @Autowired
     private SubmittableValidationDispatcher submittableValidationDispatcher;
@@ -61,7 +60,9 @@ public class SubmittableHandlerTest {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Before
-    public void buildUp() throws URISyntaxException {
+    public void buildUp() {
+        clearDb();
+
         rootUri = "http://localhost:" + port + "/api";
         final Map<String, String> standardGetContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
         standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER,TestWebSecurityConfig.USI_PASSWORD));
@@ -71,21 +72,11 @@ public class SubmittableHandlerTest {
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),standardGetContentHeader,standardPostContentHeader);
 
         submittableValidationDispatcher.setRabbitMessagingTemplate(rabbitMessagingTemplate);
-
-    }
-
-    @After
-    public void tearDown() throws IOException {
-        submissionRepository.deleteAll();
-        sampleRepository.deleteAll();
-        submissionStatusRepository.deleteAll();
     }
 
     @Test
     public void testValidationMessageSamplesOnSubmit() throws Exception {
         testHelper.submissionWithSamples(testHelper.rootRels());
-
-        // assert that created Samples caused a validation request event
         verify(submittableValidationDispatcher, atLeast(1)).validateCreate(any(Sample.class));
     }
 
@@ -94,5 +85,18 @@ public class SubmittableHandlerTest {
         testHelper.submissionWithStudies(testHelper.rootRels());
 
         verify(submittableValidationDispatcher, atLeast(1)).validateCreate(any(Study.class));
+    }
+
+    @After
+    public void tearDown() {
+        clearDb();
+    }
+
+    private void clearDb() {
+        submissionRepository.deleteAll();
+        sampleRepository.deleteAll();
+        studyRepository.deleteAll();
+        submissionStatusRepository.deleteAll();
+        validationResultRepository.deleteAll();
     }
 }
