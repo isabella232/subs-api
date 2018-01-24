@@ -6,7 +6,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.api.controllers.TeamItemsController;
 import uk.ac.ebi.subs.api.controllers.TeamSubmissionController;
 import uk.ac.ebi.subs.data.component.Team;

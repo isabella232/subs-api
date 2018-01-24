@@ -14,15 +14,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -98,7 +99,7 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
 
         //OPTIONS calls should not require authentication
 
-        String teamsUrl = rootRels.get("teams");
+        String teamsUrl = rootRels.get("userTeams");
         HttpResponse<String> optionsResponse = Unirest.options(teamsUrl)
                 .header("Origin", "http://evil.com")
                 .header("Access-Control-Request-Method", "PUT")

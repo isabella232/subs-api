@@ -1,11 +1,21 @@
 package uk.ac.ebi.subs.api;
 
-
 import uk.ac.ebi.subs.data.client.Study;
-import uk.ac.ebi.subs.data.component.*;
+import uk.ac.ebi.subs.data.component.AssayRef;
+import uk.ac.ebi.subs.data.component.Attribute;
+import uk.ac.ebi.subs.data.component.File;
+import uk.ac.ebi.subs.data.component.ProjectRef;
+import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.component.StudyDataType;
+import uk.ac.ebi.subs.data.component.StudyRef;
+import uk.ac.ebi.subs.data.component.Submitter;
+import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
@@ -13,7 +23,9 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class Helpers {
@@ -33,10 +45,6 @@ public class Helpers {
         return u;
     }
 
-    public static List<Sample> generateTestSamples() {
-        return generateTestSamples(2);
-    }
-
     public static List<uk.ac.ebi.subs.data.client.Sample> generateTestClientSamples(int numberOfSamplesRequired) {
         List<uk.ac.ebi.subs.data.client.Sample> samples = new ArrayList<>(numberOfSamplesRequired);
 
@@ -51,18 +59,22 @@ public class Helpers {
             s.setTaxonId(9606L);
             s.setReleaseDate(LocalDate.of(2017, Month.JANUARY, 1));
 
-            Attribute cellLineType = attribute("Cell line type", "EBV-LCL cell line");
+            Attribute cellLineType = attribute("EBV-LCL cell line");
             Term ebvLclCellLine = new Term();
             ebvLclCellLine.setUrl("http://purl.obolibrary.org/obo/BTO_0003335");
             cellLineType.getTerms().add(ebvLclCellLine);
 
-            s.getAttributes().add(cellLineType);
+            s.getAttributes().put("Cell line type", Collections.singletonList(cellLineType));
         }
 
         return samples;
     }
 
     public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired) {
+        return generateTestClientStudies(numberOfStudiesRequired,generateClientProject().getAlias());
+    }
+
+        public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired, String projectAlias) {
         List<uk.ac.ebi.subs.data.client.Study> studies= new ArrayList<>(numberOfStudiesRequired);
 
         for (int i = 1; i <= numberOfStudiesRequired; i++) {
@@ -70,7 +82,6 @@ public class Helpers {
             studies.add(s);
 
             Attribute studyType = new Attribute();
-            studyType.setName("study_type");
             studyType.setValue("Whole Genome Sequencing");
 
             s.setAlias("Study" + i);
@@ -79,26 +90,33 @@ public class Helpers {
 
             s.setStudyType(StudyDataType.Sequencing);
 
+            ProjectRef projectRef = new ProjectRef();
+            projectRef.setAlias(projectAlias);
+            s.setProjectRef(projectRef);
+
             Attribute studyAbstract = new Attribute();
-            studyAbstract.setName("study_abstract");
             studyAbstract.setValue(s.getDescription());
 
-            s.getAttributes().add(studyType);
-            s.getAttributes().add(studyAbstract);
-
-            LocalDate releaseDate = LocalDate.parse("2020-12-25");
-
-            s.setReleaseDate(releaseDate);
+            s.getAttributes().put("study_type", Collections.singletonList(studyType));
+            s.getAttributes().put("study_abstract", Collections.singletonList(studyAbstract));
         }
 
         return studies;
     }
 
-    private static Attribute attribute(String name, String value){
+    public static Attribute attribute(String value){
         Attribute attribute = new Attribute();
-        attribute.setName(name);
         attribute.setValue(value);
         return attribute;
+    }
+
+    public static uk.ac.ebi.subs.data.client.Project generateClientProject() {
+        uk.ac.ebi.subs.data.client.Project project = new uk.ac.ebi.subs.data.client.Project();
+        project.setAlias("example-short-unique-name");
+        project.setTitle("Example title for our scientific project, at least 50 characters long");
+        project.setDescription("Example description for our scientific project, which must also be at least 50 characters long");
+        project.setReleaseDate(LocalDate.now());
+        return project;
     }
 
     public static List<uk.ac.ebi.subs.data.client.Assay> generateTestClientAssays(int numberOfAssaysRequired) {
@@ -110,7 +128,6 @@ public class Helpers {
         studyRef.setTeam(TEAM_NAME);
 
         List<uk.ac.ebi.subs.data.client.Sample> samples = generateTestClientSamples(numberOfAssaysRequired);
-
 
         for (int i = 1; i <= numberOfAssaysRequired; i++) {
             uk.ac.ebi.subs.data.client.Assay a = new uk.ac.ebi.subs.data.client.Assay();
@@ -130,13 +147,13 @@ public class Helpers {
             sampleUse.setSampleRef( sampleRef);
             a.getSampleUses().add(sampleUse);
 
-            a.getAttributes().add(attribute("library_strategy","WGS"));
-            a.getAttributes().add(attribute("library_source","GENOMIC"));
-            a.getAttributes().add(attribute("library_selection","RANDOM"));
-            a.getAttributes().add(attribute("library_layout","SINGLE"));
+            a.getAttributes().put("library_strategy", Collections.singletonList(attribute("WGS")));
+            a.getAttributes().put("library_source", Collections.singletonList(attribute("GENOMIC")));
+            a.getAttributes().put("library_selection", Collections.singletonList(attribute("RANDOM")));
+            a.getAttributes().put("library_layout", Collections.singletonList(attribute("SINGLE")));
 
-            a.getAttributes().add(attribute("platform_type","ILLUMINA"));
-            a.getAttributes().add(attribute("instrument_model","Illumina HiSeq 2000"));
+            a.getAttributes().put("platform_type", Collections.singletonList(attribute("ILLUMINA")));
+            a.getAttributes().put("instrument_model", Collections.singletonList(attribute("Illumina HiSeq 2000")));
         }
 
         return assays;
@@ -169,13 +186,17 @@ public class Helpers {
             file.setChecksum("4bb1c4561d99d88c8b38a40d694267dc");
             ad.getFiles().add(file);
 
+            ad.getAttributes().put("assay_data_attribute", Collections.singletonList(attribute("attribute value")));
         }
 
         return assayData;
     }
 
-
     public static List<Sample> generateTestSamples(int numberOfSamplesRequired) {
+        return generateTestSamples(numberOfSamplesRequired, true);
+    }
+
+    public static List<Sample> generateTestSamples(int numberOfSamplesRequired, boolean createProcessingStatus) {
         List<Sample> samples = new ArrayList<>(numberOfSamplesRequired);
 
         for (int i = 1; i <= numberOfSamplesRequired; i++) {
@@ -190,12 +211,32 @@ public class Helpers {
             s.setTaxon("Homo sapiens");
             s.setTaxonId(9606L);
 
-            s.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+            if (createProcessingStatus) {
+                s.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+            }
         }
 
         return samples;
     }
 
+    public static List<Project> generateTestProjects(int numberRequired) {
+        List<Project> projects= new ArrayList<>(numberRequired);
+
+        for (int i = 1; i <= numberRequired; i++) {
+            Project p = new Project();
+            projects.add(p);
+
+            p.setId(createId());
+            p.setTeam(generateTestTeam());
+            p.setAlias("P" + i);
+            p.setTitle("Project" + i);
+            p.setDescription("A great project");
+
+            p.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
+        }
+
+        return projects;
+    }
 
     public static Team generateTestTeam() {
         Team d = new Team();
@@ -203,22 +244,27 @@ public class Helpers {
         return d;
     }
 
-
     public final static String TEAM_NAME = "self.usi-user";
+    public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
 
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
-        Team d = new Team();
+        Team d = generateTestTeam();
         sub.setId(createId());
 
-        sub.setTeam(generateTestTeam());
+        sub.setTeam(d);
 
         sub.setSubmissionStatus(new SubmissionStatus(SubmissionStatusEnum.Draft));
-
+        sub.getSubmissionStatus().setTeam(d);
         return sub;
     }
 
     private static String createId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String getRandomAlias() {
+        Random random = new Random();
+        return String.format("%04d", random.nextInt(10000));
     }
 }

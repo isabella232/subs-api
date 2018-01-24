@@ -1,0 +1,306 @@
+= Getting started
+:docinfo: shared
+:toc: auto
+
+This guide describes how to start submitting data.
+
+To follow these steps, you will need to have setup an account and have a valid API token. This is covered in a
+<<guide_accounts_and_logging_in.adoc#,separate guide>>.
+
+== Overview
+
+The submissions process has a few steps:
+
+ . Create a submission
+ . Add documents describing your work to the submission
+ . Check that the documents pass our validation rules, making corrections if necessary
+ . Submit the finalised submission
+
+After the final step, we will send the data to the appropriate EMBL-EBI data archives. Some of our archives perform
+additional curation on the data and may request changes to the submitted data. As data is successfully deposited with
+each archive, we will record the accessions provided by the archives. You will always be able to get an update on
+the deposition progress and the accessions.
+
+We will step through the steps required to do this, with links to the details in the reference documentation.
+
+== Start from the root
+
+The API root provides a list of links, in the http://stateless.co/hal_specification.html[HAL JSON] format. Following
+ these links takes you to other parts of the API. You can follow chains of links to access any part of the API.
+
+NOTE: Visit the <<ref_root_endpoint.adoc#,reference documention>> to get the details of using the API root
+
+You don't need to worry about most of those links for now, we'll learn about them as we go.
+
+NOTE: We recommend that you always start from the API root and follow the _links_ given in the `_links` section of the
+response, instead of relying on hard-coding each API endpoint. This will insulate you from future changes to the
+submission system architecture or URL structure.
+
+== Pick a team
+
+Every submission is owned by a _team_. A team is a group of people, working together on the same data. How you use this
+is up to you. You could create a team for just yourself, everyone in a lab, or one for all collaborators on a project.
+
+Teams are created and administed through the AAP system. Our <<guide_accounts_and_logging_in.adoc#,guide>> provides a
+starting point on how to do this.
+
+From the root endpoint, follow the link labelled `teams`. This will show all that teams that you are a member of:
+
+include::{snippets}/get-teams/http-response.adoc[]
+
+Each team record will include a block of `_links`. Following the `submissions` link will give you a list of all the
+submissions owned by this team.
+
+NOTE: You can find more details on teams in the <<ref_teams.adoc#,reference documentation>>.
+
+== Creating a submission
+
+From team, find the link labelled `submissions:create`. Making a `POST` request to this URL with an empty document will
+create a new submission:
+
+include::{snippets}/create-submission/curl-request.adoc[]
+
+NOTE: Using a `POST` request indicates that you want a new thing to be created. Each HTTP verb has a different meaning,
+you should always use the correct verb. These are described in the <<ref_overview.adoc#_http_verbs,reference overview>>.
+
+If successful, this will return a JSON object with links to parts of the submission:
+
+include::{snippets}/create-submission/http-response.adoc[]
+
+NOTE: You can also give each submission a name, to help you remember what it is intended for. See the
+<<ref_submissions.adoc#,reference documentation>> for more details.
+
+== Finding your submission again
+
+Once you have created a submission, you can find it again through two routes.
+
+From the <<ref_root_endpoint.adoc#,API root>>, you can follow the link `userSubmissions` link to get a list
+of all submissions that you can access.
+
+Alternatively, you can follow the link `userTeams`, find a team and then follow the `submissions` link for it.
+
+== Adding documents to a submission
+
+The next step is to follow the `contents` link from the submission. This will give you a set of links to get things in the
+submission, or add things to it.
+
+The response gives links to URLs where you can get all the items that are part of the submission, and links that you can
+use when adding items to a submission  - these end with `:create`.
+
+ifdef::sample[]
+
+We'll start by adding samples. It's a good template for adding anything to a submission - while the details in the
+documents change, the process is the same across all types of document.
+
+=== Naming samples (and everything else)
+
+Samples, like all the documents that you add to a submission need to have an _alias_. This field is the name used for
+the record within the submission system. Each alias should be unique within the records of that type owned by a team.
+Using an alias for a second time in another submission will cause the record to be overwritten.
+
+=== Requirements for sample documents
+
+The description of a sample should normally include a taxonomic code to describe the species classification. This must
+be an entry from the taxonomy database curated at https://www.ncbi.nlm.nih.gov/taxonomy/[NCBI]. EMBL-EBI provide a
+http://www.ebi.ac.uk/ena/browse/taxonomy-service[service] to search for and look up taxonomic entries, and this is used
+when the submission system checks sample documents.
+
+We will accept sample records for display in https://www.ebi.ac.uk/biosamples/[BioSamples] without a taxon ID, but
+you will not be able to use the sample record when submitting data to the experimental data archives without a taxon ID.
+In addition, if you use a taxon ID, it must be one marked as 'submittable' in the taxonomy database.
+
+The structure of the sample document is shown in the <<ref_samples.adoc#,reference documentation>>.
+
+=== Adding a sample record to a submission
+
+From the `submission:contents` resource, use the `samples:create` link to make a POST request. The sample document
+should be the request body.
+
+include::{snippets}/create-sample/curl-request.adoc[]
+
+This will return a response to show that the sample record has been created, with links to other
+
+include::{snippets}/create-sample/http-response.adoc[]
+
+endif::sample[]
+
+== Validation
+
+Documents are checked at two points during submission:
+
+ 1. When sent to the API server, through `POST`, `PUT` and `PATCH` requests. At this point the sent must be match the
+ expected syntax, and be identified with an alias.
+ 2. Once accepted by the API server, it is sent to a suite of validators to ensure it meets the requirements of the
+ relevant archives or project.
+
+If a document does not pass the first stage of validation, the response will have a `400 Bad Request`
+<<ref_overview.adoc#_http_status_codes,status code>>. The response body will include an error message.
+
+The second stage of validation is more in depth and takes longer. Clients can check for `ValidationResults` for each
+submitted document, and for a submission. You will not be able to complete a submission until validation
+has completed and any problems identified have been dealt with.
+
+Use the `validationResult` link from sample (or any other submitted document) to see its validation results. This may be
+ pending, in which case you can poll for completion.
+
+You can find more information about validation results in the <<ref_validation_+results.adoc#,reference documentation>>.
+
+=== Updating a sample
+
+If the validation process identifies any problems with your sample, you can change it. The simplest way is to make a
+`PUT` request to <<ref_samples.adoc#_update_a_sample,replace the whole record>>. Alternatively, you can make a `PATCH`
+request to <<ref_samples.adoc#_patch_a_sample,change part of the sample document>>. In either case, use the `self:update`
+link, available for the sample.
+
+When you update a document we will run the it through the validation process again.
+
+=== Deleting a sample
+
+Alternatively, you may decide to remove a sample from a submission. In this case, make a `DELETE` request to the
+`self:delete` link.
+
+ifdef::project[]
+
+== Adding a project
+
+Projects have a release date, title and description. As with samples, they are created using `POST` requests:
+
+include::{snippets}/create-project/curl-request.adoc[]
+
+This will return a response to show that the project record has been created:
+
+include::{snippets}/create-project/http-response.adoc[]
+
+A submission can only have one project, so once you have added a project to a submission the `projects:create` link
+will not be available from the submission contents endpoint:
+
+include::{snippets}/submission-contents-post-project-creation/curl-request.adoc[]
+
+include::{snippets}/submission-contents-post-project-creation/http-response.adoc[]
+
+
+endif::project[]
+
+ifdef::study[]
+
+== Adding a study
+
+Experimental data are grouped into _studies_. Studies should describe the motivation and summarise the design for the
+study. Like samples, studies are identified by an alias, and have a number of attributes. Studies should always
+reference a project.
+
+As with samples, study records are created using `POST` requests:
+
+include::{snippets}/create-study/curl-request.adoc[]
+
+This will return a response to show that the study record has been created:
+
+include::{snippets}/create-study/http-response.adoc[]
+
+endif::study[]
+
+ifdef::assay[]
+
+== Adding assays
+
+Assay documents describes the processes performed on the sample to produce data. For example, this could be library
+preparation and sequencing for an NGS study. If you are familiar with the ENA SRA submission system, an assay is equivalent to an Experiment.
+
+include::{snippets}/create-assay/curl-request.adoc[]
+
+This will return a response to show that the assay record has been created:
+
+include::{snippets}/create-assay/http-response.adoc[]
+
+endif::assay[]
+
+ifdef::assayData[]
+
+== Adding assay data
+
+If you are familiar with the ENA SRA submission system, assay data is equivalent to a Run.
+
+include::{snippets}/create-assay-data/curl-request.adoc[]
+
+This will return a response to show that the assay record has been created:
+
+include::{snippets}/create-assay-data/http-response.adoc[]
+
+endif::assayData[]
+
+== Finalising your submission
+
+Once you have added all your documents to the submission and they have been validated, you can finalise it and send them
+to the archives. You do this by changing the submission status. To get to the submission status, follow the
+`submissionStatus` link from the submission, then the `self` link.
+
+Follow the `availableStatuses` link from submission or submissionStatus to see the statuses that are currently available.
+Available statuses are affected by whether or not validation has finished and the current status of the submission.
+
+include::{snippets}/available-status-report/curl-request.adoc[]
+
+This will return a response to show that the status can now be updated to 'Submitted':
+
+include::{snippets}/available-status-report/http-response.adoc[]
+
+You can change the submission status to 'Submitted', using either a `PUT` or `PATCH` request:
+
+include::{snippets}/patch-submission-status/curl-request.adoc[]
+
+This will return a response to show that the status has been changed:
+
+include::{snippets}/patch-submission-status/http-response.adoc[]
+
+This will also lock the submission, so you cannot make further changes while we broker the data into the archives.
+
+== Tracking progress
+
+Once you've finalised your submission, we will send it off to the relevant data archives. You can see how
+that's progressing - e.g. has a study been received an accession yet?. There are several ways to do this.
+
+Firstly, you can see the all details by following the `processingStatuses` link from the submission:
+
+include::{snippets}/page-progress-reports/curl-request.adoc[]
+
+include::{snippets}/page-progress-reports/http-response.adoc[]
+
+You can also see summaries of the same information.
+
+Summarised by status (follow the `processingStatusSummary` link from the submission):
+
+include::{snippets}/summary-progress-reports/curl-request.adoc[]
+
+include::{snippets}/summary-progress-reports/http-response.adoc[]
+
+Summarised by status and type (follow the `typeProcessingStatusSummary` link from the submission)
+
+include::{snippets}/type-summary-progress-reports/curl-request.adoc[]
+
+include::{snippets}/type-summary-progress-reports/http-response.adoc[]
+
+You can also follow the `processingStatus` link from sample (or any other part of the submission) to see the current
+progress for an individual document.
+
+== The end?
+
+Once all documents in a submission have been completely archived, the submission is considered complete.
+
+If you need to update the information of any of the records submitted, create an new submission and add a document,
+following the same process as before. Using the same team and alias will ensure that the archive records are updated.
+
+== When things go wrong
+
+Successful requests will return a HTTP status code in `20X` range
+(see the <<submission_api.adoc#_http_status_codes,reference docs>>). When something goes wrong, there will be an
+error message to explain the problem. There's an explanation of each error type in the <<submission_api.adoc#_errors,reference docs>>.
+
+Errors can normally be resolved by correcting the content or format of your request. Please get in touch if the cause
+of the problem isn't clear or you need further assistance, by e-mailing our help desk - submission-help@ebi.ac.uk.
+
+== Getting more information
+
+You can find more in-depth documentation on the API in the <<submission_api.adoc#,reference documentation>>.
+
+You can keep up to date with announcements about the submission system by subscribing to our mailing list.
+
+You can subscribe by filling out the form https://listserver.ebi.ac.uk/mailman/listinfo/submission-announce[here].

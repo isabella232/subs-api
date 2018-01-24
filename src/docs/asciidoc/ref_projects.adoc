@@ -1,0 +1,68 @@
+= Project
+:docinfo: shared
+:toc: auto
+
+A submission can contain one project.
+
+== Minimal requirements
+Fields:
+
+* title, should be at least 50 characters long
+* description, should be at least 50 characters long
+* releaseDate, in YYYY-MM-DD format, eg. `"2017-12-12"`
+
+== Create a project
+
+=== Request
+
+include::{snippets}/create-project/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/create-project/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/create-project/links.adoc[]
+
+== Update a project
+=== Request
+
+include::{snippets}/update-project/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/update-project/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/update-project/links.adoc[]
+
+== Patch a project
+=== Request
+
+include::{snippets}/patch-project/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/patch-project/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/patch-project/links.adoc[]
+
+== Projects available
+
+Request a list of all projects available to the logged in user
+
+=== Request
+
+include::{snippets}/userProjects/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/userProjects/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/userProjects/links.adoc[]

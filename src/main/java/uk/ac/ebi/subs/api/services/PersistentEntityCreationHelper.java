@@ -4,7 +4,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.webmvc.*;
+import org.springframework.data.rest.webmvc.ControllerUtils;
+import org.springframework.data.rest.webmvc.HttpHeadersPreparer;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
+import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,14 +25,14 @@ public class PersistentEntityCreationHelper {
     private HttpHeadersPreparer headersPreparer;
 
     public ResponseEntity<ResourceSupport> createPersistentEntity(
-            PersistentEntityResource payload,
+            Object payloadContent,
             RootResourceInformation resourceInformation,
             PersistentEntityResourceAssembler assembler,
             String acceptHeader
     ) {
 
-        publisher.publishEvent(new BeforeCreateEvent(payload.getContent()));
-        Object savedObject = resourceInformation.getInvoker().invokeSave(payload.getContent());
+        publisher.publishEvent(new BeforeCreateEvent(payloadContent));
+        Object savedObject = resourceInformation.getInvoker().invokeSave(payloadContent);
         publisher.publishEvent(new AfterCreateEvent(savedObject));
 
         PersistentEntityResource resource = assembler.toFullResource(savedObject);

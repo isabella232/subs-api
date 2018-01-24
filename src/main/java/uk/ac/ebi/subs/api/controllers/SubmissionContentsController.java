@@ -1,6 +1,10 @@
 package uk.ac.ebi.subs.api.controllers;
 
-import org.springframework.data.rest.webmvc.*;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
@@ -48,7 +52,7 @@ public class SubmissionContentsController {
         submittable.setSubmission(submission);
 
         return persistentEntityCreationHelper.createPersistentEntity(
-                payload,
+                payload.getContent(),
                 resourceInformation,
                 assembler,
                 acceptHeader

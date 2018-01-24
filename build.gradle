@@ -10,13 +10,13 @@ buildscript {
 }
 
 plugins {
-    id "org.asciidoctor.convert" version "1.5.2"
+    id "org.asciidoctor.convert" version "1.5.3"
     id 'com.sourcemuse.mongo' version '1.0.0'
 
 }
 
 group 'uk.ac.ebi.subs'
-version '0.6.0-SNAPSHOT'
+version '1.3.2-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -35,12 +35,10 @@ repositories {
 }
 
 dependencies {
-    compile("uk.ac.ebi.subs:subs-repository:0.4.1-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-processing-model:0.2.0-SNAPSHOT")
-
-    compile("uk.ac.ebi.subs:subs-data-model:0.3.0-SNAPSHOT")
+    compileOnly("org.projectlombok:lombok:1.16.18")
+    compile("uk.ac.ebi.subs:subs-processing-model:1.0.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:1.3.3-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:validator-common:0.7.0-SNAPSHOT")
 
     compile("org.springframework.boot:spring-boot-starter-data-rest")
     compile 'org.springframework.data:spring-data-rest-hal-browser'
@@ -48,6 +46,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
 
     compile("com.fasterxml.jackson.module:jackson-module-afterburner:2.7.1")
+    compile("org.apache.commons:commons-csv:1.5")
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
@@ -95,18 +94,36 @@ configure(testsMakesDocs) {
     description = 'Run tests that generate documentation snippets'
 }
 
-ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1']
+ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1', project:'1']
 
 if (gradle_env == "test") {
     ext.asciiDoctorIncludes = [sample:'1']
 }
 
 asciidoctor {
-    attributes 'snippets': snippetsDir
-    sourceDir file('src/main/resources/docs')
-    attributes (asciiDoctorIncludes);
-    backends 'html5'
     inputs.dir snippetsDir
+    attributes (
+            'snippets': snippetsDir,
+            'toc-title': 'Contents',
+            'toclevels': 1,
+            'doctype': 'book',
+            'icons': 'font',
+            'source-highlighter': 'highlightjs',
+            'stylesheet': 'colony.css',
+            'stylesdir': 'stylesheets',
+            'linkcss': '',
+            'sectlinks': '',
+            'sectanchors': ''
+    )
+    attributes asciiDoctorIncludes
+    backends 'html5'
+
+    resources {
+        from(sourceDir) {
+            include 'stylesheets/**/*.css'
+        }
+    }
+
     dependsOn testsMakesDocs
 }
 
@@ -135,22 +152,34 @@ mongo {
     mongoVersion = "3.4.3"
 }
 
-def devDeployHostName = hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
-def testDeployHostName = hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
-def prodDeployHostName = hasProperty(project.name + "ProdDeployTarget") ? getProperty(project.name + "ProdDeployTarget") : 'localhost'
-
 remotes {
-    submission_dev {
+    dev {
         role('dev')
-        host = devDeployHostName
+        host = project.hasProperty(project.name + "DevDeployTarget") ? getProperty(project.name + "DevDeployTarget") : 'localhost'
     }
-    submission_test {
+    test {
         role('test')
-        host = testDeployHostName
+        host = project.hasProperty(project.name + "TestDeployTarget") ? getProperty(project.name + "TestDeployTarget") : 'localhost'
     }
-    submission_prod {
+    prodHH1 {
         role('prod')
-        host = prodDeployHostName
+        role('prodHH')
+        host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
+    }
+    prodHH2 {
+        role('prod')
+        role('prodHH')
+        host = project.hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
+    }
+    prodHX1 {
+        role('prod')
+        role('prodHX')
+        host = project.hasProperty(project.name + "ProdHX1DeployTarget") ? getProperty(project.name + "ProdHX1DeployTarget") : 'localhost'
+    }
+    prodHX2 {
+        role('prod')
+        role('prodHX')
+        host = project.hasProperty(project.name + "ProdHX2DeployTarget") ? getProperty(project.name + "ProdHX2DeployTarget") : 'localhost'
     }
 }
 
@@ -177,36 +206,32 @@ task('externalCiTest', type: Test) {
 
 task deployJar(type: SshTask, dependsOn: 'build') {
     doLast {
-
-        if (gradle_env == "dev") {
-
-            File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-dev/jar")
-            sshRun(jarDeployDir)
-
-        } else if (gradle_env == "test") {
-
-            File jarDeployDir = new File("/homes/sub_adm/tc_subs/submission-test/jar")
-            sshRun(jarDeployDir)
-
-        } else if (gradle_env == "dev2") {
-
-            File jarDeployDir = new File("/data/subs-api/jar")
-            sshRun(jarDeployDir)
-
-        }
+        sshRun()
     }
     ssh.settings {
         knownHosts = allowAnyHosts
     }
 }
 
-private Object sshRun(File jarDeployDir) {
+task testSsh(type: SshTask) {
+    doLast {
+        sshTestRun()
+    }
+    ssh.settings {
+        knownHosts = allowAnyHosts
+    }
+}
+
+private Object sshRun() {
     ssh.run {
         session(remotes.role(gradle_env)) {
-            println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
-            put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
+            def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
+            File jarDeployFile = new File("/homes/sub_adm/tc_subs/$remote.name/jar",jarFileName)
+            File jarDeployDir = jarDeployFile.getParentFile()
+            println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
+            put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
             println "creating symbolic link to $jar.archiveName"
-            def result = execute "ln -s -f $jarDeployDir/$jar.archiveName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+            def result = execute "ln -s -f $jarDeployFile.absolutePath $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
             println result
             println "updating permissions of $jarDeployDir/$jar.archiveName"
             execute "chmod u+x $jarDeployDir/*", ignoreError: false
@@ -214,6 +239,13 @@ private Object sshRun(File jarDeployDir) {
     }
 }
 
+private Object sshTestRun(){
+    ssh.run {
+        session(remotes.role(gradle_env)){
+            println "started ssh session"
+        }
+    }
+}
 
 task printClasspath << {
     configurations.testCompile.each { println it }

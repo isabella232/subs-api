@@ -1,0 +1,81 @@
+= Submissions
+:docinfo: shared
+:toc: auto
+
+== List submissions available to user
+
+=== Request
+
+
+include::{snippets}/userSubmissions/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/userSubmissions/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/userSubmissions/links.adoc[]
+
+== Summarise submission statuses
+
+=== Request
+
+
+include::{snippets}/userSubmissionStatusSummary/curl-request.adoc[]
+=== Response
+
+include::{snippets}/userSubmissionStatusSummary/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/userSubmissionStatusSummary/links.adoc[]
+
+
+== Create a submission
+
+=== Request
+
+include::{snippets}/create-submission/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/create-submission/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/create-submission/links.adoc[]
+
+== Delete a submission
+
+`DELETE`-ing a submission will delete the submission and all resources within it e.g. studies, samples.
+
+// TODO add delete example
+
+== Submission status
+
+=== Patch a submission status
+
+==== Request
+
+include::{snippets}/patch-submission-status/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/patch-submission-status/http-response.adoc[]
+
+==== Links
+
+include::{snippets}/patch-submission-status/links.adoc[]
+
+== Status descriptions
+
+The status description resources provide information about each status used in the system, including available status
+changes and wether the resources can be changed. These resources do not accept `POST`, `PUT`, `PATCH` or `DELETE`
+requests.
+
+* release status
+* submission status
+* processing status
+
+`TODO to cover all status descriptions`

@@ -16,7 +16,8 @@ public enum SubsApiErrors {
     missing_field("This required field has not been set"),
     invalid("The formatting of this field is invalid"),
     resource_locked("The resource cannot be changed"),
-    already_exists("Another resource with the same value already exists");
+    already_exists("Another resource with the same value already exists"),
+    already_exists_and_not_completed("Another resource with the same alias already exists within the team and is not 'Completed'.");
 
     private String description;
 
@@ -40,7 +41,7 @@ public enum SubsApiErrors {
         missing_field.doRejectIfEmptyOrWhitespace(errors, field);
     }
 
-    private void doRejectIfEmptyOrWhitespace(Errors errors, String field){
+    private void doRejectIfEmptyOrWhitespace(Errors errors, String field) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, field, this.name(), this.name());
     }
 

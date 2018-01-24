@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -16,21 +17,39 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import uk.ac.ebi.subs.api.error.ApiError;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
+import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
+import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
+import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -40,9 +59,11 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.ac.ebi.subs.api.Helpers.generateTestSamples;
 
+@WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 public abstract class ApiIntegrationTest {
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @LocalServerPort
@@ -56,36 +77,98 @@ public abstract class ApiIntegrationTest {
 
     @Autowired
     protected SubmissionRepository submissionRepository;
-
     @Autowired
     protected SubmissionStatusRepository submissionStatusRepository;
-
     @Autowired
     protected SampleRepository sampleRepository;
+    @Autowired
+    protected TemplateRepository templateRepository;
+    @Autowired
+    protected ValidationResultRepository validationResultRepository;
+    @Autowired
+    protected ProcessingStatusRepository processingStatusRepository;
 
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
+    @Autowired
+    private SubmittableHelperService submittableHelperService;
+
     @Before
-    public void buildUp() throws URISyntaxException, UnirestException {
+    public void buildUp() throws UnirestException {
+        clearDbs();
+
         rootUri = "http://localhost:" + port + "/api";
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
     }
 
+    public void clearDbs() {
+        Arrays.asList(
+                submissionRepository,
+                submissionStatusRepository,
+                sampleRepository,
+                templateRepository,
+                validationResultRepository,
+                processingStatusRepository
+        ).forEach(CrudRepository::deleteAll);
+    }
+
     @After
     public void tearDown() throws IOException {
-        submissionRepository.deleteAll();
-        sampleRepository.deleteAll();
-        submissionStatusRepository.deleteAll();
+        clearDbs();
     }
 
     @Test
     public void checkRootRels() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        assertThat(rootRels.keySet(), hasItems("teams", "team"));
+        assertThat(rootRels.keySet(), hasItems("userTeams", "team"));
         assertThat(rootRels.keySet(), not(hasItems("submissions:create", "samples:create")));
+    }
+
+    @Test
+    public void downloadTemplate() throws UnirestException, IOException {
+        Map<String, String> rootRels = testHelper.rootRels();
+        assertThat(rootRels.keySet(), hasItems("templates"));
+
+        Template template = Template.builder().name("test-template").targetType("samples").build();
+        template
+                .add(
+                        "alias",
+                        FieldCapture.builder().fieldName("alias").build()
+                )
+                .add(
+                        "taxon id",
+                        FieldCapture.builder().fieldName("taxonId").fieldType(JsonFieldType.IntegerNumber).build()
+                )
+                .add(
+                        "taxon",
+                        FieldCapture.builder().fieldName("taxon").build()
+                );
+
+        template.setDefaultCapture(
+                AttributeCapture.builder().build()
+        );
+
+        templateRepository.insert(template);
+
+        HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("templates")).headers(testHelper.getGetHeaders()).asJson();
+
+        JSONArray templates = templatesResponse.getBody().getObject().getJSONObject("_embedded").getJSONArray("templates");
+        JSONObject exampleTemplateJson = templates.getJSONObject(0);
+        String spreadsheetLink = exampleTemplateJson
+                .getJSONObject("_links")
+                .getJSONObject("spreadsheet-csv-download")
+                .getString("href");
+
+        Map<String,String> requestHeaders = testHelper.getGetHeaders();
+        requestHeaders.put("Accept","text/csv");
+
+        HttpResponse<String> templateResponse = Unirest.get(spreadsheetLink).headers(requestHeaders).asString();
+        Headers responseHeaders = templateResponse.getHeaders();
+
+        assertThat(responseHeaders.getFirst("Content-Disposition"),equalTo("attachment; filename=\"test-template_template.csv\""));
     }
 
     @Test
@@ -93,7 +176,7 @@ public abstract class ApiIntegrationTest {
         Map<String, String> rootRels = testHelper.rootRels();
 
         Submission submission = Helpers.generateSubmission();
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        testHelper.postSubmission(rootRels, submission);
 
         List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
         assertThat(submissionStatuses, notNullValue());
@@ -101,13 +184,6 @@ public abstract class ApiIntegrationTest {
         SubmissionStatus submissionStatus = submissionStatuses.get(0);
         assertThat(submissionStatus.getStatus(), notNullValue());
         assertThat(submissionStatus.getStatus(), equalTo("Draft"));
-    }
-
-    @Test
-    public void submissionWithSamples() throws IOException, UnirestException {
-        Map<String, String> rootRels = testHelper.rootRels();
-
-        String submissionLocation = testHelper.submissionWithSamples(rootRels);
     }
 
     /**
@@ -150,9 +226,13 @@ public abstract class ApiIntegrationTest {
         ApiError apiErrorResponse = mapper.readValue(sampleSecondResponse.getBody().toString(), ApiError.class);
 
         List<String> errors = apiErrorResponse.getErrors();
-
         assertThat(errors, notNullValue());
-        assertThat(errors.size(), is(equalTo(1)));
+
+        Optional<String> optionalError = errors.stream()
+                .filter(error -> error.contains("already_exists: In Sample, field alias can't be "))
+                .findAny();
+
+        assertTrue(optionalError.isPresent());
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
         assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
@@ -162,7 +242,7 @@ public abstract class ApiIntegrationTest {
      * POSTing a sample with no alias should throw an error
      */
     @Test
-    public void postSampleWithNoAlias() throws IOException, UnirestException{
+    public void postSampleWithNoAlias() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
         Submission submission = Helpers.generateSubmission();
 
@@ -207,7 +287,7 @@ public abstract class ApiIntegrationTest {
 
         for (Sample sample : testSamples) {
 
-           // sample.setSubmission(submissionLocation);
+            // sample.setSubmission(submissionLocation);
 
             HttpResponse<JsonNode> samplePostResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                     .headers(testHelper.getPostHeaders())
@@ -239,7 +319,12 @@ public abstract class ApiIntegrationTest {
             List<String> errors = apiErrorResponse.getErrors();
 
             assertThat(errors, notNullValue());
-            assertThat(errors.size(), equalTo(1));
+
+            Optional<String> optionalError = errors.stream()
+                    .filter(error -> error.contains("already_exists: In Sample, field alias can't be "))
+                    .findAny();
+
+            assertTrue(optionalError.isPresent());
 
             assertEquals(HttpStatus.BAD_REQUEST.value(), apiErrorResponse.getStatus());
             assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), apiErrorResponse.getTitle());
@@ -255,33 +340,37 @@ public abstract class ApiIntegrationTest {
      */
     @Test
     public void sampleVersions() throws IOException, UnirestException {
-        Map<String, String> rootRels = testHelper.rootRels();
-
+        uk.ac.ebi.subs.repository.model.Submission submission;
+        Team testTeam = Helpers.generateTestTeam();
 
         int numberOfSubmissions = 5;
+        int numberOfSamples = 2;
 
-        Submission submission = Helpers.generateSubmission();
-        List<Sample> testSamples = Helpers.generateTestClientSamples(2);
-
+        // At this point we are bypassing our API validation checks and inserting the objects directly into the DB,
+        // this is for test purposes only and the DB must be cleared afterwards.
         for (int i = 0; i < numberOfSubmissions; i++) {
-            HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+            submission = Helpers.generateSubmission();
+            submission.setTeam(testTeam);
 
-            String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
-            Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
-            Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
-            assertThat(submissionContentsRels.get("samples:create"), notNullValue());
+            SubmissionStatus submissionStatus = new SubmissionStatus(SubmissionStatusEnum.Draft);
+            submission.setSubmissionStatus(submissionStatus);
+            submissionStatusRepository.insert(submissionStatus);
 
-            //add samples to the submission
-            for (Sample sample : testSamples) {
+            submissionRepository.insert(submission);
 
-                sample.setSubmission(submissionLocation);
+            HttpResponse<JsonNode> submissionResponse = Unirest.get(rootUri + "/submissions/" + submission.getId())
+                            .headers(testHelper.getGetHeaders()).asJson();
+            assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
-                HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
-                        .headers(testHelper.getPostHeaders())
-                        .body(sample)
-                        .asJson();
+            for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
+                sample.setSubmission(submission);
+                submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
+                submittableHelperService.processingStatusAndValidationResultSetUp(sample);
+                sampleRepository.save(sample);
 
-                assertThat(sampleResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
+                HttpResponse<JsonNode> sampleResponse = Unirest.get(rootUri + "/samples/" + sample.getId())
+                        .headers(testHelper.getGetHeaders()).asJson();
+                assertEquals(HttpStatus.OK.value(), sampleResponse.getStatus());
             }
         }
 
@@ -303,7 +392,7 @@ public abstract class ApiIntegrationTest {
         JSONObject teamSamplesPayload = teamSamplesQueryResponse.getBody().getObject();
         JSONArray teamSamples = teamSamplesPayload.getJSONObject("_embedded").getJSONArray("samples");
 
-        assertThat(teamSamples.length(), is(equalTo(testSamples.size())));
+        assertThat(teamSamples.length(), is(equalTo(numberOfSamples)));
 
         for (int i = 0; i < teamSamples.length(); i++) {
             JSONObject teamSample = teamSamples.getJSONObject(i);

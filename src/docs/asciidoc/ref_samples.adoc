@@ -1,0 +1,76 @@
+= Samples
+:docinfo: shared
+:toc: auto
+
+== What are samples?
+
+The definition of a sample is intentionally flexible in order to accommodate a wide range of uses. Typically, each
+sample record corresponds to a discrete physical object that is composed of live biological material.
+
+In most cases sample entities are self-evident; such as a blood sample, cell culture or an individual organism.
+However, a sample can also be an environmental sample (e.g. for meta-genomic analysis), a hybrid between two species,
+parasite infected cell culture, etc.
+
+== Minimal requirements
+
+These fields must be filled out for all samples:
+
+* alias
+* title
+* releaseDate in YYYY-MM-DD format, e.g. `"2017-12-12"`
+
+https://www.ebi.ac.uk/biosamples/[BioSamples] will release your sample information on or after the release date.
+
+In addition, most of our data archives also require a taxonomy entry, to classify the species or sample type. This should
+be given as a taxon ID. You can search for taxon IDs through the
+https://www.ebi.ac.uk/ena/data/search?query=xenograft[ENA web page], or
+https://www.ebi.ac.uk/ena/browse/taxonomy-service[API].
+
+* taxonId
+
+NOTE: Please note that not all taxon are considered acceptable for submitted data. For example
+https://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/tax-id/9443[primates] is not accepted, but
+https://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/tax-id/9606[humans] is.
+
+
+== Create a sample
+
+=== Request
+
+include::{snippets}/create-sample/curl-request.adoc[]
+
+
+=== Response
+
+include::{snippets}/create-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/create-sample/links.adoc[]
+
+
+== Update a sample
+=== Request
+
+include::{snippets}/update-sample/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/update-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/update-sample/links.adoc[]
+
+== Patch a sample
+=== Request
+
+include::{snippets}/patch-sample/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/patch-sample/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/patch-sample/links.adoc[]

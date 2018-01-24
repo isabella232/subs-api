@@ -1,12 +1,13 @@
 package uk.ac.ebi.subs.api.handlers;
 
-import org.springframework.data.rest.core.annotation.*;
+import org.springframework.data.rest.core.annotation.HandleAfterCreate;
+import org.springframework.data.rest.core.annotation.HandleAfterSave;
+import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
+import org.springframework.data.rest.core.annotation.HandleBeforeSave;
+import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
-import uk.ac.ebi.subs.repository.model.Assay;
-import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 @Component
@@ -21,31 +22,29 @@ public class CoreSubmittableEventHelper {
     private SubmittableHelperService submittableHelperService;
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
-
     /**
-     * Give submittables an ID and draft status on creation
+     * Give submittable an ID and set Team from submission.
      *
      * @param submittable
      */
     @HandleBeforeCreate
     public void addDependentObjectsToSubmittable(StoredSubmittable submittable) {
-        submittableHelperService.setupNewSubmittable(submittable);
+        submittableHelperService.uuidAndTeamFromSubmissionSetUp(submittable);
     }
 
-    // Validation of created submittables
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
+        submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
+    }
+
+    @HandleBeforeSave
+    public void beforeSave(StoredSubmittable storedSubmittable) {
+        submittableHelperService.setTeamFromSubmission(storedSubmittable);
     }
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
         submittableValidationDispatcher.validateUpdate(storedSubmittable);
-    }
-
-
-    @HandleBeforeSave
-    public void beforeSave(StoredSubmittable storedSubmittable) {
-        submittableHelperService.setTeamFromSubmission(storedSubmittable);
     }
 }
