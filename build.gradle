@@ -164,21 +164,25 @@ remotes {
     prodHH1 {
         role('prod')
         role('prodHH')
+        role('prodHH1')
         host = project.hasProperty(project.name + "ProdHH1DeployTarget") ? getProperty(project.name + "ProdHH1DeployTarget") : 'localhost'
     }
     prodHH2 {
         role('prod')
         role('prodHH')
+	role('prodHH2')
         host = project.hasProperty(project.name + "ProdHH2DeployTarget") ? getProperty(project.name + "ProdHH2DeployTarget") : 'localhost'
     }
     prodHX1 {
         role('prod')
         role('prodHX')
+	role('prodHX1')
         host = project.hasProperty(project.name + "ProdHX1DeployTarget") ? getProperty(project.name + "ProdHX1DeployTarget") : 'localhost'
     }
     prodHX2 {
         role('prod')
         role('prodHX')
+	role('prodHX2')
         host = project.hasProperty(project.name + "ProdHX2DeployTarget") ? getProperty(project.name + "ProdHX2DeployTarget") : 'localhost'
     }
 }
