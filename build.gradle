@@ -96,7 +96,7 @@ configure(testsMakesDocs) {
 
 ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1', project:'1']
 
-if (gradle_env == "test") {
+if (gradle_env == "test" || gradle_env.startsWith("prod") ) {
     ext.asciiDoctorIncludes = [sample:'1']
 }
 
