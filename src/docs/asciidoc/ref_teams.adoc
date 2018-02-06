@@ -14,7 +14,8 @@ include::{snippets}/get-teams/http-response.adoc[]
 
 == Fetching one team
 
-If you know the name of team, you can use the https://en.wikipedia.org/wiki/URL_Template[templated] link to fetch it directly.
+If you know the name of team already, you can expand the `team` link from the API root to fetch it directly. The link is
+provided as a https://en.wikipedia.org/wiki/URL_Template[url template].
 
 === Request
 
