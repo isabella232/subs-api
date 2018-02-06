@@ -32,6 +32,98 @@ NOTE: Please note that not all taxon are considered acceptable for submitted dat
 https://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/tax-id/9443[primates] is not accepted, but
 https://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/tax-id/9606[humans] is.
 
+== Optional fields
+
+These fields are optional:
+
+* description, a text description of the sample
+* attributes, a structured description of the sample
+* sampleRelationships,
+
+=== Attributes
+
+The attributes field should be structured like this:
+
+.attributes
+[source,javascript]
+----
+"attributes": {
+    "<attribute name>": [
+        "value": "<attribute value>",
+        "units": "<units>",
+        "terms": [
+            {"url": "<Ontology term URL>"}
+        ]
+    ]
+}
+----
+
+
+* value
+* units, should specify the units used for a numeric value, e.g. to clarify if an age is specified in years, months, or
+weeks. The unit should be lowercase and written out in full (e.g. "milimole" instead of "mm")
+* terms, a list of ontology terms to describe the attribute. The url should be for an ontology term, available through
+the https://www.ebi.ac.uk/ols(ontology lookup service). E.g. "http://purl.obolibrary.org/obo/UBERON_0002114" for duodenum.
+
+.example.attributes
+[source,javascript]
+----
+"attributes": {
+    "material": [
+        "value": "specimen from organism",
+        "terms": [
+            {"url": "http://purl.obolibrary.org/obo/OBI_0001479"}
+        ]
+    ],
+    "tissue": [
+        "value": "stomach",
+        "terms": [
+            {"url": "http://purl.obolibrary.org/obo/UBERON_0000945"}
+        ]
+    ],
+    "tissue weight": [
+        "value": 907,
+        "units": "gram"
+    ]
+}
+----
+
+=== Sample relationships
+
+Sample relationships are used to record how samples are linked, e.g. parentage, or derivation
+
+.relationships
+[source,javascript]
+----
+"sampleRelationships": [
+    {
+        "alias": "<sample alias>",
+        "relationshipNature": "<relationship nature>"
+    }
+]
+----
+
+These relationship natures are available:
+
+* "derived from"
+* "child of"
+* "same as"
+* "recurated from"
+
+.relationship.example
+[source,javascript]
+----
+"sampleRelationships": [
+    {
+        "alias": "sample-a-mum-1",
+        "relationshipNature": "child of"
+    },
+    {
+        "alias": "sample-a-dad-1",
+        "relationshipNature": "child of"
+    }
+]
+----
 
 == Create a sample
 
