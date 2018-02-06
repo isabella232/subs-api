@@ -7,6 +7,16 @@
 Templates help users provide bulk data (e.g. sampeles, assays), using familiar tools.
 Users can download spreadsheets by using the `spreadsheet-csv-download` link in their browser.
 
+=== Template search resources
+
+==== Request
+
+include::{snippets}/templates-search/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/templates-search/http-response.adoc[]
+
 === Find all templates
 ==== Request
 
@@ -16,14 +26,25 @@ include::{snippets}/templates-list/curl-request.adoc[]
 
 include::{snippets}/templates-list/http-response.adoc[]
 
-==== Find one template by name
-===== Request
+=== Find one template by name
+==== Request
 
 include::{snippets}/test-template-one/curl-request.adoc[]
 
-===== Response
+==== Response
 
 include::{snippets}/test-template-one/http-response.adoc[]
+
+=== Find templates by type
+
+==== Request
+
+include::{snippets}/test-template-by-type/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/test-template-by-type/http-response.adoc[]
+
 
 == Spreadsheet upload
 

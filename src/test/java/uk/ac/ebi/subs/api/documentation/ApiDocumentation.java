@@ -1116,10 +1116,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.samples").description("Samples within the submission"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1310,10 +1307,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1341,10 +1335,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.projects").description("Projects available to current user"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1421,10 +1412,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );

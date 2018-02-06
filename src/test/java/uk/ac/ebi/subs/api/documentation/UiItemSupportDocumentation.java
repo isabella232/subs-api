@@ -43,10 +43,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageNumberDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageSizeDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalElementsDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalPagesDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
 @RunWith(SpringRunner.class)
@@ -118,10 +115,7 @@ public class UiItemSupportDocumentation {
                                 responseFields(
                                         linksResponseField(),
                                         fieldWithPath("_embedded.uiSupportItems").description("Support data available"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        paginationBlock()
                                 )
 
 
