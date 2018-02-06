@@ -63,7 +63,7 @@ The attributes field should be structured like this:
 * units, should specify the units used for a numeric value, e.g. to clarify if an age is specified in years, months, or
 weeks. The unit should be lowercase and written out in full (e.g. "milimole" instead of "mm")
 * terms, a list of ontology terms to describe the attribute. The url should be for an ontology term, available through
-the https://www.ebi.ac.uk/ols(ontology lookup service). E.g. "http://purl.obolibrary.org/obo/UBERON_0002114" for duodenum.
+the https://www.ebi.ac.uk/ols[ontology lookup service]. E.g. "http://purl.obolibrary.org/obo/UBERON_0002114" for duodenum.
 
 .example.attributes
 [source,javascript]
