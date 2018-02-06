@@ -143,11 +143,17 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet();
+        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload");
         Assert.assertEquals(SheetStatusEnum.Draft, sheet.getStatus());
     }
 
-    private Sheet uploadCsvAsSheet() throws Exception {
+    @Test
+    public void uploadSheetTwice() throws Exception {
+        uploadCsvAsSheet("sheet-csv-upload-rep-1");
+        uploadCsvAsSheet("sheet-csv-upload-rep-2");
+    }
+
+    private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -166,7 +172,7 @@ public class SpreadsheetDocumentation {
                         .content(csv)
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("sheet-csv-upload",
+                        document(snippetName,
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -199,7 +205,7 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void patchSheetStatus() throws Exception {
-        Sheet sheet = uploadCsvAsSheet();
+        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-patch-rep-1");
 
         this.mockMvc.perform(
                 patch("/api/sheets/{sheetId}", sheet.getId())
@@ -238,7 +244,7 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void patchSheetContents() throws Exception {
-        Sheet sheet = uploadCsvAsSheet();
+        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-patch-contents");
 
         this.mockMvc.perform(
                 patch("/api/sheets/{sheetId}", sheet.getId())
@@ -256,7 +262,7 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void deleteSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet();
+        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-delete-contents");
 
         this.mockMvc.perform(
                 delete("/api/sheets/{sheetId}", sheet.getId())
