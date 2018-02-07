@@ -230,7 +230,7 @@ private Object sshRun() {
     ssh.run {
         session(remotes.role(gradle_env)) {
             def jarFileName = project.name + "-"  + project.version + "." + System.currentTimeMillis() + ".jar"
-            File jarDeployFile = new File("/homes/sub_adm/tc_subs/$remote.name/jar",jarFileName)
+            File jarDeployFile = new File("/homes/sub_adm/tc_subs/$project.name/$remote.name/jar",jarFileName)
             File jarDeployDir = jarDeployFile.getParentFile()
             println "Uploading jar $jar.archivePath.name to $jarDeployFile.absolutePath  area on $remote"
             put(jar.archivePath.absolutePath, jarDeployFile.absolutePath)
