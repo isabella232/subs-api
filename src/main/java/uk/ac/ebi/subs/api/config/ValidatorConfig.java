@@ -16,7 +16,6 @@ import uk.ac.ebi.subs.api.validators.ProjectValidator;
 import uk.ac.ebi.subs.api.validators.ProtocolValidator;
 import uk.ac.ebi.subs.api.validators.SampleGroupValidator;
 import uk.ac.ebi.subs.api.validators.SampleValidator;
-import uk.ac.ebi.subs.api.validators.SheetDeleteValidator;
 import uk.ac.ebi.subs.api.validators.SheetValidator;
 import uk.ac.ebi.subs.api.validators.StudyValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionDeleteValidator;
@@ -77,8 +76,6 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
     private SubmissionStatusValidator submissionStatusValidator;
     @NonNull
     private SheetValidator sheetValidator;
-    @NonNull
-    private SheetDeleteValidator sheetDeleteValidator;
 
 
     @Override
@@ -114,7 +111,6 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
 
         eventListener.addValidator(BEFORE_DELETE, submittableDeleteValidator);
 
-        eventListener.addValidator(BEFORE_DELETE, sheetDeleteValidator);
     }
 
 }
