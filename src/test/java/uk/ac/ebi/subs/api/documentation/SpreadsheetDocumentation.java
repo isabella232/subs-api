@@ -144,7 +144,7 @@ public class SpreadsheetDocumentation {
     @Test
     public void uploadSheet() throws Exception {
         Sheet sheet = uploadCsvAsSheet("sheet-csv-upload");
-        Assert.assertEquals(SheetStatusEnum.Draft, sheet.getStatus());
+        Assert.assertEquals(SheetStatusEnum.Submitted, sheet.getStatus());
     }
 
     @Test
@@ -203,44 +203,6 @@ public class SpreadsheetDocumentation {
         return sheets.get(0);
     }
 
-    @Test
-    public void patchSheetStatus() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-patch-rep-1");
-
-        this.mockMvc.perform(
-                patch("/api/sheets/{sheetId}", sheet.getId())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-                        .content("{\"status\": \"Submitted\"}")
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("sheet-patch-status",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        selfRelLink(),
-                                        linkWithRel("sheet").description("Link to this uploaded spreadsheet"),
-                                        linkWithRel("submission").description("Link to the submission this upload is associated with")
-                                ),
-                                responseFields(
-                                        linksResponseField(),
-                                        fieldWithPath("headerRowIndex").description("Index of the row thought to contain the column headers"),
-                                        fieldWithPath("status").description("Current status of the sheet"),
-                                        fieldWithPath("template").description("The spreadsheet template this upload is based on"),
-                                        fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("rows").description("The spreadsheet content"),
-                                        fieldWithPath("mappings").description("The column mappings determined for this spreadsheet"),
-                                        fieldWithPath("firstRowsLimit").description("The number of rows to display when summarising this content"),
-                                        fieldWithPath("_embedded.submission").description("Submission this spreadsheet was uploaded to"),
-                                        fieldWithPath("createdDate").ignored(),
-                                        fieldWithPath("lastModifiedDate").ignored(),
-                                        fieldWithPath("createdBy").ignored(),
-                                        fieldWithPath("lastModifiedBy").ignored()
-                                )
-                        )
-                );
-    }
 
     @Test
     public void patchSheetContents() throws Exception {
