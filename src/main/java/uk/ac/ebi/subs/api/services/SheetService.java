@@ -19,9 +19,16 @@ import java.util.stream.Stream;
 @Component
 public class SheetService {
 
-    public void fillInId(Sheet sheet) {
-        Assert.isNull(sheet.getId());
-        sheet.setId(UUID.randomUUID().toString());
+    public void preProcessSheet(Sheet sheet){
+        if (sheet.getTemplate() ==null) return;
+        if (sheet.getRows() == null) return;
+
+
+        sheet.removeEmptyRows();
+        sheet.removeColumnsPastLastNonEmpty();
+        this.ignoreCommentLines(sheet);
+        this.guessHeader(sheet);
+        this.mapHeadings(sheet);
     }
 
     public void ignoreCommentLines(Sheet sheet) {
