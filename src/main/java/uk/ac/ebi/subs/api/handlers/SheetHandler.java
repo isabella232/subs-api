@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.api.handlers;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
+import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
@@ -42,7 +43,7 @@ public class SheetHandler {
         sheet.setId(UUID.randomUUID().toString());
     }
 
-    @HandleAfterSave
+    @HandleAfterCreate
     public void handleAfterCreate(Sheet sheet) {
         sendSheetEvent(sheet);
     }
