@@ -5,7 +5,6 @@ import lombok.NonNull;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.api.services.SheetService;
@@ -57,11 +56,11 @@ public class SheetValidator implements Validator {
 
     public void validateCreate(Sheet sheet, Errors errors) {
 
-        if(sheet.getTemplate() == null){
-            SubsApiErrors.missing_field.addError(errors,"template");
+        if (sheet.getTemplate() == null) {
+            SubsApiErrors.missing_field.addError(errors, "template");
         }
-        if(sheet.getSubmission() == null){
-            SubsApiErrors.missing_field.addError(errors,"submission");
+        if (sheet.getSubmission() == null) {
+            SubsApiErrors.missing_field.addError(errors, "submission");
         }
 
         List<Row> firstRows = sheet.getFirstRows();
@@ -75,15 +74,15 @@ public class SheetValidator implements Validator {
             return;
         }
 
-        if (!errors.hasErrors()) {
-            Optional<JSONObject> optionalJsonWithoutAlias = sheetService.parse(sheet)
-                    .filter(json -> !hasStringAlias(json))
-                    .findAny();
 
-            if (optionalJsonWithoutAlias.isPresent()) {
-                SubsApiErrors.invalid.addError(errors, "rows");
-            }
+        Optional<JSONObject> optionalJsonWithoutAlias = sheetService.parse(sheet)
+                .filter(json -> !hasStringAlias(json))
+                .findAny();
+
+        if (optionalJsonWithoutAlias.isPresent()) {
+            SubsApiErrors.invalid.addError(errors, "rows");
         }
+        
 
     }
 
