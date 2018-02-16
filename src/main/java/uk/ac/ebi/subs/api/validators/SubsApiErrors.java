@@ -13,6 +13,7 @@ import org.springframework.validation.ValidationUtils;
  */
 public enum SubsApiErrors {
 
+    missing_alias("Each entry must have an alias/unique name filled in"),
     missing_field("This required field has not been set"),
     invalid("The formatting of this field is invalid"),
     resource_locked("The resource cannot be changed"),

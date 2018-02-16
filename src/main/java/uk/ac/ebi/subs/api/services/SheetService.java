@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.api.services;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.validation.Errors;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.templates.Capture;
@@ -128,34 +129,5 @@ public class SheetService {
         sheet.setMappings(capturePositions);
     }
 
-    public Stream<JSONObject> parse(Sheet sheet) {
 
-        List<String> headers = sheet.getRows().get(sheet.getHeaderRowIndex()).getCells();
-
-        List<Row> rows = sheet.getRows();
-
-        List<Row> rowsToParse = rows.subList(sheet.getHeaderRowIndex()+1,rows.size());
-
-
-        return rowsToParse.stream()
-                .filter(row -> !row.isIgnored())
-                .map(row -> {
-                    JSONObject document = new JSONObject();
-
-                    List<String> cells = row.getCells();
-
-                    ListIterator<Capture> captureIterator = sheet.getMappings().listIterator();
-
-                    while (captureIterator.hasNext()) {
-                        int position = captureIterator.nextIndex();
-                        Capture capture = captureIterator.next();
-
-                        if (capture != null) {
-                            capture.capture(position, headers, cells, document);
-                        }
-                    }
-
-                    return document;
-                });
-    }
 }
