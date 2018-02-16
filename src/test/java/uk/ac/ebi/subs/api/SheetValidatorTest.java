@@ -129,10 +129,13 @@ public class SheetValidatorTest {
     public void testNewNoAlias() {
         Sheet sheet = exampleSheet();
 
-        sheet.addRow(new String[]{"", "bob", "bob"});
+        sheet.addRow(new String[]{"", "bob", "bob",""});
 
         sheet.setMappings(Arrays.asList(
-                FieldCapture.builder().fieldName("alias").fieldType(JsonFieldType.String).build()
+                FieldCapture.builder().fieldName("alias").fieldType(JsonFieldType.String).build(),
+                FieldCapture.builder().fieldName("c2").fieldType(JsonFieldType.String).build(),
+                FieldCapture.builder().fieldName("c3").fieldType(JsonFieldType.String).build(),
+                FieldCapture.builder().fieldName("c4").fieldType(JsonFieldType.String).build()
         ));
 
         when(sheetRepository.findOne("not-a-real-id")).thenReturn(null);

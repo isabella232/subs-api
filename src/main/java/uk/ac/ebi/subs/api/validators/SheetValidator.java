@@ -16,7 +16,6 @@ import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Optional;
 
 @Component
 @Data
@@ -46,8 +45,7 @@ public class SheetValidator implements Validator {
 
         if (storedVersion == null) {
             validateCreate(sheet, errors);
-        }
-        else{
+        } else {
             SubsApiErrors.resource_locked.addError(errors);
         }
 
@@ -139,15 +137,13 @@ public class SheetValidator implements Validator {
                     String fieldPath = "rows[" + rowIndex + "].cells[" + position + "]";
                     SubsApiErrors.invalid.addError(errors, fieldPath);
                 }
-                catch (IndexOutOfBoundsException e){
-                    //fewer values than expected columns - this is ok as we trim the rows aggressively
-                }
             }
 
-            if (!hasStringAlias(document)) {
-                String fieldPath = "rows[" + rowIndex + "]";
-                SubsApiErrors.missing_alias.addError(errors, fieldPath);
-            }
+        }
+
+        if (!hasStringAlias(document)) {
+            String fieldPath = "rows[" + rowIndex + "]";
+            SubsApiErrors.missing_alias.addError(errors, fieldPath);
         }
 
         return document;
