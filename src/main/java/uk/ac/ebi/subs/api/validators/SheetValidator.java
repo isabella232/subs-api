@@ -139,6 +139,9 @@ public class SheetValidator implements Validator {
                     String fieldPath = "rows[" + rowIndex + "].cells[" + position + "]";
                     SubsApiErrors.invalid.addError(errors, fieldPath);
                 }
+                catch (IndexOutOfBoundsException e){
+                    //fewer values than expected columns - this is ok as we trim the rows aggressively
+                }
             }
 
             if (!hasStringAlias(document)) {
