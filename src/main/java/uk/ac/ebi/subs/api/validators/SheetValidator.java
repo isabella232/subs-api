@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.validators;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NonNull;
 import org.json.JSONObject;
@@ -13,6 +15,7 @@ import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.templates.Capture;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -114,13 +117,13 @@ public class SheetValidator implements Validator {
 
             if (row.isIgnored()) continue;
 
-            JSONObject document = rowToDocument(i, row, mappings, headers, errors);
-            row.setDocument(document.toString());
+            JsonNode document = rowToDocument(i, row, mappings, headers, errors);
+            row.setDocument(document);
             row.setCells(Collections.emptyList());
         }
     }
 
-    private JSONObject rowToDocument(int rowIndex, Row row, List<Capture> mappings, List<String> headers, Errors errors) {
+    private JsonNode rowToDocument(int rowIndex, Row row, List<Capture> mappings, List<String> headers, Errors errors) {
         JSONObject document = new JSONObject();
 
         List<String> cells = row.getCells();
@@ -146,6 +149,17 @@ public class SheetValidator implements Validator {
             SubsApiErrors.missing_alias.addError(errors, fieldPath);
         }
 
-        return document;
+        return stringToJsonNode(document.toString());
+    }
+
+    public static JsonNode stringToJsonNode(String jsonContent){
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode actualObj = null;
+        try {
+            actualObj = mapper.readTree(jsonContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return actualObj;
     }
 }
