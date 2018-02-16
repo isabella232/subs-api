@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.templates.Capture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 
@@ -55,8 +56,6 @@ public class SheetValidatorTest {
 
         fakeSubmission = new Submission();
         fakeSubmission.setId("fs");
-        fakeSubmission.setSubmissionStatus(new SubmissionStatus());
-        fakeSubmission.getSubmissionStatus().setStatus(SubmissionStatusEnum.Draft);
     }
 
     @Test
@@ -114,6 +113,7 @@ public class SheetValidatorTest {
         sheet.setSubmission(null);
 
         given(sheetRepository.findOne("not-a-real-id")).willReturn(null);
+        given(operationControlService.isUpdateable(fakeSubmission)).willReturn(true);
         given(errors.hasErrors()).willReturn(true);
 
         validator.validate(sheet, errors);
@@ -131,7 +131,12 @@ public class SheetValidatorTest {
 
         sheet.addRow(new String[]{"", "bob", "bob"});
 
+        sheet.setMappings(Arrays.asList(
+                FieldCapture.builder().fieldName("alias").fieldType(JsonFieldType.String).build()
+        ));
+
         when(sheetRepository.findOne("not-a-real-id")).thenReturn(null);
+        given(operationControlService.isUpdateable(fakeSubmission)).willReturn(true);
 
         validator.validate(sheet, errors);
 
@@ -139,6 +144,24 @@ public class SheetValidatorTest {
                 "rows[3]",
                 SubsApiErrors.missing_alias.name(),
                 SubsApiErrors.missing_alias.name()
+        );
+    }
+
+    @Test
+    public void testBadNumberValue() {
+        Sheet sheet = exampleSheet();
+        sheet.getTemplate().getColumnCaptures().put("header3", FieldCapture.builder().fieldName("number").fieldType(JsonFieldType.IntegerNumber).build());
+
+        when(sheetRepository.findOne("not-a-real-id")).thenReturn(null);
+        when(operationControlService.isUpdateable(fakeSubmission)).thenReturn(true);
+        when(errors.hasErrors()).thenReturn(false);
+
+        validator.validate(sheet, errors);
+
+        verify(errors).rejectValue(
+                "rows[1].cells[2]",
+                SubsApiErrors.invalid.name(),
+                SubsApiErrors.invalid.name()
         );
     }
 
@@ -162,13 +185,18 @@ public class SheetValidatorTest {
     private Sheet exampleSheet() {
         Sheet sheet = new Sheet();
 
-        Map<String, Capture> captureMap = new HashMap<>();
 
         sheet.setTemplate(Template.builder()
                 .targetType("thing")
                 .name("bob")
-                .columnCaptures(captureMap)
                 .build());
+
+        sheet.setMappings(Arrays.asList(
+                FieldCapture.builder().fieldName("alias").fieldType(JsonFieldType.String).build(),
+                FieldCapture.builder().fieldName("header2").fieldType(JsonFieldType.String).build(),
+                FieldCapture.builder().fieldName("number").fieldType(JsonFieldType.IntegerNumber).build(),
+                FieldCapture.builder().fieldName("header4").fieldType(JsonFieldType.String).build()
+        ));
 
         sheet.setHeaderRowIndex(0);
 
@@ -177,9 +205,6 @@ public class SheetValidatorTest {
         sheet.addRow(new String[]{"4", "", "5", "6"});
         sheet.setSubmission(fakeSubmission);
 
-        sheet.setMappings(Arrays.asList(
-                FieldCapture.builder().fieldName("alias").build()
-        ));
 
         return sheet;
     }
