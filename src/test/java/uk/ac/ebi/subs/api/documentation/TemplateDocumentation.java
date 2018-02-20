@@ -150,7 +150,8 @@ public class TemplateDocumentation {
                                         halLinks(),
                                         selfRelLink(),
                                         linkWithRel("by-target-type").description("Search for templates with a specific target type"),
-                                        linkWithRel("by-name").description("Find a template by its name")
+                                        linkWithRel("by-name").description("Find a template by its name"),
+                                        linkWithRel("by-target-type-and-tags").description("Search for templates matching a target type and a set of tags")
                                 ),
                                 responseFields(
                                         linksResponseField()
