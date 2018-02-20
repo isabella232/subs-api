@@ -24,6 +24,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmittablesBatch;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
@@ -32,6 +33,7 @@ import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.SubmittablesBatchRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
@@ -79,7 +81,7 @@ public class SpreadsheetDocumentation {
     private TemplateRepository templateRepository;
 
     @Autowired
-    private SheetRepository sheetRepository;
+    private SubmittablesBatchRepository submittablesBatchRepository;
 
     @Autowired
     private SubmissionRepository submissionRepository;
@@ -122,7 +124,7 @@ public class SpreadsheetDocumentation {
 
 
     private void clearDatabases() {
-        this.sheetRepository.deleteAll();
+        this.submittablesBatchRepository.deleteAll();
         this.templateRepository.deleteAll();
         this.submissionRepository.deleteAll();
         this.submissionStatusRepository.deleteAll();
@@ -143,8 +145,8 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload");
-        Assert.assertEquals(SheetStatusEnum.Submitted, sheet.getStatus());
+        SubmittablesBatch batch = uploadCsvAsSheet("sheet-csv-upload");
+        Assert.assertEquals("Submitted", batch.getStatus());
     }
 
     @Test
@@ -153,7 +155,7 @@ public class SpreadsheetDocumentation {
         uploadCsvAsSheet("sheet-csv-upload-rep-2");
     }
 
-    private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
+    private SubmittablesBatch uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -164,7 +166,7 @@ public class SpreadsheetDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/contents/samples/sheets?templateName={templateName}",
+                post("/api/submissions/{submissionId}/batchSubmittables?templateName={templateName}",
                         submission.getId(),
                         template.getName())
                         .contentType("text/csv")
@@ -178,19 +180,17 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to this uploaded spreadsheet"),
-                                        linkWithRel("submission").description("Link to the submission this upload is associated with")
+                                        linkWithRel("submittablesBatch").description("Link to batch of documents created from the spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with"),
+                                        linkWithRel("template").description("Link to the template used to process this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("headerRowIndex").description("Index of the row thought to contain the column headers"),
-                                        fieldWithPath("status").description("Current status of the sheet"),
-                                        fieldWithPath("template").description("The spreadsheet template this upload is based on"),
+                                        fieldWithPath("status").description("Current status of the batch of documents"),
                                         fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("rows").description("The spreadsheet content"),
-                                        fieldWithPath("mappings").description("The column mappings determined for this spreadsheet"),
-                                        fieldWithPath("firstRowsLimit").description("The number of rows to display when summarising this content"),
-                                        fieldWithPath("_embedded.submission").description("Submission this spreadsheet was uploaded to"),
+                                        fieldWithPath("documents").description("The documents generated from the spreadsheet"),
+                                        fieldWithPath("documentCount").description("Number of documents in this batch"),
+                                        fieldWithPath("processedDocumentCount").description("Number of documetns in this batch that have been loaded"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -199,42 +199,8 @@ public class SpreadsheetDocumentation {
                         )
                 );
 
-        List<Sheet> sheets = sheetRepository.findAll();
-        return sheets.get(0);
+        List<SubmittablesBatch> batches = submittablesBatchRepository.findAll();
+        return batches.get(0);
     }
 
-
-    @Test
-    public void patchSheetContents() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-patch-contents");
-
-        this.mockMvc.perform(
-                patch("/api/sheets/{sheetId}", sheet.getId())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-                        .content("{\"headerRowIndex\": 1}")
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("sheet-patch-content",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void deleteSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-delete-contents");
-
-        this.mockMvc.perform(
-                delete("/api/sheets/{sheetId}", sheet.getId())
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isNoContent())
-                .andDo(
-                        document("sheet-delete",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
 }

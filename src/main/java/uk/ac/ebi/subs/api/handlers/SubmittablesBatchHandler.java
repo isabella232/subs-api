@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.services.SheetService;
 import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.repository.model.SubmittablesBatch;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 
@@ -18,48 +19,43 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@RepositoryEventHandler(Sheet.class)
-public class SheetHandler {
+@RepositoryEventHandler(SubmittablesBatch.class)
+public class SubmittablesBatchHandler {
 
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
-    @NonNull
-    private SheetService sheetService;
-
-    private final String routingKeyPrefix = "usi.sheet.";
+    private final String routingKeyPrefix = "usi.submittablesBatch.";
 
 
     @HandleBeforeCreate
-    public void handleBeforeCreate(Sheet sheet) {
-        sheetService.preProcessSheet(sheet);
-
-        this.fillInId(sheet);
+    public void handleBeforeCreate(SubmittablesBatch batch) {
+        this.fillInId(batch);
         //we only support immediate submission at the moment
-        sheet.setStatus(SheetStatusEnum.Submitted);
+        batch.setStatus("Submitted");
     }
 
-    private void fillInId(Sheet sheet) {
-        sheet.setId(UUID.randomUUID().toString());
+    private void fillInId(SubmittablesBatch batch) {
+        batch.setId(UUID.randomUUID().toString());
     }
 
     @HandleAfterCreate
-    public void handleAfterCreate(Sheet sheet) {
-        sendSheetEvent(sheet);
+    public void handleAfterCreate(SubmittablesBatch batch) {
+        sendSheetEvent(batch);
     }
 
     @HandleAfterSave
-    public void handleAfterSave(Sheet sheet) {
-        sendSheetEvent(sheet);
+    public void handleAfterSave(SubmittablesBatch batch) {
+        sendSheetEvent(batch);
     }
 
-    private void sendSheetEvent(Sheet sheet) {
-        String routingKey = routingKeyPrefix + sheet.getStatus().name().toLowerCase();
+    private void sendSheetEvent(SubmittablesBatch batch) {
+        String routingKey = routingKeyPrefix + batch.getStatus().toLowerCase();
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 routingKey,
-                sheet);
+                batch);
     }
 
 

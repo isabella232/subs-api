@@ -2,15 +2,11 @@ package uk.ac.ebi.subs.api.processors;
 
 import lombok.Data;
 import lombok.NonNull;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.subs.api.controllers.SheetsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
@@ -44,7 +40,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
         addSubmittablesInSubmission(resource, subId);
         addProjectLink(resource, subId);
-        addSpreadsheetLinks(resource,subId);
+        addSpreadsheetLinks(resource, subId);
 
         if (operationControlService.isUpdateable(resource.getContent().getSubmission())) {
             addUpdateLinks(resource);
@@ -56,14 +52,14 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         return resource;
     }
 
-    private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String subId){
+    private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String subId) {
 
-        Map<String,String> templateExpansionParameters = new HashMap<>();
-        templateExpansionParameters.put("submissionId",subId);
-        templateExpansionParameters.put("templateTargetType","samples");
+        Map<String, String> templateExpansionParameters = new HashMap<>();
+        templateExpansionParameters.put("submissionId", subId);
+        templateExpansionParameters.put("templateTargetType", "samples");
 
         Link link = repositoryEntityLinks
-                .linkToSearchResource(Sheet.class,"by-submission-and-target-type")
+                .linkToSearchResource(Sheet.class, "by-submission-and-target-type")
                 .expand(templateExpansionParameters)
                 .withRel("samplesSheets");
 
@@ -78,17 +74,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                             methodOn(SheetsController.class)
                                     .uploadCsv(
                                             subId,
-                                            "samples",
-                                            "sheets",
                                             null,//template name is required, must select one and use as param
-                                            null,
-                                            null,
-                                            null,
                                             null
 
 
                                     )
-                    ).withRel("samples:sheetUpload");
+                    ).withRel("sheetUpload");
             resource.add(link);
         } catch (IOException e) {
             //method is not actually invoked, so the exception can't occur
