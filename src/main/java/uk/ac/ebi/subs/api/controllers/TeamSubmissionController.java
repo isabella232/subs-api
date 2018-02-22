@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -27,7 +28,7 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 
 import java.net.URI;
 
-@RestController
+
 /**
  * This controller accepts new Submissions for a team.
  * Unlike the SubmissionContentsController, it can't be implemented using Spring Data Rest
@@ -35,6 +36,7 @@ import java.net.URI;
  * exported through SDR, which isn't possible for teams.
  * We have therefore reimplemented some functionality from SDR.
  */
+@RestController
 public class TeamSubmissionController {
 
     private SubmissionRepository submissionRepository;

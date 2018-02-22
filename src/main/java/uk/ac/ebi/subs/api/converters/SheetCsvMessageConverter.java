@@ -32,8 +32,8 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
     public static final MediaType CSV_UTF8_MEDIA_TYPE = new MediaType("text", "csv", Charset.forName("utf-8"));
     public static final MediaType CSV_MEDIA_TYPE = new MediaType("text", "csv");
 
-    public SheetCsvMessageConverter(){
-        super(CSV_MEDIA_TYPE,CSV_UTF8_MEDIA_TYPE);
+    public SheetCsvMessageConverter() {
+        super(CSV_MEDIA_TYPE, CSV_UTF8_MEDIA_TYPE);
     }
 
     @Override
@@ -52,6 +52,10 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
         Writer out = new BufferedWriter(new OutputStreamWriter(outputStream));
         CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL);
 
+        printer.printRecord(
+                sheet.getHeaderRow().getCells()
+        );
+
         for (Row row : sheet.getRows()) {
             printer.printRecord(row.getCells());
         }
@@ -65,7 +69,7 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
 
     }
 
-    public Sheet readStream(InputStream inputStream) throws IOException{
+    public Sheet readStream(InputStream inputStream) throws IOException {
         Sheet sheet = new Sheet();
 
         Reader in = new InputStreamReader(inputStream);

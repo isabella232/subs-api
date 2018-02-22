@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -24,7 +23,6 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.SubmittablesBatch;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
@@ -33,7 +31,6 @@ import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.SubmittablesBatchRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
@@ -43,8 +40,6 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -81,7 +76,7 @@ public class SpreadsheetDocumentation {
     private TemplateRepository templateRepository;
 
     @Autowired
-    private SubmittablesBatchRepository submittablesBatchRepository;
+    private SheetRepository sheetRepository;
 
     @Autowired
     private SubmissionRepository submissionRepository;
@@ -124,7 +119,7 @@ public class SpreadsheetDocumentation {
 
 
     private void clearDatabases() {
-        this.submittablesBatchRepository.deleteAll();
+        this.sheetRepository.deleteAll();
         this.templateRepository.deleteAll();
         this.submissionRepository.deleteAll();
         this.submissionStatusRepository.deleteAll();
@@ -145,8 +140,8 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
-        SubmittablesBatch batch = uploadCsvAsSheet("sheet-csv-upload");
-        Assert.assertEquals("Submitted", batch.getStatus());
+        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload");
+        Assert.assertEquals(SheetStatusEnum.Submitted, sheet.getStatus());
     }
 
     @Test
@@ -155,7 +150,7 @@ public class SpreadsheetDocumentation {
         uploadCsvAsSheet("sheet-csv-upload-rep-2");
     }
 
-    private SubmittablesBatch uploadCsvAsSheet(String snippetName) throws Exception {
+    private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -166,7 +161,7 @@ public class SpreadsheetDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/batchSubmittables?templateName={templateName}",
+                post("/api/submissions/{submissionId}/spreadsheet?templateName={templateName}",
                         submission.getId(),
                         template.getName())
                         .contentType("text/csv")
@@ -180,7 +175,7 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("submittablesBatch").description("Link to batch of documents created from the spreadsheet"),
+                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
                                         linkWithRel("submission").description("Link to the submission this upload is associated with"),
                                         linkWithRel("template").description("Link to the template used to process this data")
                                 ),
@@ -188,9 +183,10 @@ public class SpreadsheetDocumentation {
                                         linksResponseField(),
                                         fieldWithPath("status").description("Current status of the batch of documents"),
                                         fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("documents").description("The documents generated from the spreadsheet"),
-                                        fieldWithPath("documentCount").description("Number of documents in this batch"),
-                                        fieldWithPath("processedDocumentCount").description("Number of documetns in this batch that have been loaded"),
+                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        fieldWithPath("totalRowCount").description("Number of documents in this batch"),
+                                        fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -199,7 +195,7 @@ public class SpreadsheetDocumentation {
                         )
                 );
 
-        List<SubmittablesBatch> batches = submittablesBatchRepository.findAll();
+        List<Sheet> batches = sheetRepository.findAll();
         return batches.get(0);
     }
 

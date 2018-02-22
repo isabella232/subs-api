@@ -22,8 +22,6 @@ import uk.ac.ebi.subs.api.validators.SubmissionDeleteValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionStatusValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionValidator;
 import uk.ac.ebi.subs.api.validators.SubmittableDeleteValidator;
-import uk.ac.ebi.subs.api.validators.SubmittablesBatchValidator;
-import uk.ac.ebi.subs.repository.model.SubmittablesBatch;
 
 import java.util.stream.Stream;
 
@@ -77,7 +75,7 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
     @NonNull
     private SubmissionStatusValidator submissionStatusValidator;
     @NonNull
-    private SubmittablesBatchValidator submittablesBatchValidator;
+    private SheetValidator sheetValidator;
 
 
     @Override
@@ -98,7 +96,7 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
 
                 submissionValidator,
 
-                submittablesBatchValidator
+                sheetValidator
 
         );
 
