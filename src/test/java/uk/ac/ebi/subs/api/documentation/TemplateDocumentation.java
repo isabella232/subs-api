@@ -70,6 +70,8 @@ public class TemplateDocumentation {
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
+    private Template template;
+
     @Before
     public void setUp() {
         clearDatabases();
@@ -78,7 +80,7 @@ public class TemplateDocumentation {
         this.objectMapper = DocumentationHelper.mapper();
 
 
-        Template template = Template.builder().name("test-template").targetType("samples").build();
+        this.template = Template.builder().name("test-template").targetType("samples").build();
         template
                 .add(
                         "alias",
@@ -91,7 +93,9 @@ public class TemplateDocumentation {
                 .add(
                         "taxon",
                         FieldCapture.builder().fieldName("taxon").build()
-                );
+                )
+                .addTag("tag1")
+                .addTag("tag2");
 
         template.setDefaultCapture(
                 AttributeCapture.builder().build()
@@ -135,7 +139,6 @@ public class TemplateDocumentation {
                         )
                 );
     }
-
     @Test
     public void templateSearchResources() throws Exception {
         this.mockMvc.perform(
@@ -150,7 +153,8 @@ public class TemplateDocumentation {
                                         halLinks(),
                                         selfRelLink(),
                                         linkWithRel("by-target-type").description("Search for templates with a specific target type"),
-                                        linkWithRel("by-name").description("Find a template by its name")
+                                        linkWithRel("by-name").description("Find a template by its name"),
+                                        linkWithRel("by-target-type-and-tags").description("Search for templates matching a target type and a set of tags")
                                 ),
                                 responseFields(
                                         linksResponseField()
@@ -183,6 +187,7 @@ public class TemplateDocumentation {
                                         fieldWithPath("targetType").description("The type of item to be created from spreadsheets based on this template"),
                                         fieldWithPath("columnCaptures").description("Column names for the spreadsheet, and the definition of how to map values to JSON documents"),
                                         fieldWithPath("defaultCapture").description("Handler for any columns in the spreadsheet that aren't expected based on the template"),
+                                        fieldWithPath("tags").description("Text tags to help users search for templates"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -214,6 +219,36 @@ public class TemplateDocumentation {
                                 )
                         )
                 );
+    }
 
+    @Test
+    public void templateByTags() throws Exception {
+
+        String[] templateTags = this.template.getTags().toArray(new String[]{});
+
+        this.mockMvc.perform(
+                get("/api/templates/search/findByTargetTypeAndTagsAllMatch?targetType={type}&tags={tagOne}&tags={tagTwo}",
+                        this.template.getTargetType(),
+                        templateTags[0],
+                        templateTags[1]
+                )
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("templates-by-tags-and-type",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameters")
+                                )
+
+
+                        )
+                );
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -24,6 +23,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.sheets.Row;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
@@ -41,8 +41,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -153,18 +152,71 @@ public class SpreadsheetDocumentation {
         uploadCsvAsSheet("sheet-csv-upload-rep-2");
     }
 
+    @Test
+    public void fetchSheet() throws Exception {
+        Sheet sheet = new Sheet();
+        sheet.setStatus(SheetStatusEnum.Submitted);
+        sheet.setTemplate(template);
+        sheet.setSubmission(submission);
+        sheet.setTeam(submission.getTeam());
+        sheet.setHeaderRow(new Row(headerCells));
+        sheet.addRow(row1Cells);
+        sheet.addRow(row2Cells);
+
+        sheetRepository.insert(sheet);
+
+        this.mockMvc.perform(
+                get("/api/sheets/{id}",
+                        sheet.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("fetch-sheet",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink(),
+                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with"),
+                                        linkWithRel("template").description("Link to the template used to process this data")
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.submission").description("The submission this sheet belongs to"),
+                                        fieldWithPath("status").description("Current status of the batch of documents"),
+                                        fieldWithPath("team").description("The team that owns this upload"),
+                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        fieldWithPath("totalRowCount").description("Number of documents in this batch"),
+                                        fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
+                                        fieldWithPath("createdDate").ignored(),
+                                        fieldWithPath("lastModifiedDate").ignored(),
+                                        fieldWithPath("createdBy").ignored(),
+                                        fieldWithPath("lastModifiedBy").ignored()
+                                )
+                        )
+                );
+
+
+    }
+
+    private final String[] headerCells = new String[]{"alias", "taxon id", "taxon", "height", "units"};
+    private final String[] row1Cells = new String[]{"s1", "9606", "Homo sapiens", "1.7", "meters"};
+    private final String[] row2Cells = new String[]{"s2", "9606", "Homo sapiens", "1.7", "meters"};
+
     private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
-                String.join(comma, "alias", "taxon id", "taxon", "height", "units"), //header
-                String.join(comma, "s1", "9606", "Homo sapiens", "1.7", "meters"),
-                String.join(comma, "s2", "9606", "Homo sapiens", "1.7", "meters")
+                String.join(comma, headerCells), //header
+                String.join(comma, row1Cells),
+                String.join(comma, row2Cells)
         );
 
 
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/contents/samples/sheets?templateName={templateName}",
+                post("/api/submissions/{submissionId}/spreadsheet?templateName={templateName}",
                         submission.getId(),
                         template.getName())
                         .contentType("text/csv")
@@ -178,19 +230,18 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to this uploaded spreadsheet"),
-                                        linkWithRel("submission").description("Link to the submission this upload is associated with")
+                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with"),
+                                        linkWithRel("template").description("Link to the template used to process this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("headerRowIndex").description("Index of the row thought to contain the column headers"),
-                                        fieldWithPath("status").description("Current status of the sheet"),
-                                        fieldWithPath("template").description("The spreadsheet template this upload is based on"),
+                                        fieldWithPath("status").description("Current status of the batch of documents"),
                                         fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("rows").description("The spreadsheet content"),
-                                        fieldWithPath("mappings").description("The column mappings determined for this spreadsheet"),
-                                        fieldWithPath("firstRowsLimit").description("The number of rows to display when summarising this content"),
-                                        fieldWithPath("_embedded.submission").description("Submission this spreadsheet was uploaded to"),
+                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        fieldWithPath("totalRowCount").description("Number of documents in this batch"),
+                                        fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -199,42 +250,8 @@ public class SpreadsheetDocumentation {
                         )
                 );
 
-        List<Sheet> sheets = sheetRepository.findAll();
-        return sheets.get(0);
+        List<Sheet> batches = sheetRepository.findAll();
+        return batches.get(0);
     }
 
-
-    @Test
-    public void patchSheetContents() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-patch-contents");
-
-        this.mockMvc.perform(
-                patch("/api/sheets/{sheetId}", sheet.getId())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-                        .content("{\"headerRowIndex\": 1}")
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("sheet-patch-content",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void deleteSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload-delete-contents");
-
-        this.mockMvc.perform(
-                delete("/api/sheets/{sheetId}", sheet.getId())
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isNoContent())
-                .andDo(
-                        document("sheet-delete",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
 }

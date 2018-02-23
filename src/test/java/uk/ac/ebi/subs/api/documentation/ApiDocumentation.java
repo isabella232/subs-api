@@ -329,7 +329,7 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
@@ -813,7 +813,7 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
