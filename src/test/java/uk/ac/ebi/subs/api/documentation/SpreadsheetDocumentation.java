@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.sheets.Row;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
@@ -40,6 +41,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -150,13 +152,66 @@ public class SpreadsheetDocumentation {
         uploadCsvAsSheet("sheet-csv-upload-rep-2");
     }
 
+    @Test
+    public void fetchSheet() throws Exception {
+        Sheet sheet = new Sheet();
+        sheet.setStatus(SheetStatusEnum.Submitted);
+        sheet.setTemplate(template);
+        sheet.setSubmission(submission);
+        sheet.setTeam(submission.getTeam());
+        sheet.setHeaderRow(new Row(headerCells));
+        sheet.addRow(row1Cells);
+        sheet.addRow(row2Cells);
+
+        sheetRepository.insert(sheet);
+
+        this.mockMvc.perform(
+                get("/api/sheets/{id}",
+                        sheet.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("fetch-sheet",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink(),
+                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("submission").description("Link to the submission this upload is associated with"),
+                                        linkWithRel("template").description("Link to the template used to process this data")
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.submission").description("The submission this sheet belongs to"),
+                                        fieldWithPath("status").description("Current status of the batch of documents"),
+                                        fieldWithPath("team").description("The team that owns this upload"),
+                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        fieldWithPath("totalRowCount").description("Number of documents in this batch"),
+                                        fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
+                                        fieldWithPath("createdDate").ignored(),
+                                        fieldWithPath("lastModifiedDate").ignored(),
+                                        fieldWithPath("createdBy").ignored(),
+                                        fieldWithPath("lastModifiedBy").ignored()
+                                )
+                        )
+                );
+
+
+    }
+
+    private final String[] headerCells = new String[]{"alias", "taxon id", "taxon", "height", "units"};
+    private final String[] row1Cells = new String[]{"s1", "9606", "Homo sapiens", "1.7", "meters"};
+    private final String[] row2Cells = new String[]{"s2", "9606", "Homo sapiens", "1.7", "meters"};
+
     private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
-                String.join(comma, "alias", "taxon id", "taxon", "height", "units"), //header
-                String.join(comma, "s1", "9606", "Homo sapiens", "1.7", "meters"),
-                String.join(comma, "s2", "9606", "Homo sapiens", "1.7", "meters")
+                String.join(comma, headerCells), //header
+                String.join(comma, row1Cells),
+                String.join(comma, row2Cells)
         );
 
 

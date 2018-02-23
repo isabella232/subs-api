@@ -45,6 +45,16 @@ include::{snippets}/test-template-by-type/curl-request.adoc[]
 
 include::{snippets}/test-template-by-type/http-response.adoc[]
 
+=== Find templates by type and tags
+
+==== Request
+
+include::{snippets}/templates-by-tags-and-type/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/templates-by-tags-and-type/http-response.adoc[]
+
 
 == Spreadsheet upload
 
@@ -55,12 +65,14 @@ This is currently available for samples.
 .Steps to upload a spreadsheet
 . Select a template
 . Download template file
-. Open template in spreadsheet software (e.g. LibreOffice or Excel)
+. Open template in spreadsheet software (e.g. Excel)
+. Fill in spreadsheet values
 . Save spreadsheet in `.csv` format
-. Select the same template, upload to the API. This will give you a sheet document
-. Review results
-.. If happy with the results, change the sheet status to Submitted.
-.. If you are not happy with the results, delete the uploaded sheet entry, modify your spreadsheet and re-upload it
+. Select the same template, upload to the API. This will give you a sheet resource
+. The sheet will be parsed by the system and loaded into the database (e.g. as sample records)
+. Progress and errors will be recorded in the sheet resource
+. Sheets will be cleaned up within a few days of them being completed.
+
 
 === Uploading a CSV file
 
@@ -90,22 +102,17 @@ include::{snippets}/sheet-csv-upload/http-response.adoc[]
 
 include::{snippets}/sheet-csv-upload/links.adoc[]
 
-=== Changing the status of an uploaded sheet
+
+=== Fetching a sheet resource
 
 ==== Request
 
-include::{snippets}/sheet-patch-status/curl-request.adoc[]
+include::{snippets}/sheet-csv-upload/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/sheet-patch-status/http-response.adoc[]
+include::{snippets}/sheet-csv-upload/http-response.adoc[]
 
-=== Deleting a sheet
+==== Links
 
-==== Request
-
-include::{snippets}/sheet-delete/curl-request.adoc[]
-
-==== Response
-
-include::{snippets}/sheet-delete/http-response.adoc[]
+include::{snippets}/sheet-csv-upload/links.adoc[]
