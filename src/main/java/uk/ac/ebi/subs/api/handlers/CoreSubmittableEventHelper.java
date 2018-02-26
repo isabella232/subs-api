@@ -6,6 +6,7 @@ import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.api.services.ChainedValidationService;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
@@ -14,13 +15,15 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 @RepositoryEventHandler
 public class CoreSubmittableEventHelper {
 
-    public CoreSubmittableEventHelper(SubmittableHelperService submittableHelperService, SubmittableValidationDispatcher submittableValidationDispatcher) {
-        this.submittableHelperService = submittableHelperService;
-        this.submittableValidationDispatcher = submittableValidationDispatcher;
-    }
-
     private SubmittableHelperService submittableHelperService;
     private SubmittableValidationDispatcher submittableValidationDispatcher;
+    private ChainedValidationService chainedValidationService;
+
+    public CoreSubmittableEventHelper(SubmittableHelperService submittableHelperService, SubmittableValidationDispatcher submittableValidationDispatcher, ChainedValidationService chainedValidationService) {
+        this.submittableHelperService = submittableHelperService;
+        this.submittableValidationDispatcher = submittableValidationDispatcher;
+        this.chainedValidationService = chainedValidationService;
+    }
 
     /**
      * Give submittable an ID and set Team from submission.
@@ -36,6 +39,7 @@ public class CoreSubmittableEventHelper {
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
+        chainedValidationService.triggerChainedValidation(storedSubmittable.getSubmission().getId(), storedSubmittable.getId());
     }
 
     @HandleBeforeSave
