@@ -89,10 +89,6 @@ s2,9606,Homo sapiens,1.7,meters
 include::{snippets}/sheet-csv-upload/curl-request.adoc[]
 
 NOTE: If using curl, you can use the --data-binary parameter to pass file contents more efficiently:
-[source,bash]
-----
-$ curl 'https://submission.ebi.ac.uk/api/submissions/544ce6a6-0535-4840-9d58-43bf694292e1/contents/samples/sheets?templateName=default-sample-template' -i -X POST -H 'Content-Type: text/csv' -H 'Accept: application/hal+json' --data-binary "@my-samples.csv"
-----
 
 ==== Response
 
