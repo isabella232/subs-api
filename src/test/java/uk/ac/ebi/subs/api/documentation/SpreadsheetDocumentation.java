@@ -201,6 +201,34 @@ public class SpreadsheetDocumentation {
 
     }
 
+    @Test
+    public void uploadEmptyCsvExpectValidationError() throws Exception {
+        this.mockMvc.perform(
+                post("/api/submissions/{submissionId}/spreadsheet?templateName={templateName}",
+                        submission.getId(),
+                        template.getName())
+                        .contentType("text/csv")
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .content("")
+        ).andExpect(status().isBadRequest())
+                .andDo(
+                        document("sheet-upload-error",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks()
+                                ),
+                                responseFields(
+                                        fieldWithPath("type").ignored(),
+                                        fieldWithPath("title").ignored(),
+                                        fieldWithPath("status").ignored(),
+                                        fieldWithPath("instance").ignored(),
+                                        fieldWithPath("errors").ignored()
+                                )
+                        )
+                );
+    }
+
     private final String[] headerCells = new String[]{"alias", "taxon id", "taxon", "height", "units"};
     private final String[] row1Cells = new String[]{"s1", "9606", "Homo sapiens", "1.7", "meters"};
     private final String[] row2Cells = new String[]{"s2", "9606", "Homo sapiens", "1.7", "meters"};

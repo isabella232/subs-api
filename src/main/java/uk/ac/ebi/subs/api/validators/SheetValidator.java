@@ -44,8 +44,11 @@ public class SheetValidator implements Validator {
             if (batch.getTemplate() == null){
                 SubsApiErrors.missing_field.addError(errors,"template");
             }
-            if (batch.getRows() == null){
+            if (batch.getRows() == null || batch.getRows().isEmpty()){
                 SubsApiErrors.missing_field.addError(errors,"rows");
+            }
+            if (batch.getHeaderRow() == null || batch.getHeaderRow().getCells().isEmpty()){
+                SubsApiErrors.missing_field.addError(errors,"headerRow");
             }
         }
         else {
