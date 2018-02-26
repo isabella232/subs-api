@@ -19,14 +19,14 @@ public class ChainedValidationService {
         this.submittableValidationDispatcher = submittableValidationDispatcher;
     }
 
-    public void triggerChainedValidation(String submissionId, String submittableId) {
-        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = findSubmittablesInSubmission(submissionId);
+    public void triggerChainedValidation(StoredSubmittable storedSubmittable) {
+        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = findSubmittablesInSubmission(storedSubmittable.getSubmission().getId());
 
-        // TODO - Use submittableId to filter out submittable that triggered validation
+        // TODO - Use submittableId to filter out submittable that triggered validation on creation
 
         submittablesInSubmission.entrySet().forEach(es -> {
-            for (StoredSubmittable storedSubmittable : es.getValue()) {
-                submittableValidationDispatcher.validateUpdate(storedSubmittable);
+            for (StoredSubmittable submittable : es.getValue()) {
+                submittableValidationDispatcher.validateUpdate(submittable);
             }
         });
     }

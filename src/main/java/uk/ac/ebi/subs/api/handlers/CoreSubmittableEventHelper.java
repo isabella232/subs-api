@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.handlers;
 
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
@@ -39,7 +40,7 @@ public class CoreSubmittableEventHelper {
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
-        chainedValidationService.triggerChainedValidation(storedSubmittable.getSubmission().getId(), storedSubmittable.getId());
+        chainedValidationService.triggerChainedValidation(storedSubmittable);
     }
 
     @HandleBeforeSave
@@ -49,6 +50,12 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
-        submittableValidationDispatcher.validateUpdate(storedSubmittable);
+        //submittableValidationDispatcher.validateUpdate(storedSubmittable);
+        chainedValidationService.triggerChainedValidation(storedSubmittable);
+    }
+
+    @HandleAfterDelete
+    public void validateOnDelete(StoredSubmittable storedSubmittable) {
+        chainedValidationService.triggerChainedValidation(storedSubmittable);
     }
 }
