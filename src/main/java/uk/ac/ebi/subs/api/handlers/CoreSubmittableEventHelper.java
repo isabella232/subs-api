@@ -50,7 +50,7 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
-        //submittableValidationDispatcher.validateUpdate(storedSubmittable);
+        submittableValidationDispatcher.validateUpdate(storedSubmittable);
         chainedValidationService.triggerChainedValidation(storedSubmittable);
     }
 
