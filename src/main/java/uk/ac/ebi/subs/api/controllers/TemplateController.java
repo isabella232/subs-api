@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.services.TemplateToSheetConverter;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.templates.Template;
@@ -15,7 +16,7 @@ import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import java.io.IOException;
 
 @Data
-@Controller
+@RestController
 public class TemplateController {
 
     @NonNull

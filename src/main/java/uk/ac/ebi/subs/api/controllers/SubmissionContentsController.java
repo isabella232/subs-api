@@ -18,7 +18,7 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
-@RepositoryRestController
+@RepositoryRestController //although we normally use @RestController, this class needs access to Repository REST objects
 public class SubmissionContentsController {
 
     private SubmissionRepository submissionRepository;
