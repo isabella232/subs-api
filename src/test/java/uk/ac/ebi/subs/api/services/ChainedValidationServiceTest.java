@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.ac.ebi.subs.api.Helpers.generateTestTeam;
 
@@ -74,6 +74,7 @@ public class ChainedValidationServiceTest {
         Assert.assertEquals(3, submittablesInSubmission.get("Sample").size());
         Assert.assertEquals(0, submittablesInSubmission.get("Assay").size());
         Assert.assertEquals(1, submittablesInSubmission.get("Study").size());
+        Assert.assertEquals(0, submittablesInSubmission.get("AssayData").size());
     }
 
     @Test
@@ -85,12 +86,13 @@ public class ChainedValidationServiceTest {
 
         Assert.assertEquals(3, submittablesInSubmission.get("Sample").size());
         Assert.assertEquals(0, submittablesInSubmission.get("Assay").size());
+        Assert.assertEquals(0, submittablesInSubmission.get("AssayData").size());
     }
 
     @Test
     public void triggerChainedValidationTest() {
         service.triggerChainedValidation(study);
-        verify(submittableValidationDispatcher, atLeast(3)).validateUpdate(any(Sample.class));
+        verify(submittableValidationDispatcher, times(3)).validateUpdate(any(Sample.class));
     }
 
     private Submission createSubmission() {
