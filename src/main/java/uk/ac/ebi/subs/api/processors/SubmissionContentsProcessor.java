@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.api.controllers.SheetsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.Project;
+import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
@@ -39,6 +40,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         String subId = resource.getContent().getSubmission().getId();
 
         addSubmittablesInSubmission(resource, subId);
+        addFilesLink(resource, subId);
         addProjectLink(resource, subId);
         addSpreadsheetLinks(resource, subId);
 
@@ -52,18 +54,13 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         return resource;
     }
 
-    private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String subId) {
+    private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String submissionId) {
 
-        Map<String, String> templateExpansionParameters = new HashMap<>();
-        templateExpansionParameters.put("submissionId", subId);
+        Map<String, String> templateExpansionParameters = paramWithSubmissionID(submissionId);
         templateExpansionParameters.put("templateTargetType", "samples");
 
-        Link link = repositoryEntityLinks
-                .linkToSearchResource(Sheet.class, "by-submission-and-target-type")
-                .expand(templateExpansionParameters)
-                .withRel("samplesSheets");
-
-        resource.add(link);
+        resource.add(createResourceLink(Sheet.class, "by-submission-and-target-type",
+                templateExpansionParameters, "samplesSheets"));
     }
 
     private void addSpreadsheetUploadLinks(Resource<SubmissionContents> resource, String subId) {
@@ -76,8 +73,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                                             subId,
                                             null,//template name is required, must select one and use as param
                                             null
-
-
                                     )
                     ).withRel("sheetUpload");
             resource.add(link);
@@ -99,17 +94,29 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     }
 
-    private void addProjectLink(Resource<SubmissionContents> resource, String subId) {
-        if (projectRepository.findOneBySubmissionId(subId) != null) {
-            Map<String, String> paramMap = new HashMap<>();
-            paramMap.put("submissionId", subId);
-
-            Link fetchLink = repositoryEntityLinks
-                    .linkToSearchResource(Project.class, "project-by-submission")
-                    .expand(paramMap)
-                    .withRel("project");
-            resource.add(fetchLink);
+    private void addProjectLink(Resource<SubmissionContents> resource, String submissionId) {
+        if (projectRepository.findOneBySubmissionId(submissionId) != null) {
+            resource.add(createResourceLink(Project.class, "project-by-submission",
+                    paramWithSubmissionID(submissionId), "project"));
         }
     }
 
+    private void addFilesLink(Resource<SubmissionContents> resource, String submissionId) {
+        resource.add(createResourceLink(File.class, "by-submission",
+                paramWithSubmissionID(submissionId), "files"));
+    }
+
+    private Map<String, String> paramWithSubmissionID(String submissionId) {
+        Map<String, String> params = new HashMap<>();
+        params.put("submissionId", submissionId);
+
+        return params;
+    }
+
+    private Link createResourceLink(Class clazzResource, String rel, Map<String, String> params, String withRel) {
+        return repositoryEntityLinks
+                .linkToSearchResource(clazzResource, rel)
+                .expand(params)
+                .withRel(withRel);
+    }
 }
