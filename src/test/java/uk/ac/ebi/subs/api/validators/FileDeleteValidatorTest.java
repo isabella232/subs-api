@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.api.CoreValidatorTest;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.utils.FileHelper;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
@@ -24,8 +25,6 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
-
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -52,11 +51,6 @@ public class FileDeleteValidatorTest {
     private Team team = Team.build(CoreValidatorTest.TEST_TEAM_1);
     private Submitter submitter = Submitter.build("test@test.ac.uk");
 
-    private static final String TUS_ID = UUID.randomUUID().toString();
-    private static final String SUBMISSION_ID = UUID.randomUUID().toString();
-    private static final String FILENAME = "test.cram";
-    private static final long TOTAL_SIZE = 123456L;
-
     private Submission submission;
     private File file;
 
@@ -64,7 +58,7 @@ public class FileDeleteValidatorTest {
     public void setup() {
         submission = submissionHelperService.createSubmission(team,submitter);
 
-        file = createFile(submission.getId());
+        file = FileHelper.createFile(submission.getId());
         fileRepository.save(file);
     }
 
@@ -111,15 +105,4 @@ public class FileDeleteValidatorTest {
         assertEquals(1, errors.getErrorCount());
         assertThat(errors.getGlobalError().getDefaultMessage(), is(equalTo(SubsApiErrors.resource_locked.name())));
     }
-
-    public static File createFile(String submissionId) {
-        File file = new File();
-        file.setGeneratedTusId(TUS_ID);
-        file.setSubmissionId(submissionId);
-        file.setFilename(FILENAME);
-        file.setTotalSize(TOTAL_SIZE);
-
-        return file;
-    }
-
 }
