@@ -39,7 +39,7 @@ public class CoreSubmittableValidationHelper {
     }
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
-        logger.info("validating {}", target);
+        logger.debug("validating {}", target);
         StoredSubmittable storedVersion = null;
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
