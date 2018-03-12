@@ -25,31 +25,25 @@ public class SheetLoaderRabbitBridge {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
     private SheetLoaderService sheetLoaderService;
     private SheetRepository sheetRepository;
-    private RoleLookup roleLookup;
+    private AdminUserService adminUserService;
 
-    public SheetLoaderRabbitBridge(RabbitMessagingTemplate rabbitMessagingTemplate, SheetLoaderService sheetLoaderService, SheetRepository sheetRepository, RoleLookup roleLookup) {
+    public SheetLoaderRabbitBridge(RabbitMessagingTemplate rabbitMessagingTemplate, SheetLoaderService sheetLoaderService, SheetRepository sheetRepository, AdminUserService adminUserService) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.sheetLoaderService = sheetLoaderService;
         this.sheetRepository = sheetRepository;
-        this.roleLookup = roleLookup;
+        this.adminUserService = adminUserService;
     }
 
     @RabbitListener(queues = SheetLoaderQueueConfig.SHEET_SUBMITTED_QUEUE)
     public void onSubmissionLoadSheetContents(Sheet sheet) {
 
-        Domain domain = new Domain();
-        domain.setDomainName(roleLookup.adminRole());
-
-        Authentication auth = new UsernamePasswordAuthenticationToken("subs-processor", "", Arrays.asList(domain) );
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        adminUserService.injectAdminUserIntoSecurityContext();
 
         logger.info("sheet ready for loading {}", sheet.getId());
 
         sheetLoaderService.loadSheet(sheet);
 
         logger.info("sheet mapped", sheet.getId());
-
-
     }
 
 

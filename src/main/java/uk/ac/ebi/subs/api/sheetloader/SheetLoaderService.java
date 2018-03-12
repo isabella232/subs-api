@@ -1,22 +1,18 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
-import org.springframework.data.rest.core.event.AfterCreateEvent;
-import org.springframework.data.rest.core.event.AfterSaveEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.validation.ObjectError;
 import uk.ac.ebi.subs.api.services.ChainedValidationService;
-import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
@@ -44,7 +40,7 @@ public class SheetLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetLoaderService.class);
 
-    private Map<String, SubmittableRepository> submittableRepositoryMap;
+    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
     private Map<String, Class<? extends StoredSubmittable>> submittableClassMap;
     private ApplicationEventPublisher publisher;
     private ObjectMapper objectMapper;
@@ -86,19 +82,19 @@ public class SheetLoaderService {
                 Optional.of(template.getDefaultCapture())
         );
 
-        convertAndStore(sheet,columnMappings);
+        convertAndStore(sheet, columnMappings);
 
 
     }
 
-    protected List<Capture> mapColumns(Row headerRow, Map<String,Capture> columnCaptures, Optional<Capture> optionalDefaultCapture)  {
-        logger.debug("Mapping by headers {} to captures {}, with default {}",headerRow,columnCaptures,optionalDefaultCapture);
+    protected List<Capture> mapColumns(Row headerRow, Map<String, Capture> columnCaptures, Optional<Capture> optionalDefaultCapture) {
+        logger.debug("Mapping by headers {} to captures {}, with default {}", headerRow, columnCaptures, optionalDefaultCapture);
 
         columnCaptures.entrySet().stream().forEach(entry ->
                 entry.getValue().setDisplayName(entry.getKey())
         );
 
-        List<Capture> capturePositions = new ArrayList<>(Collections.nCopies(headerRow.getCells().size(),null));
+        List<Capture> capturePositions = new ArrayList<>(Collections.nCopies(headerRow.getCells().size(), null));
 
         List<String> headerRowCells = headerRow.getCells();
         int position = 0;
@@ -125,7 +121,7 @@ public class SheetLoaderService {
                 capture.setDisplayName(null)
         );
 
-       return capturePositions;
+        return capturePositions;
     }
 
     protected JSONObject rowToDocument(Row row, List<Capture> mappings, List<String> headers) {
@@ -154,7 +150,7 @@ public class SheetLoaderService {
             row.getErrors().add("Please provide an alias");
         }
 
-        if (row.getErrors().isEmpty()){
+        if (row.getErrors().isEmpty()) {
             row.setProcessed(true);
         }
 
@@ -167,7 +163,7 @@ public class SheetLoaderService {
      * @param json
      * @return
      */
-    protected static boolean hasStringAlias(JSONObject json) {
+    private static boolean hasStringAlias(JSONObject json) {
         if (!json.has("alias")) return false;
 
         Object alias = json.get("alias");
@@ -183,14 +179,14 @@ public class SheetLoaderService {
     }
 
     private void convertAndStore(Sheet sheet, List<Capture> columnMappings) {
-        logger.debug("starting convert and store for sheet {}",sheet);
+        logger.debug("starting convert and store for sheet {}", sheet);
         String targetTypeName = sheet.getTemplate().getTargetType().toLowerCase();
         Class<? extends StoredSubmittable> targetTypeClass = this.submittableClassMap.get(targetTypeName);
-        SubmittableRepository repository = this.submittableRepositoryMap.get(targetTypeName);
-        
+
+
         Assert.notNull(targetTypeClass);
-        Assert.notNull(repository);
-        
+
+        List<String> headerRow = sheet.getHeaderRow().getCells();
         Submission submission = sheet.getSubmission();
 
         List<Row> rowsToLoad = sheet.getRows().stream()
@@ -200,41 +196,8 @@ public class SheetLoaderService {
         int numberProcessed = 0;
 
         for (Row row : rowsToLoad) {
-            JSONObject json = rowToDocument(row,columnMappings,sheet.getHeaderRow().getCells());
 
-            logger.debug("mapping row to doc {} {}", row, json);
-
-            StoredSubmittable submittable = null;
-
-            if (row.getErrors().isEmpty()){
-                try {
-                    submittable = objectMapper.readValue(json.toString(),targetTypeClass);
-                    submittable.setSubmission(submission);
-                } catch (IOException e) {
-                    logger.error("IO exception while converting json to submittable class {}. JSON: {} ",targetTypeClass.getName(),json);
-                    row.getErrors().add("Unrecoverable error while converting row");
-                }
-
-                logger.debug("mapped doc to submittable {} {}", json, submittable);
-            }
-
-            if (row.getErrors().isEmpty()){
-                StoredSubmittable storedVersion = repository.findOneBySubmissionIdAndAlias(submission.getId(),submittable.getAlias());
-
-                logger.debug("alias: {} storedVersion: {}",submittable.getAlias(),storedVersion);
-
-                try {
-                    if (storedVersion == null) {
-                        createNewSubmittable(submittable, repository, row);
-                    } else {
-                        updateExistingSubmittable(submittable, repository, row, storedVersion);
-                    }
-                }
-                catch (RepositoryConstraintViolationException exception){
-                    logger.error("whoops",exception);
-                    row.getErrors().add("err");
-                }
-            }
+            convertAndStoreRow(columnMappings, targetTypeClass, submission, row, headerRow);
 
             row.setProcessed(true);
             numberProcessed++;
@@ -244,61 +207,121 @@ public class SheetLoaderService {
             }
 
         }
-        logger.debug("triggering validation sheet {}",sheet);
+        logger.debug("triggering validation sheet {}", sheet);
         chainedValidationService.triggerChainedValidation(submission);
 
         sheet.setStatus(SheetStatusEnum.Completed);
         sheet.setLastModifiedDate(new Date());
         sheetRepository.save(sheet);
-        logger.debug("completed mapping of sheet {}",sheet);
+        logger.debug("completed mapping of sheet {}", sheet);
 
     }
 
+    protected void convertAndStoreRow(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow) {
+
+        StoredSubmittable submittable = rowToSubmittable(columnMappings, targetTypeClass, submission, row, headerRow);
+
+        storeSubmittable(submission, row, submittable);
+    }
+
+    protected void storeSubmittable(Submission submission, Row row, StoredSubmittable submittable) {
+        SubmittableRepository repository = this.submittableRepositoryMap.get(submittable.getClass());
+
+        if (row.getErrors().isEmpty()) {
+            StoredSubmittable storedVersion = repository.findOneBySubmissionIdAndAlias(submission.getId(), submittable.getAlias());
+
+            logger.debug("alias: {} storedVersion: {}", submittable.getAlias(), storedVersion);
+
+            try {
+                if (storedVersion == null) {
+                    createNewSubmittable(submittable, repository, row);
+                } else {
+                    updateExistingSubmittable(submittable, repository, row, storedVersion);
+                }
+            } catch (RepositoryConstraintViolationException exception) {
+                for (ObjectError objectError : exception.getErrors().getAllErrors()) {
+                    row.getErrors().add(objectError.getDefaultMessage());
+                }
+            }
+        }
+    }
+
+    private StoredSubmittable rowToSubmittable(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow) {
+        JSONObject json = rowToDocument(row, columnMappings, headerRow);
+
+        logger.debug("mapping row to doc {} {}", row, json);
+
+        StoredSubmittable submittable = null;
+
+        if (row.getErrors().isEmpty()) {
+            try {
+                submittable = objectMapper.readValue(json.toString(), targetTypeClass);
+                submittable.setSubmission(submission);
+            } catch (IOException e) {
+                logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);
+                row.getErrors().add("Unrecoverable error while converting row");
+            }
+
+            logger.debug("mapped doc to submittable {} {}", json, submittable);
+        }
+        return submittable;
+    }
+
     private void updateExistingSubmittable(StoredSubmittable submittable, SubmittableRepository repository, Row row, StoredSubmittable storedVersionSubmittable) {
-        submittable.setId( storedVersionSubmittable.getId());
+        submittable.setId(storedVersionSubmittable.getId());
         submittable.setVersion(storedVersionSubmittable.getVersion());
         submittable.setCreatedBy(storedVersionSubmittable.getCreatedBy());
         submittable.setCreatedDate(storedVersionSubmittable.getCreatedDate());
 
-        logger.debug("Updating submittable {}",submittable);
+        logger.debug("Updating submittable {}", submittable);
 
         publisher.publishEvent(new BeforeSaveEvent(submittable));
         Object savedObject = repository.save(submittable);
-        //publisher.publishEvent(new AfterSaveEvent(submittable));-- suspend this to prevent triggering repeated validation of everything in the submission
+        /* The obvious thing to do is publisher.publishEvent(new AfterSaveEvent(savedObject))
+            , but this re-validates the whole submission at present, which gives unacceptable performance
+            , so we run validation for the whole submission at the END of loading
 
-        logger.debug("Updating submittable {}",savedObject);
+         */
+
+        /* Actions here should be also made to SheetLoader Service, but be careful about performance */
+        logger.debug("Updating submittable {}", savedObject);
 
 
     }
 
     private void createNewSubmittable(StoredSubmittable submittable, SubmittableRepository repository, Row row) {
-        logger.debug("Creating submittable {}",submittable);
+        logger.debug("Creating submittable {}", submittable);
 
         publisher.publishEvent(new BeforeCreateEvent(submittable));
         Object savedObject = repository.insert(submittable);
-        //publisher.publishEvent(new AfterCreateEvent(savedObject)); -- suspend this to prevent triggering repeated validation of everything in the submission
+
+        /* The obvious thing to do is publisher.publishEvent(new AfterCreateEvent(savedObject))
+            , but this re-validates the whole submission at present, which gives unacceptable performance
+            , so we run validation for the whole submission at the END of loading
+
+         */
+
+        /* Actions here should be also made to SheetLoader Service, but be careful about performance */
+
         submittableHelperService.processingStatusAndValidationResultSetUp(submittable);
 
-        logger.debug("Created submittable {}",savedObject);
+        logger.debug("Created submittable {}", savedObject);
 
 
     }
 
     private void initSubmittableMaps(Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap, RelProvider relProvider) {
-        Map<String,SubmittableRepository> repositoriesByCollectionName = new HashMap<>();
-        Map<String,Class<? extends StoredSubmittable>> classesByCollectionName = new HashMap<>();
+        Map<String, Class<? extends StoredSubmittable>> classesByCollectionName = new HashMap<>();
 
-        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()){
-            SubmittableRepository<? extends StoredSubmittable> repository = entry.getValue();
+        for (Map.Entry<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> entry : submittableRepositoryMap.entrySet()) {
             Class<? extends StoredSubmittable> submittableClass = entry.getKey();
 
             String collectionName = relProvider.getCollectionResourceRelFor(submittableClass);
 
-            repositoriesByCollectionName.put(collectionName,repository);
-            classesByCollectionName.put(collectionName,submittableClass);
+            classesByCollectionName.put(collectionName, submittableClass);
         }
 
-        this.submittableRepositoryMap = repositoriesByCollectionName;
+        this.submittableRepositoryMap = submittableRepositoryMap;
         this.submittableClassMap = classesByCollectionName;
     }
 }
