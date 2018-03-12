@@ -2,11 +2,13 @@ package uk.ac.ebi.subs.api.services;
 
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Service
 public class ChainedValidationService {
@@ -20,31 +22,24 @@ public class ChainedValidationService {
     }
 
     public void triggerChainedValidation(StoredSubmittable storedSubmittable) {
-        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = findSubmittablesInSubmission(storedSubmittable.getSubmission().getId());
-
-        filterOutTriggerSubmittable(storedSubmittable, submittablesInSubmission);
-
-        submittablesInSubmission.entrySet().forEach(es -> {
-            for (StoredSubmittable submittable : es.getValue()) {
-                submittableValidationDispatcher.validateUpdate(submittable);
-            }
-        });
+        streamSubmittablesInSubmissionExceptTriggerSubmittable(storedSubmittable)
+                .forEach(submittable -> submittableValidationDispatcher.validateUpdate(submittable));
     }
 
-    public Map<String, List<? extends StoredSubmittable>> findSubmittablesInSubmission(String submissionId) {
-        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = new HashMap<>();
-
-        this.submittableRepositoryMap.entrySet().forEach(es ->
-            submittablesInSubmission.put(es.getKey().getSimpleName(), es.getValue().findBySubmissionId(submissionId))
-        );
-
-        return submittablesInSubmission;
+    public void triggerChainedValidation(Submission submission){
+        streamSubmittablesInSubmission(submission.getId())
+                .forEach(submittable -> submittableValidationDispatcher.validateUpdate(submittable));
     }
 
-    public void filterOutTriggerSubmittable(StoredSubmittable storedSubmittable, Map<String, List<? extends StoredSubmittable>> submittablesInSubmission) {
-        submittablesInSubmission.entrySet().forEach(es ->
-            es.getValue().removeIf(ss -> ss.getId().equals(storedSubmittable.getId()))
-        );
+    protected Stream<? extends StoredSubmittable> streamSubmittablesInSubmission(String submissionId) {
+        return submittableRepositoryMap.entrySet().stream()
+                .map(entry -> entry.getValue())
+                .flatMap( submittableRepository -> submittableRepository.streamBySubmissionId(submissionId));
+    }
+
+    protected Stream<? extends StoredSubmittable> streamSubmittablesInSubmissionExceptTriggerSubmittable(StoredSubmittable triggerSubmittable) {
+        return streamSubmittablesInSubmission(triggerSubmittable.getSubmission().getId())
+                .filter(submittable -> !submittable.getId().equals(triggerSubmittable.getId()));
     }
 
 }

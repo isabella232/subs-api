@@ -38,9 +38,11 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
+        /* Actions here should be also made in SheetLoader Service */
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
         chainedValidationService.triggerChainedValidation(storedSubmittable);
+
     }
 
     @HandleBeforeSave
@@ -50,6 +52,7 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
+        /* Actions here should be also made in SheetLoader Service */
         submittableValidationDispatcher.validateUpdate(storedSubmittable);
         chainedValidationService.triggerChainedValidation(storedSubmittable);
     }

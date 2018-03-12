@@ -23,9 +23,11 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
@@ -70,23 +72,41 @@ public class ChainedValidationServiceTest {
 
     @Test
     public void findSubmittablesInSubmissionTest() {
-        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = service.findSubmittablesInSubmission(submission.getId());
+        Stream<? extends StoredSubmittable> submittablesStream = service.streamSubmittablesInSubmission(submission.getId());
+
+        Map<String, List<StoredSubmittable>> submittablesInSubmission = groupSubmittablesByClassName(submittablesStream);
+
         Assert.assertEquals(3, submittablesInSubmission.get("Sample").size());
-        Assert.assertEquals(0, submittablesInSubmission.get("Assay").size());
+        Assert.assertFalse(submittablesInSubmission.containsKey("Assay"));
         Assert.assertEquals(1, submittablesInSubmission.get("Study").size());
-        Assert.assertEquals(0, submittablesInSubmission.get("AssayData").size());
+        Assert.assertFalse(submittablesInSubmission.containsKey("AssayData"));
+    }
+
+    private Map<String, List<StoredSubmittable>> groupSubmittablesByClassName(Stream<? extends StoredSubmittable> submittablesStream) {
+        Map<String, List<StoredSubmittable>> submittablesInSubmission = new HashMap<>();
+
+        submittablesStream.forEach(submittable -> {
+            String key = submittable.getClass().getSimpleName();
+
+            if (!submittablesInSubmission.containsKey(key)) {
+                submittablesInSubmission.put(key, new ArrayList<>());
+            }
+            submittablesInSubmission.get(key).add(submittable);
+        });
+        return submittablesInSubmission;
     }
 
     @Test
     public void filterOutTriggerSubmittableTest() {
-        Map<String, List<? extends StoredSubmittable>> submittablesInSubmission = service.findSubmittablesInSubmission(submission.getId());
+        Stream<? extends StoredSubmittable> submittablesStream = service.streamSubmittablesInSubmissionExceptTriggerSubmittable(study);
 
-        service.filterOutTriggerSubmittable(study, submittablesInSubmission);
-        Assert.assertEquals(0, submittablesInSubmission.get("Study").size());
+        Map<String, List<StoredSubmittable>> submittablesInSubmission = groupSubmittablesByClassName(submittablesStream);
+
+        Assert.assertFalse(submittablesInSubmission.containsKey("Study"));
 
         Assert.assertEquals(3, submittablesInSubmission.get("Sample").size());
-        Assert.assertEquals(0, submittablesInSubmission.get("Assay").size());
-        Assert.assertEquals(0, submittablesInSubmission.get("AssayData").size());
+        Assert.assertFalse(submittablesInSubmission.containsKey("Assay"));
+        Assert.assertFalse(submittablesInSubmission.containsKey("AssayData"));
     }
 
     @Test
