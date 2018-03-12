@@ -76,7 +76,6 @@ public class SheetsController {
             throw new ResourceNotFoundException();
         }
 
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Template template = templateRepository.findOneByName(templateName);
 
         if (template == null) {
