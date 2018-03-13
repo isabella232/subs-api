@@ -28,6 +28,7 @@ public class WithMockAAPUserSecurityContextFactory implements WithSecurityContex
                 annotation.userName(),
                 annotation.email(),
                 annotation.userReference(),
+                annotation.fullName(),
                 domains
         );
 

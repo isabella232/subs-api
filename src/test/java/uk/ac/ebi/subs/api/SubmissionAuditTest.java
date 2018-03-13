@@ -34,6 +34,7 @@ public class SubmissionAuditTest {
     public static final String DEFAULT_USER_REFERENCE = "usr-12345";
     public static final String USI_USER = "usi_user";
     public static final String USI_USER_EMAIL = "usi-user@usi.org";
+    public static final String USER_FULL_NAME = "Test User";
     private MockMvc mockMvc;
 
     @Autowired
@@ -57,17 +58,17 @@ public class SubmissionAuditTest {
     }
 
     @Test
-    @WithMockAAPUser(userName = USI_USER,email = USI_USER_EMAIL,userReference = DEFAULT_USER_REFERENCE, domains = {Helpers.TEAM_NAME})
+    @WithMockAAPUser(userName = USI_USER,email = USI_USER_EMAIL,userReference = DEFAULT_USER_REFERENCE, fullName = USER_FULL_NAME, domains = {Helpers.TEAM_NAME})
     public void postSubmissionAndCheckAAPAuditInfo () throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(submission.getCreatedBy(),DEFAULT_USER_REFERENCE);
+        Assert.assertEquals(DEFAULT_USER_REFERENCE,submission.getCreatedBy());
     }
 
     @Test
     @WithMockUser(username= USI_USER,roles={Helpers.TEAM_NAME})
     public void postSubmissionAndCheckAuditInfo () throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(submission.getCreatedBy(),USI_USER);
+        Assert.assertEquals(USI_USER,submission.getCreatedBy());
     }
 
     private Submission postSubmission() throws Exception {
