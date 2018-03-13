@@ -264,7 +264,7 @@ to access the submissions API.
 == Development servers
 
 We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
-rather than the main server, please use this version of AAP: https://explore.aap.tsi.ebi.ac.uk
+rather than the main server, please use this version of AAP: https://explore.aai.ebi.ac.uk
 
 
 == Wrapping up
