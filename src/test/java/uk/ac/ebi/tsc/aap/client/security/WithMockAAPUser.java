@@ -32,6 +32,13 @@ public @interface WithMockAAPUser {
     String userReference();
 
     /**
+     * The AAP full name
+     * @return
+     */
+    String fullName();
+
+
+    /**
      * The AAP domains / roles
      * @return
      */

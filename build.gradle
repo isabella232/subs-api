@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '1.9.1-SNAPSHOT'
+version '1.9.2-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -61,7 +61,7 @@ dependencies {
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.4.6'
-    compile('uk.ac.ebi.tsc.aap.client:security:0.2.2-SNAPSHOT') {
+    compile('uk.ac.ebi.tsc.aap.client:security:1.0.1-SNAPSHOT') {
         changing = true
     }
 }
