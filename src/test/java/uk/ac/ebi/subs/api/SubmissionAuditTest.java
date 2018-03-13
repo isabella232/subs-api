@@ -61,14 +61,14 @@ public class SubmissionAuditTest {
     @WithMockAAPUser(userName = USI_USER,email = USI_USER_EMAIL,userReference = DEFAULT_USER_REFERENCE, fullName = USER_FULL_NAME, domains = {Helpers.TEAM_NAME})
     public void postSubmissionAndCheckAAPAuditInfo () throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(submission.getCreatedBy(),DEFAULT_USER_REFERENCE);
+        Assert.assertEquals(DEFAULT_USER_REFERENCE,submission.getCreatedBy());
     }
 
     @Test
     @WithMockUser(username= USI_USER,roles={Helpers.TEAM_NAME})
     public void postSubmissionAndCheckAuditInfo () throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(submission.getCreatedBy(),USI_USER);
+        Assert.assertEquals(USI_USER,submission.getCreatedBy());
     }
 
     private Submission postSubmission() throws Exception {
