@@ -7,7 +7,7 @@ usi:
 aap:
   enabled: true
   password: ${aapPassword}
-  url: "https://api.ai.ebi.ac.uk/auth"
+  url: "https://api.aai.ebi.ac.uk/auth"
   username: ${aapUsername}
 jwt:
   certificate: production.der
