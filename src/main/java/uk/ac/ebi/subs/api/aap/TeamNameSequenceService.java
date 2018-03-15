@@ -17,8 +17,8 @@ public class TeamNameSequenceService {
     @NonNull
     private MongoTemplate mongoTemplate;
 
-    @Value("${usi.teamName.prefix:subs.dev-team-")
-    private final String domainPrefix;
+    @Value("${usi.teamName.prefix}")
+    private String domainPrefix;
 
 
     private String sequenceName(){
