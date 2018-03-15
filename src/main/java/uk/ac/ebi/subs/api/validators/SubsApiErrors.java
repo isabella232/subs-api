@@ -13,6 +13,7 @@ import org.springframework.validation.ValidationUtils;
  */
 public enum SubsApiErrors {
 
+    not_a_subs_team("Submissions must be owned by a 'subs.' team"),
     missing_alias("Each entry must have an alias/unique name filled in"),
     missing_field("This required field has not been set"),
     invalid("The formatting of this field is invalid"),

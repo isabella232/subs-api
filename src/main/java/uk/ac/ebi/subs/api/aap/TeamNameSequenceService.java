@@ -20,9 +20,11 @@ public class TeamNameSequenceService {
     @Value("${usi.teamName.prefix}")
     private String domainPrefix;
 
+    @Value("${usi.teamName.nameStart}")
+    private String nameStart;
 
     private String sequenceName(){
-        return domainPrefix;
+        return domainPrefix+nameStart;
     }
 
     private TeamNameSequence nextTeamNameSequence(){

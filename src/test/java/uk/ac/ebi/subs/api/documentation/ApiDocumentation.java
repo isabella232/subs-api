@@ -142,6 +142,7 @@ public class ApiDocumentation {
 
     @Before
     public void setUp() {
+        storeSubmission();
         clearDatabases();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
@@ -1186,64 +1187,6 @@ public class ApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField()
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void team() throws Exception {
-
-        Submission submission = storeSubmission();
-        Team team = submission.getTeam();
-
-        this.mockMvc.perform(
-                get("/api/teams/{teamName}", team.getName())
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("get-team",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        linkWithRel("self").description("This resource"),
-                                        linkWithRel("submissions").description("Collection of submissions within this team"),
-                                        linkWithRel("submissions:create").description("Collection of submissions within this team"),
-                                        linkWithRel("items").description("Items owned by this team")
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("name").description("Name of this team")
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void teams() throws Exception {
-
-        Submission submission = storeSubmission();
-
-        this.mockMvc.perform(
-                get("/api/user/teams")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("get-teams",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        linkWithRel("self").description("This resource list")
-                                ),
-                                responseFields(
-                                        fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                        fieldWithPath("_embedded").description("The list of resources"),
-                                        fieldWithPath("_embedded.teams[].name").description("Name of this team"),
-                                        fieldWithPath("page.size").description("The number of resources in this page"),
-                                        fieldWithPath("page.totalElements").description("The total number of resources"),
-                                        fieldWithPath("page.totalPages").description("The total number of pages"),
-                                        fieldWithPath("page.number").description("The page number")
                                 )
                         )
                 );

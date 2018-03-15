@@ -8,6 +8,8 @@ import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,6 +72,12 @@ public class TeamController {
 
         Resource<Team> resource = new Resource<>(d);
 
+        addSelfLink(d, resource);
+
+        return resource;
+    }
+
+    private void addSelfLink(Team d, Resource<Team> resource) {
         resource.add(
                 linkTo(
                         methodOn(this.getClass()).getTeam(
@@ -77,12 +85,10 @@ public class TeamController {
                         )
                 ).withSelfRel()
         );
-
-        return resource;
     }
 
     @RequestMapping(value = "/user/teams", method = RequestMethod.POST)
-    public Resource<Team> createTeam(@RequestBody TeamDto teamDto) {
+    public ResponseEntity<Resource<Team>> createTeam(@RequestBody TeamDto teamDto) {
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getDetails();
@@ -92,7 +98,13 @@ public class TeamController {
 
         Resource<Team> teamResource = new Resource<>(team);
 
-        return teamResourceProcessor.process(teamResource);
+        addSelfLink(team,teamResource);
+
+
+       return new ResponseEntity<>(
+                teamResourceProcessor.process(teamResource),
+                HttpStatus.CREATED
+        );
     }
 
 

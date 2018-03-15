@@ -6,12 +6,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,24 +22,15 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.api.services.SubmissionEventService;
+import uk.ac.ebi.subs.api.aap.TeamCreationService;
 import uk.ac.ebi.subs.data.component.Team;
-import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
-import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.AssayDataRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
-import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -46,6 +38,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
+
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
@@ -70,11 +64,47 @@ public class TeamDocumentation {
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
+    @MockBean
+    private TeamCreationService teamCreationService;
+
     @Before
     public void setUp() {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+    }
+
+    @Test
+    public void createTeam() throws Exception {
+        String teamDescJson = "{\"description\": \"10,000 Horses project group\"}";
+        Team team = Team.build("subs.team-1234");
+
+        Mockito.when(teamCreationService.createTeam(Mockito.anyObject(),Mockito.anyObject()))
+                .thenReturn(team);
+
+        this.mockMvc.perform(
+                post("/api/user/teams", Helpers.TEAM_NAME)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .content(teamDescJson)
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-team",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("submissions").description("Collection of submissions within this team"),
+                                        linkWithRel("submissions:create").description("Collection of submissions within this team"),
+                                        linkWithRel("items").description("Items owned by this team")
+                                ),
+                                responseFields(
+                                        DocumentationHelper.linksResponseField(),
+                                        fieldWithPath("name").description("Name of this team")
+                                )
+                        )
+                );
     }
 
     @Test
@@ -86,7 +116,7 @@ public class TeamDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-team",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -113,7 +143,7 @@ public class TeamDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-teams",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         linkWithRel("self").description("This resource list")

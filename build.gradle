@@ -61,9 +61,11 @@ dependencies {
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.4.6'
-    compile('uk.ac.ebi.tsc.aap.client:security:1.0.1-SNAPSHOT') {
-        changing = true
-    }
+    compile('uk.ac.ebi.tsc.aap.client:security:1.0.2-SNAPSHOT')
+    compile('uk.ac.ebi.tsc.aap.client:service:1.0.2-SNAPSHOT')
+
+    compile('com.auth0:java-jwt:3.3.0')
+
 }
 
 ext.gradle_env = hasProperty('env') ? env : 'dev'
