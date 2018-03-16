@@ -74,7 +74,7 @@ public class SheetLoaderService {
         String targetType = template.getTargetType().toLowerCase();
         String submissionId = sheet.getSubmission().getId();
 
-        logger.info("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
+        logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 
         List<Capture> columnMappings = mapColumns(
                 sheet.getHeaderRow(),

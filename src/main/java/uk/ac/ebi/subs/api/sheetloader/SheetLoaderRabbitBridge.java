@@ -39,11 +39,11 @@ public class SheetLoaderRabbitBridge {
 
         adminUserService.injectAdminUserIntoSecurityContext();
 
-        logger.info("sheet ready for loading {}", sheet.getId());
+        logger.debug("sheet ready for loading {}", sheet.getId());
 
         sheetLoaderService.loadSheet(sheet);
 
-        logger.info("sheet mapped", sheet.getId());
+        logger.debug("sheet mapped", sheet.getId());
     }
 
 

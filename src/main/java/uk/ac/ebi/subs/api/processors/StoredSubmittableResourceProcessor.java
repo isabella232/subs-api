@@ -32,7 +32,7 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
     @Override
     public Resource<T> process(Resource<T> resource) {
 
-        logger.info("processing resource {}",resource);
+        logger.debug("processing resource {}",resource);
 
         addHistory(resource);
         addCurrentVersion(resource);

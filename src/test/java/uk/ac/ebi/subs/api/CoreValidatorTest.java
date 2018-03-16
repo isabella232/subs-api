@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 @WithMockUser(username="usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
 public class CoreValidatorTest {
 
-    public static final String TEST_TEAM_1 = "testTeam1";
+    public static final String TEST_TEAM_1 = "subs.team-1234";
     @Autowired
     SubmissionRepository submissionRepository;
     @Autowired
