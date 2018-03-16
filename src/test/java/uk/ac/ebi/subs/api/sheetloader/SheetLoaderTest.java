@@ -5,16 +5,13 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.verification.VerificationMode;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.hateoas.RelProvider;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.subs.api.services.ChainedValidationService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -43,8 +40,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,9 +65,6 @@ public class SheetLoaderTest {
     private SubmittableHelperService submittableHelperService;
 
     @MockBean
-    private ChainedValidationService chainedValidationService;
-
-    @MockBean
     private RelProvider relProvider;
 
     private Submission submission;
@@ -89,8 +81,7 @@ public class SheetLoaderTest {
                 sheetRepository,
                 relProvider,
                 objectMapper,
-                submittableHelperService,
-                chainedValidationService
+                submittableHelperService
         );
 
 
