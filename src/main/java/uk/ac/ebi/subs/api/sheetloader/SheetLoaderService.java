@@ -12,7 +12,6 @@ import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.validation.ObjectError;
-import uk.ac.ebi.subs.api.services.ChainedValidationService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
@@ -46,7 +45,6 @@ public class SheetLoaderService {
     private ObjectMapper objectMapper;
     private SheetRepository sheetRepository;
     private SubmittableHelperService submittableHelperService;
-    private ChainedValidationService chainedValidationService;
 
     public SheetLoaderService(
             Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap,
@@ -54,14 +52,12 @@ public class SheetLoaderService {
             SheetRepository sheetRepository,
             RelProvider relProvider,
             ObjectMapper objectMapper,
-            SubmittableHelperService submittableHelperService,
-            ChainedValidationService chainedValidationService) {
+            SubmittableHelperService submittableHelperService) {
         initSubmittableMaps(submittableRepositoryMap, relProvider);
         this.publisher = publisher;
         this.sheetRepository = sheetRepository;
         this.objectMapper = objectMapper;
         this.submittableHelperService = submittableHelperService;
-        this.chainedValidationService = chainedValidationService;
     }
 
     public void loadSheet(Sheet sheet) {
@@ -208,7 +204,6 @@ public class SheetLoaderService {
 
         }
         logger.debug("triggering validation sheet {}", sheet);
-        chainedValidationService.triggerChainedValidation(submission);
 
         sheet.setStatus(SheetStatusEnum.Completed);
         sheet.setLastModifiedDate(new Date());
