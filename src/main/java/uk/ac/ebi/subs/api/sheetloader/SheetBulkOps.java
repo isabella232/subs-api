@@ -37,7 +37,7 @@ public class SheetBulkOps {
     @NonNull
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public void lookupExistingEntries(Submission submission, Collection<Pair<Row, ? extends StoredSubmittable>> submittables, SubmittableRepository<?> repository) {
+    public Collection<Pair<Row, ? extends StoredSubmittable>>  lookupExistingEntries(Submission submission, Collection<Pair<Row, ? extends StoredSubmittable>> submittables, SubmittableRepository<?> repository) {
 
         Map<String, StoredSubmittable> submittablesByAlias = new HashMap<>();
 
@@ -62,7 +62,7 @@ public class SheetBulkOps {
 
                 });
 
-
+        return submittables;
     }
 
     public void updateExistingSubmittables(

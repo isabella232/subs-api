@@ -22,6 +22,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,9 +74,9 @@ public class SheetLoaderService {
 
         logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 
-        List<Pair<Row, ? extends StoredSubmittable>> submittablesWithRows = convertToSubmittables(sheet, targetTypeClass);
+        Collection<Pair<Row, ? extends StoredSubmittable>> submittablesWithRows = convertToSubmittables(sheet, targetTypeClass);
 
-        sheetBulkOps.lookupExistingEntries(sheet.getSubmission(), submittablesWithRows, repository);
+        submittablesWithRows = sheetBulkOps.lookupExistingEntries(sheet.getSubmission(), submittablesWithRows, repository);
 
         List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() == null).collect(Collectors.toList());
         List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() != null).collect(Collectors.toList());
@@ -98,7 +99,7 @@ public class SheetLoaderService {
         sheetRepository.save(sheet);
     }
 
-    private List<Pair<Row, ? extends StoredSubmittable>> convertToSubmittables(Sheet sheet, Class<? extends StoredSubmittable> targetTypeClass) {
+    protected List<Pair<Row, ? extends StoredSubmittable>> convertToSubmittables(Sheet sheet, Class<? extends StoredSubmittable> targetTypeClass) {
         List<Capture> columnMappings = mapColumns(
                 sheet.getHeaderRow(),
                 sheet.getTemplate().getColumnCaptures(),
@@ -217,6 +218,10 @@ public class SheetLoaderService {
 
         logger.debug("mapping row to doc {} {}", row, json);
 
+        return documentToSubmittable(targetTypeClass, submission, row, json);
+    }
+
+    protected StoredSubmittable documentToSubmittable(Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, JSONObject json) {
         StoredSubmittable submittable = null;
 
         if (row.getErrors().isEmpty()) {
