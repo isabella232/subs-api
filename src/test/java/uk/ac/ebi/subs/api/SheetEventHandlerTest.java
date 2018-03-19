@@ -51,13 +51,14 @@ public class SheetEventHandlerTest {
 
         sheetHandler.handleAfterCreate(sheet);
 
-        verify(rabbitMessagingTemplate).convertAndSend(Exchanges.SUBMISSIONS, "usi.sheet.submitted", sheet);
+        verify(rabbitMessagingTemplate).convertAndSend(Exchanges.SUBMISSIONS, "usi.sheetId.submitted", sheet.getId());
     }
 
 
     private Sheet exampleSheet() {
         Sheet sheet = new Sheet();
 
+        sheet.setId("1");
         sheet.setSourceFileName("my-samples.csv");
 
         sheet.setHeaderRow(new Row(new String[]{"col1", "col2", "col3"}));
