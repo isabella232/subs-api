@@ -8,7 +8,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.api.services.ChainedValidationService;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -85,11 +84,11 @@ public class SheetLoaderService {
         sheetBulkOps.insertNewSubmittables(freshSubmittables, repository);
 
         Optional<? extends StoredSubmittable> o = submittablesWithRows.stream()
-                .filter(p -> p.getFirst().hasErrors() == false )
+                .filter(p -> p.getFirst().hasErrors() == false)
                 .map(p -> p.getSecond())
                 .findAny();
 
-        if (o.isPresent()){
+        if (o.isPresent()) {
             //this will trigger validation of everything in the submission
             submittableValidationDispatcher.validateUpdate(o.get());
         }
