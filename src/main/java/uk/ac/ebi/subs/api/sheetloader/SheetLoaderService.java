@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.rest.core.RepositoryConstraintViolationException;
-import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.core.event.BeforeSaveEvent;
+import org.springframework.data.util.Pair;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.validation.ObjectError;
+import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
@@ -21,10 +18,10 @@ import uk.ac.ebi.subs.repository.model.templates.Capture;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
-import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,23 +38,25 @@ public class SheetLoaderService {
 
     private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
     private Map<String, Class<? extends StoredSubmittable>> submittableClassMap;
-    private ApplicationEventPublisher publisher;
+
     private ObjectMapper objectMapper;
     private SheetRepository sheetRepository;
-    private SubmittableHelperService submittableHelperService;
+    private SubmittableValidationDispatcher submittableValidationDispatcher;
+
+    private SheetBulkOps sheetBulkOps;
 
     public SheetLoaderService(
             Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap,
-            ApplicationEventPublisher publisher,
             SheetRepository sheetRepository,
             RelProvider relProvider,
             ObjectMapper objectMapper,
-            SubmittableHelperService submittableHelperService) {
+            SubmittableValidationDispatcher submittableValidationDispatcher,
+            SheetBulkOps sheetBulkOps) {
         initSubmittableMaps(submittableRepositoryMap, relProvider);
-        this.publisher = publisher;
         this.sheetRepository = sheetRepository;
         this.objectMapper = objectMapper;
-        this.submittableHelperService = submittableHelperService;
+        this.submittableValidationDispatcher = submittableValidationDispatcher;
+        this.sheetBulkOps = sheetBulkOps;
     }
 
     public void loadSheet(Sheet sheet) {
@@ -68,19 +67,57 @@ public class SheetLoaderService {
 
         Template template = sheet.getTemplate();
         String targetType = template.getTargetType().toLowerCase();
+        Class<? extends StoredSubmittable> targetTypeClass = this.submittableClassMap.get(targetType);
+        SubmittableRepository repository = this.submittableRepositoryMap.get(targetTypeClass);
         String submissionId = sheet.getSubmission().getId();
 
         logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 
+        Collection<Pair<Row, ? extends StoredSubmittable>> submittablesWithRows = convertToSubmittables(sheet, targetTypeClass);
+
+        submittablesWithRows = sheetBulkOps.lookupExistingEntries(sheet.getSubmission(), submittablesWithRows, repository);
+
+        List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() == null).collect(Collectors.toList());
+        List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() != null).collect(Collectors.toList());
+
+        sheetBulkOps.updateExistingSubmittables(existingSubmittables, repository);
+        sheetBulkOps.insertNewSubmittables(freshSubmittables, repository);
+
+        Optional<? extends StoredSubmittable> o = submittablesWithRows.stream()
+                .filter(p -> p.getFirst().hasErrors() == false)
+                .map(p -> p.getSecond())
+                .findAny();
+
+        if (o.isPresent()) {
+            //this will trigger validation of everything in the submission
+            submittableValidationDispatcher.validateUpdate(o.get());
+        }
+
+        sheet.setStatus(SheetStatusEnum.Completed);
+        sheet.setLastModifiedDate(new Date());
+        sheetRepository.save(sheet);
+    }
+
+    protected List<Pair<Row, ? extends StoredSubmittable>> convertToSubmittables(Sheet sheet, Class<? extends StoredSubmittable> targetTypeClass) {
         List<Capture> columnMappings = mapColumns(
                 sheet.getHeaderRow(),
-                template.getColumnCaptures(),
-                Optional.of(template.getDefaultCapture())
+                sheet.getTemplate().getColumnCaptures(),
+                Optional.of(sheet.getTemplate().getDefaultCapture())
         );
 
-        convertAndStore(sheet, columnMappings);
-
-
+        List<Pair<Row, ? extends StoredSubmittable>> submittables = sheet.getRows().stream()
+                .map(row -> Pair.of(
+                        row,
+                        rowToSubmittable(
+                                columnMappings,
+                                targetTypeClass,
+                                sheet.getSubmission(),
+                                row,
+                                sheet.getHeaderRow().getCells()
+                        ))
+                )
+                .collect(Collectors.toList());
+        return submittables;
     }
 
     protected List<Capture> mapColumns(Row headerRow, Map<String, Capture> columnCaptures, Optional<Capture> optionalDefaultCapture) {
@@ -174,78 +211,16 @@ public class SheetLoaderService {
         return false;
     }
 
-    private void convertAndStore(Sheet sheet, List<Capture> columnMappings) {
-        logger.debug("starting convert and store for sheet {}", sheet);
-        String targetTypeName = sheet.getTemplate().getTargetType().toLowerCase();
-        Class<? extends StoredSubmittable> targetTypeClass = this.submittableClassMap.get(targetTypeName);
-
-
-        Assert.notNull(targetTypeClass);
-
-        List<String> headerRow = sheet.getHeaderRow().getCells();
-        Submission submission = sheet.getSubmission();
-
-        List<Row> rowsToLoad = sheet.getRows().stream()
-                .filter(row -> !row.isProcessed())
-                .collect(Collectors.toList());
-
-        int numberProcessed = 0;
-
-        for (Row row : rowsToLoad) {
-
-            convertAndStoreRow(columnMappings, targetTypeClass, submission, row, headerRow);
-
-            row.setProcessed(true);
-            numberProcessed++;
-            if (numberProcessed % 100 == 0) {
-                sheet.setLastModifiedDate(new Date());
-                sheetRepository.save(sheet);
-            }
-
-        }
-        logger.debug("triggering validation sheet {}", sheet);
-
-        sheet.setStatus(SheetStatusEnum.Completed);
-        sheet.setLastModifiedDate(new Date());
-        sheetRepository.save(sheet);
-        logger.debug("completed mapping of sheet {}", sheet);
-
-    }
-
-    protected void convertAndStoreRow(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow) {
-
-        StoredSubmittable submittable = rowToSubmittable(columnMappings, targetTypeClass, submission, row, headerRow);
-
-        storeSubmittable(submission, row, submittable);
-    }
-
-    protected void storeSubmittable(Submission submission, Row row, StoredSubmittable submittable) {
-        SubmittableRepository repository = this.submittableRepositoryMap.get(submittable.getClass());
-
-        if (row.getErrors().isEmpty()) {
-            StoredSubmittable storedVersion = repository.findOneBySubmissionIdAndAlias(submission.getId(), submittable.getAlias());
-
-            logger.debug("alias: {} storedVersion: {}", submittable.getAlias(), storedVersion);
-
-            try {
-                if (storedVersion == null) {
-                    createNewSubmittable(submittable, repository, row);
-                } else {
-                    updateExistingSubmittable(submittable, repository, row, storedVersion);
-                }
-            } catch (RepositoryConstraintViolationException exception) {
-                for (ObjectError objectError : exception.getErrors().getAllErrors()) {
-                    row.getErrors().add(objectError.getDefaultMessage());
-                }
-            }
-        }
-    }
 
     private StoredSubmittable rowToSubmittable(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow) {
         JSONObject json = rowToDocument(row, columnMappings, headerRow);
 
         logger.debug("mapping row to doc {} {}", row, json);
 
+        return documentToSubmittable(targetTypeClass, submission, row, json);
+    }
+
+    protected StoredSubmittable documentToSubmittable(Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, JSONObject json) {
         StoredSubmittable submittable = null;
 
         if (row.getErrors().isEmpty()) {
@@ -260,49 +235,6 @@ public class SheetLoaderService {
             logger.debug("mapped doc to submittable {} {}", json, submittable);
         }
         return submittable;
-    }
-
-    private void updateExistingSubmittable(StoredSubmittable submittable, SubmittableRepository repository, Row row, StoredSubmittable storedVersionSubmittable) {
-        submittable.setId(storedVersionSubmittable.getId());
-        submittable.setVersion(storedVersionSubmittable.getVersion());
-        submittable.setCreatedBy(storedVersionSubmittable.getCreatedBy());
-        submittable.setCreatedDate(storedVersionSubmittable.getCreatedDate());
-
-        logger.debug("Updating submittable {}", submittable);
-
-        publisher.publishEvent(new BeforeSaveEvent(submittable));
-        Object savedObject = repository.save(submittable);
-        /* The obvious thing to do is publisher.publishEvent(new AfterSaveEvent(savedObject))
-            , but this re-validates the whole submission at present, which gives unacceptable performance
-            , so we run validation for the whole submission at the END of loading
-
-         */
-
-        /* Actions here should be also made to SheetLoader Service, but be careful about performance */
-        logger.debug("Updating submittable {}", savedObject);
-
-
-    }
-
-    private void createNewSubmittable(StoredSubmittable submittable, SubmittableRepository repository, Row row) {
-        logger.debug("Creating submittable {}", submittable);
-
-        publisher.publishEvent(new BeforeCreateEvent(submittable));
-        Object savedObject = repository.insert(submittable);
-
-        /* The obvious thing to do is publisher.publishEvent(new AfterCreateEvent(savedObject))
-            , but this re-validates the whole submission at present, which gives unacceptable performance
-            , so we run validation for the whole submission at the END of loading
-
-         */
-
-        /* Actions here should be also made to SheetLoader Service, but be careful about performance */
-
-        submittableHelperService.processingStatusAndValidationResultSetUp(submittable);
-
-        logger.debug("Created submittable {}", savedObject);
-
-
     }
 
     private void initSubmittableMaps(Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap, RelProvider relProvider) {

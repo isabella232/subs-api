@@ -1,17 +1,21 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.core.event.BeforeSaveEvent;
+import org.springframework.data.util.Pair;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
+import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -28,19 +32,19 @@ import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
-import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,19 +54,19 @@ public class SheetLoaderTest {
 
     private SheetLoaderService sheetLoaderService;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @MockBean
+    private SubmittableValidationDispatcher submittableValidationDispatcher;
+
+    @MockBean
+    private SheetBulkOps sheetBulkOps;
+
     @MockBean
     private SheetRepository sheetRepository;
 
     @MockBean
     private SampleRepository sampleRepository;
-
-    @MockBean
-    private ApplicationEventPublisher publisher;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    @MockBean
-    private SubmittableHelperService submittableHelperService;
 
     @MockBean
     private RelProvider relProvider;
@@ -75,15 +79,17 @@ public class SheetLoaderTest {
                 submittableRepositoryMap = new HashMap<>();
         submittableRepositoryMap.put(Sample.class, sampleRepository);
 
+
+        Mockito.doReturn("samples").when(relProvider).getCollectionResourceRelFor(any());
+
         sheetLoaderService = new SheetLoaderService(
                 submittableRepositoryMap,
-                publisher,
                 sheetRepository,
                 relProvider,
                 objectMapper,
-                submittableHelperService
+                submittableValidationDispatcher,
+                sheetBulkOps
         );
-
 
         submission = new Submission();
         submission.setTeam(Team.build("test"));
@@ -103,7 +109,7 @@ public class SheetLoaderTest {
                 NoOpCapture.builder().build()
         );
 
-        when(relProvider.getCollectionResourceRelFor(Sample.class)).thenReturn("samples");
+
 
     }
 
@@ -112,7 +118,7 @@ public class SheetLoaderTest {
 
 
     @Test
-    public void testMappingHeadersToColumnCaptures() {
+    public void map_headings_to_column_captures() {
 
         List<Capture> actualColumnMappings = sheetLoaderService.mapColumns(
                 sheet.getHeaderRow(),
@@ -153,28 +159,90 @@ public class SheetLoaderTest {
         assertTrue(sheet.getRows().get(0).isProcessed());
     }
 
-
     @Test
-    public void load_one_new_sample() {
-        Sample s = new Sample();
-        s.setAlias("test1");
-        s.setTaxonId(7L);
+    public void convert_document_to_sample() {
+        JSONObject json = stringToJsonObject(
+                "{\n" +
+                        "  \"alias\": \"s1\",\n" +
+                        "  \"taxon\": \"Homo sapiens\",\n" +
+                        "  \"taxonId\": 9606,\n" +
+                        "  \"description\": \"\",\n" +
+                        "  \"title\": \"\",\n" +
+                        "  \"attributes\": {\n" +
+                        "    \"height\": [\n" +
+                        "      {\n" +
+                        "        \"value\": \"1.7\",\n" +
+                        "        \"units\": \"meters\"\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }\n" +
+                        "}");
 
-        Row row = new Row();
 
-        when(sampleRepository.findOneBySubmissionIdAndAlias(submission.getId(), s.getAlias()))
-                .thenReturn(null);
+        Sample expectedSample = sample("s1");
 
-        sheetLoaderService.storeSubmittable(submission, row, s);
+        Sample actualSample = (Sample) sheetLoaderService.documentToSubmittable(
+                Sample.class,
+                sheet.getSubmission(),
+                sheet.getRows().get(0),
+                json
+        );
 
-        verify(sampleRepository).findOneBySubmissionIdAndAlias(submission.getId(), s.getAlias());
-        verify(publisher).publishEvent(any(BeforeCreateEvent.class));
-        verify(sampleRepository).insert(same(s));
-        verify(submittableHelperService).processingStatusAndValidationResultSetUp(same(s));
+        Assert.assertEquals(expectedSample, actualSample);
 
     }
 
     @Test
+    public void convert_sheet_to_submittables() {
+        List<Pair<Row, ? extends StoredSubmittable>> expected = submittablesWithPairs();
+
+        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class);
+
+        Assert.assertEquals(expected, actual);
+    }
+
+    private List<Pair<Row, ? extends StoredSubmittable>> submittablesWithPairs() {
+        return Arrays.asList(
+                Pair.of(sheet.getRows().get(0), sample("s1")),
+                Pair.of(sheet.getRows().get(1), sample("s2"))
+        );
+    }
+
+
+    @Test
+    public void load_sheet() {
+        List<Pair<Row, ? extends StoredSubmittable>> submittablesWithPairs = submittablesWithPairs();
+
+        Answer<Collection<Pair<Row, ? extends StoredSubmittable>>> ans = invocation -> {
+            submittablesWithPairs.get(0).getSecond().setId("ID");
+            return submittablesWithPairs;
+        };
+
+        when(sheetBulkOps.lookupExistingEntries(sheet.getSubmission(),
+                submittablesWithPairs,
+                sampleRepository)).thenAnswer(ans);
+
+        List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithPairs.subList(0, 1);
+        List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithPairs.subList(1, 2);
+
+        sheetLoaderService.loadSheet(sheet);
+
+        verify(sheetBulkOps).lookupExistingEntries(org.mockito.Matchers.eq(sheet.getSubmission()),
+                org.mockito.Matchers.anyCollection(),
+                org.mockito.Matchers.eq(sampleRepository));
+
+        verify(sheetBulkOps).updateExistingSubmittables(existingSubmittables, sampleRepository);
+
+        verify(sheetBulkOps).insertNewSubmittables(freshSubmittables, sampleRepository);
+
+        verify(submittableValidationDispatcher).validateUpdate(submittablesWithPairs.get(0).getSecond());
+
+        verify(sheetRepository).save(sheet);
+        assertEquals(SheetStatusEnum.Completed,sheet.getStatus());
+
+    }
+
+
     public void load_one_existing_sample() {
         Sample s = new Sample();
         s.setAlias("test1");
@@ -189,16 +257,7 @@ public class SheetLoaderTest {
         sampleAfterPropertyMerge.setTaxonId(7L);
         sampleAfterPropertyMerge.setId("1");
 
-        Row row = new Row();
 
-        when(sampleRepository.findOneBySubmissionIdAndAlias(submission.getId(), s.getAlias()))
-                .thenReturn(storedVersion);
-
-        sheetLoaderService.storeSubmittable(submission, row, s);
-
-        verify(sampleRepository).findOneBySubmissionIdAndAlias(submission.getId(), s.getAlias());
-        verify(publisher).publishEvent(any(BeforeSaveEvent.class));
-        verify(sampleRepository).save(sampleAfterPropertyMerge);
     }
 
 
@@ -221,6 +280,20 @@ public class SheetLoaderTest {
         sheet.setStatus(SheetStatusEnum.Submitted);
 
         return sheet;
+    }
+
+    private Sample sample(String alias) {
+        Sample sample = new Sample();
+        sample.setAlias(alias);
+        sample.setTaxon("Homo sapiens");
+        sample.setTaxonId(9606L);
+        sample.setDescription("");
+        sample.setTitle("");
+        Attribute heightAttribute = new Attribute();
+        heightAttribute.setValue("1.7");
+        heightAttribute.setUnits("meters");
+        sample.getAttributes().put("height", Arrays.asList(heightAttribute));
+        return sample;
     }
 
     private Template template() {
