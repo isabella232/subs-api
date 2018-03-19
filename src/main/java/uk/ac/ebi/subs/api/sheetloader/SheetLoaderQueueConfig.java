@@ -11,8 +11,8 @@ import uk.ac.ebi.subs.messaging.Queues;
 @Configuration
 public class SheetLoaderQueueConfig {
 
-    public final static String SHEET_SUBMITTED_QUEUE = "usi-sheet-submitted-load-contents";
-    private final String SHEET_SUBMITTED_ROUTING_KEY = "usi.sheet.submitted";
+    public final static String SHEET_SUBMITTED_QUEUE = "usi-sheetId-submitted-load-contents";
+    private final String SHEET_SUBMITTED_ROUTING_KEY = "usi.sheetId.submitted";
 
     /**
      * Queue for cleaning up contents of a submission if the user deletes it
