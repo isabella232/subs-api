@@ -28,3 +28,16 @@ include::{snippets}/get-team/http-response.adoc[]
 === Links
 
 include::{snippets}/get-team/links.adoc[]
+
+== Create a new team
+
+You can create a new team by POSTing a `description`. You will need to get a new token before you can use this team. You
+will be set as a member and manager of the team.
+
+=== Request
+
+include::{snippets}/create-team/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/create-team/http-response.adoc[]
