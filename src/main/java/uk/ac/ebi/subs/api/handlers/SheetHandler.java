@@ -22,7 +22,7 @@ public class SheetHandler {
     @NonNull
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
-    private final String routingKeyPrefix = "usi.sheetId.";
+    private final String routingKeyPrefix = "usi.sheet.";
 
 
     @HandleBeforeCreate
@@ -54,7 +54,7 @@ public class SheetHandler {
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 routingKey,
-                sheet.getId());
+                sheet);
     }
 
 
