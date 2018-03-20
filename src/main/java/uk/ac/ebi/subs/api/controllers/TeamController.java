@@ -58,7 +58,7 @@ public class TeamController {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<Team> teamList = userTeamService.userTeams();
 
-        final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, authentication.getAuthorities().size());
+        final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, teamList.size());
         return teamPagedResourcesAssembler.toResource(teams);
     }
 
