@@ -35,9 +35,11 @@ public class SheetLoaderRabbitBridge {
     }
 
     @RabbitListener(queues = SheetLoaderQueueConfig.SHEET_SUBMITTED_QUEUE)
-    public void onSubmissionLoadSheetContents(Sheet sheet) {
+    public void onSubmissionLoadSheetContents(String sheetId) {
 
         adminUserService.injectAdminUserIntoSecurityContext();
+
+        Sheet sheet = sheetRepository.findOne(sheetId);
 
         logger.debug("sheet ready for loading {}", sheet.getId());
 
