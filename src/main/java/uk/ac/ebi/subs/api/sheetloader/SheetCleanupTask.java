@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -7,7 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-@Component
+
 /**
  * The batch loading process leaves processed batches in the db
  * We need them in the short term, so the UI can look up progress, but we don't need them in the long term.
@@ -16,10 +18,13 @@ import java.util.GregorianCalendar;
  *
  * At the moment, it's every 4 hours, remove completed records over a week old
  */
+@Component
+@RequiredArgsConstructor
 public class SheetCleanupTask {
 
     private static final long FOUR_HOUR_IN_MILLIS = 1000l * 60 * 60 * 4;
 
+    @NonNull
     private SheetCleanupRepository sheetCleanupRepository;
 
 

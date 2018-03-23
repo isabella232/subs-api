@@ -62,9 +62,9 @@ public class SubmissionValidator implements Validator {
         }
 
         if (errors.hasErrors()) {
-            log.error("validation has errors {}", errors.getAllErrors());
+            log.debug("validation has errors {}", errors.getAllErrors());
         } else {
-            log.error("no validation errors");
+            log.debug("no validation errors");
         }
 
     }
