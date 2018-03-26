@@ -2,10 +2,9 @@ package uk.ac.ebi.subs.api.sheetloader;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
-import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.ObjectError;
@@ -21,11 +20,14 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SheetBulkOps {
 
     @NonNull
@@ -37,9 +39,9 @@ public class SheetBulkOps {
     @NonNull
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public Collection<Pair<Row, ? extends StoredSubmittable>>  lookupExistingEntries(Submission submission, Collection<Pair<Row, ? extends StoredSubmittable>> submittables, SubmittableRepository<?> repository) {
-
+    public Collection<Pair<Row, ? extends StoredSubmittable>> lookupExistingEntries(Submission submission, Collection<Pair<Row, ? extends StoredSubmittable>> submittables, SubmittableRepository<?> repository) {
         Map<String, StoredSubmittable> submittablesByAlias = new HashMap<>();
+
 
         for (Pair<Row, ? extends StoredSubmittable> pair : submittables) {
             StoredSubmittable s = pair.getSecond();
@@ -47,20 +49,24 @@ public class SheetBulkOps {
                 submittablesByAlias.put(s.getAlias(), s);
             }
         }
-
-        repository.streamBySubmissionId(submission.getId())
-                .forEach(dbSubmittable -> {
-                    if (dbSubmittable.getAlias() != null && submittablesByAlias.containsKey(dbSubmittable.getAlias())) {
-                        StoredSubmittable sheetSubmittable = submittablesByAlias.get(dbSubmittable.getAlias());
-
-                        sheetSubmittable.setId(dbSubmittable.getId());
-                        sheetSubmittable.setVersion(dbSubmittable.getVersion());
-                        sheetSubmittable.setCreatedBy(dbSubmittable.getCreatedBy());
-                        sheetSubmittable.setCreatedDate(dbSubmittable.getCreatedDate());
-                    }
+        List<? extends StoredSubmittable> dbSubmittables = repository.findBySubmissionIdAndAliasIn(
+                submission.getId(),
+                submittablesByAlias.keySet()
+        );
 
 
-                });
+        for (StoredSubmittable dbSubmittable : dbSubmittables) {
+            StoredSubmittable sheetSubmittable = submittablesByAlias.get(dbSubmittable.getAlias());
+
+            sheetSubmittable.setId(dbSubmittable.getId());
+            sheetSubmittable.setVersion(dbSubmittable.getVersion());
+            sheetSubmittable.setCreatedBy(dbSubmittable.getCreatedBy());
+            sheetSubmittable.setCreatedDate(dbSubmittable.getCreatedDate());
+            sheetSubmittable.setProcessingStatus(dbSubmittable.getProcessingStatus());
+            sheetSubmittable.setValidationResult(dbSubmittable.getValidationResult());
+            sheetSubmittable.setSubmission(dbSubmittable.getSubmission());
+
+        }
 
         return submittables;
     }
@@ -69,25 +75,10 @@ public class SheetBulkOps {
             Collection<Pair<Row, ? extends StoredSubmittable>> existingSubmittables,
             SubmittableRepository repository) {
 
-        Collection<StoredSubmittable> submittablesToSave = new ArrayList<>();
-
+        Collection<StoredSubmittable> submittablesToSave = new LinkedList<>();
         for (Pair<Row, ? extends StoredSubmittable> pair : existingSubmittables) {
-            Row row = pair.getFirst();
-            StoredSubmittable storedSubmittable = pair.getSecond();
-
-            boolean okToSave = true;
-
-            try {
-                applicationEventPublisher.publishEvent(new BeforeSaveEvent(storedSubmittable));
-            } catch (RepositoryConstraintViolationException e) {
-                okToSave = false;
-                addErrorToRow(e, row);
-            }
-
-            if (okToSave) {
-                submittablesToSave.add(storedSubmittable);
-            }
-            row.setProcessed(true);
+            pair.getFirst().setProcessed(true);
+            submittablesToSave.add(pair.getSecond());
         }
 
         repository.save(submittablesToSave);
@@ -111,20 +102,10 @@ public class SheetBulkOps {
             Row row = pair.getFirst();
             StoredSubmittable storedSubmittable = pair.getSecond();
 
-            boolean okToSave = true;
+            submittablesToSave.add(storedSubmittable);
+            validationResults.add(validationResult(storedSubmittable));
+            processingStatuses.add(processingStatus(storedSubmittable));
 
-            try {
-                applicationEventPublisher.publishEvent(new BeforeCreateEvent(storedSubmittable));
-            } catch (RepositoryConstraintViolationException e) {
-                okToSave = false;
-                addErrorToRow(e, row);
-            }
-
-            if (okToSave) {
-                submittablesToSave.add(storedSubmittable);
-                validationResults.add(validationResult(storedSubmittable));
-                processingStatuses.add(processingStatus(storedSubmittable));
-            }
             row.setProcessed(true);
         }
 
