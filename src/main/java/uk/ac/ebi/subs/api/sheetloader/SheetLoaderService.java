@@ -9,6 +9,7 @@ import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
+import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -43,7 +44,6 @@ public class SheetLoaderService {
     private ObjectMapper objectMapper;
     private SheetRepository sheetRepository;
     private SubmittableValidationDispatcher submittableValidationDispatcher;
-
     private SheetBulkOps sheetBulkOps;
 
     public SheetLoaderService(
@@ -61,6 +61,7 @@ public class SheetLoaderService {
     }
 
     public void loadSheet(Sheet sheet) {
+        logger.info("processing sheet {}",sheet.getId());
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("init");
 
@@ -77,6 +78,7 @@ public class SheetLoaderService {
         SubmittableRepository repository = this.submittableRepositoryMap.get(targetTypeClass);
         String submissionId = sheet.getSubmission().getId();
 
+
         logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 
         stopWatch.stop(); stopWatch.start("convert");
@@ -89,8 +91,15 @@ public class SheetLoaderService {
 
         stopWatch.stop(); stopWatch.start("organise");
 
-        List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() == null).collect(Collectors.toList());
-        List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() != null).collect(Collectors.toList());
+        List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithRows.stream()
+                .filter(p -> !p.getFirst().hasErrors())
+                .filter(p -> p.getSecond().getId() == null)
+                .collect(Collectors.toList());
+
+        List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithRows.stream()
+                .filter(p -> !p.getFirst().hasErrors())
+                .filter(p -> p.getSecond().getId() != null)
+                .collect(Collectors.toList());
 
         stopWatch.stop(); stopWatch.start("update existing");
 
