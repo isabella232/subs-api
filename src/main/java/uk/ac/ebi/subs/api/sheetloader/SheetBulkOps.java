@@ -101,7 +101,7 @@ public class SheetBulkOps {
         for (Pair<Row, ? extends StoredSubmittable> pair : freshSubmittables) {
             Row row = pair.getFirst();
             StoredSubmittable storedSubmittable = pair.getSecond();
-
+            storedSubmittable.setId(UUID.randomUUID().toString());
             submittablesToSave.add(storedSubmittable);
             validationResults.add(validationResult(storedSubmittable));
             processingStatuses.add(processingStatus(storedSubmittable));
