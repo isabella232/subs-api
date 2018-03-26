@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StopWatch;
 import org.springframework.validation.ObjectError;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -57,14 +56,15 @@ public class SheetBulkOps {
 
 
         for (StoredSubmittable dbSubmittable : dbSubmittables) {
-            if (dbSubmittable.getAlias() != null && submittablesByAlias.containsKey(dbSubmittable.getAlias())) {
-                StoredSubmittable sheetSubmittable = submittablesByAlias.get(dbSubmittable.getAlias());
+            StoredSubmittable sheetSubmittable = submittablesByAlias.get(dbSubmittable.getAlias());
 
-                sheetSubmittable.setId(dbSubmittable.getId());
-                sheetSubmittable.setVersion(dbSubmittable.getVersion());
-                sheetSubmittable.setCreatedBy(dbSubmittable.getCreatedBy());
-                sheetSubmittable.setCreatedDate(dbSubmittable.getCreatedDate());
-            }
+            sheetSubmittable.setId(dbSubmittable.getId());
+            sheetSubmittable.setVersion(dbSubmittable.getVersion());
+            sheetSubmittable.setCreatedBy(dbSubmittable.getCreatedBy());
+            sheetSubmittable.setCreatedDate(dbSubmittable.getCreatedDate());
+            sheetSubmittable.setProcessingStatus(dbSubmittable.getProcessingStatus());
+            sheetSubmittable.setValidationResult(dbSubmittable.getValidationResult());
+            sheetSubmittable.setSubmission(dbSubmittable.getSubmission());
 
         }
 
