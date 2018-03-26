@@ -8,6 +8,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StopWatch;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -60,10 +61,15 @@ public class SheetLoaderService {
     }
 
     public void loadSheet(Sheet sheet) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("init");
+
         Assert.notNull(sheet);
         Assert.notNull(sheet.getSubmission());
         Assert.notNull(sheet.getRows());
         Assert.notNull(sheet.getTemplate());
+
+
 
         Template template = sheet.getTemplate();
         String targetType = template.getTargetType().toLowerCase();
@@ -73,16 +79,34 @@ public class SheetLoaderService {
 
         logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 
+        stopWatch.stop(); stopWatch.start("convert");
+
         Collection<Pair<Row, ? extends StoredSubmittable>> submittablesWithRows = convertToSubmittables(sheet, targetTypeClass);
 
+        stopWatch.stop(); stopWatch.start("lookup");
+
         submittablesWithRows = sheetBulkOps.lookupExistingEntries(sheet.getSubmission(), submittablesWithRows, repository);
+
+        stopWatch.stop(); stopWatch.start("organise");
 
         List<Pair<Row, ? extends StoredSubmittable>> freshSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() == null).collect(Collectors.toList());
         List<Pair<Row, ? extends StoredSubmittable>> existingSubmittables = submittablesWithRows.stream().filter(p -> p.getSecond().getId() != null).collect(Collectors.toList());
 
+        stopWatch.stop(); stopWatch.start("update existing");
+
         sheetBulkOps.updateExistingSubmittables(existingSubmittables, repository);
+
+        stopWatch.stop(); stopWatch.start("progress update");
+
+        sheet.setLastModifiedDate(new Date());
+        sheetRepository.save(sheet);
+
+        stopWatch.stop(); stopWatch.start("insert new");
+
         sheetBulkOps.insertNewSubmittables(freshSubmittables, repository);
 
+
+        stopWatch.stop(); stopWatch.start("validation trigger");
         Optional<? extends StoredSubmittable> o = submittablesWithRows.stream()
                 .filter(p -> p.getFirst().hasErrors() == false)
                 .map(p -> p.getSecond())
@@ -92,10 +116,15 @@ public class SheetLoaderService {
             //this will trigger validation of everything in the submission
             submittableValidationDispatcher.validateUpdate(o.get());
         }
+        stopWatch.stop(); stopWatch.start("save progress");
 
         sheet.setStatus(SheetStatusEnum.Completed);
         sheet.setLastModifiedDate(new Date());
         sheetRepository.save(sheet);
+
+        stopWatch.stop();
+        logger.info(stopWatch.prettyPrint());
+
     }
 
     protected List<Pair<Row, ? extends StoredSubmittable>> convertToSubmittables(Sheet sheet, Class<? extends StoredSubmittable> targetTypeClass) {

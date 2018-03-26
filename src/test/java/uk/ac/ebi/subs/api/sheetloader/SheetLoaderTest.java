@@ -45,6 +45,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -237,7 +238,7 @@ public class SheetLoaderTest {
 
         verify(submittableValidationDispatcher).validateUpdate(submittablesWithPairs.get(0).getSecond());
 
-        verify(sheetRepository).save(sheet);
+        verify(sheetRepository,times(2)).save(sheet);
         assertEquals(SheetStatusEnum.Completed,sheet.getStatus());
 
     }
