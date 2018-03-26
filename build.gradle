@@ -208,7 +208,7 @@ if (project.hasProperty('sshPassphrase')) {
 }
 task('externalCiTest', type: Test) {
     useJUnit {
-        excludeCategories 'uk.ac.ebi.subs.RabbitMQDependentTest', 'uk.ac.ebi.subs.BioSamplesDependentTest'
+        excludeCategories 'uk.ac.ebi.subs.RabbitMQDependentTest', 'uk.ac.ebi.subs.BioSamplesDependentTest', 'uk.ac.ebi.subs.api.PerfTest'
     }
     testLogging {
         exceptionFormat = 'full'
