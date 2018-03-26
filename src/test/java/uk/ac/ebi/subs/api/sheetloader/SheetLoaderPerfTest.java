@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.api.sheetloader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +40,8 @@ import java.util.stream.Stream;
 @SpringBootTest(classes = ApiApplication.class)
 @RunWith(SpringRunner.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
-public class SheetLoaderPerfTest implements RabbitMQDependentTest {
+@Category(RabbitMQDependentTest.class)
+public class SheetLoaderPerfTest {
 
     @Autowired
     private SheetLoaderService sheetLoaderService;
