@@ -11,8 +11,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.api.PerfTest;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 @SpringBootTest(classes = ApiApplication.class)
 @RunWith(SpringRunner.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
-public class SheetLoaderPerfTest implements PerfTest{
+public class SheetLoaderPerfTest implements RabbitMQDependentTest {
 
     @Autowired
     private SheetLoaderService sheetLoaderService;
@@ -51,7 +51,8 @@ public class SheetLoaderPerfTest implements PerfTest{
     private TemplateRepository templateRepository;
     @Autowired
     private SubmissionRepository submissionRepository;
-    @Autowired private SubmissionStatusRepository submissionStatusRepository;
+    @Autowired
+    private SubmissionStatusRepository submissionStatusRepository;
 
     private StopWatch stopWatch = new StopWatch();
 
@@ -59,7 +60,7 @@ public class SheetLoaderPerfTest implements PerfTest{
     private Template template;
     private Sheet sheet;
 
-    private static final int SPREADSHEET_SIZE_IN_ROWS = 50000;
+    private static final int SPREADSHEET_SIZE_IN_ROWS = 3000;
 
     @Before
     public void init() {
@@ -110,7 +111,7 @@ public class SheetLoaderPerfTest implements PerfTest{
     private List<Row> createRows() {
         List<Row> rows = new LinkedList<>();
         List<JsonFieldType> types = Arrays.asList(
-                JsonFieldType.String,JsonFieldType.String,JsonFieldType.String,JsonFieldType.String,
+                JsonFieldType.String, JsonFieldType.String, JsonFieldType.String, JsonFieldType.String,
                 JsonFieldType.IntegerNumber
         );
 
@@ -139,7 +140,7 @@ public class SheetLoaderPerfTest implements PerfTest{
 
     @After
     public void clearDbs() {
-        Stream.of(sheetRepository, sampleRepository, templateRepository, submissionRepository,submissionStatusRepository)
+        Stream.of(sheetRepository, sampleRepository, templateRepository, submissionRepository, submissionStatusRepository)
                 .forEach(CrudRepository::deleteAll);
     }
 
