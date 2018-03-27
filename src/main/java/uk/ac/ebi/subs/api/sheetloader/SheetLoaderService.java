@@ -265,6 +265,7 @@ public class SheetLoaderService {
             try {
                 submittable = objectMapper.readValue(json.toString(), targetTypeClass);
                 submittable.setSubmission(submission);
+                submittable.setTeam(submission.getTeam());
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);
                 row.getErrors().add("Unrecoverable error while converting row");
