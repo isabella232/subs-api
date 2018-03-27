@@ -61,11 +61,14 @@ public class SubsAAPWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/").permitAll()
                 .antMatchers("/browser/**/*").permitAll()
+                .antMatchers("/docs").permitAll()
                 .antMatchers("/docs/**/*").permitAll()
                 .antMatchers("/health").permitAll()
+                .antMatchers("/health/summary").permitAll()
                 .antMatchers(HttpMethod.GET,"/uiSupportItems/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/templates/**").permitAll()
                 .mvcMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                .mvcMatchers(HttpMethod.HEAD,"/**").permitAll()
                 .anyRequest().authenticated();
 
         httpSecurity.addFilterBefore(statelessAuthenticationFilterBean(),

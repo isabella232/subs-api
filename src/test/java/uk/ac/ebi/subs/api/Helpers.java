@@ -244,7 +244,7 @@ public class Helpers {
         return d;
     }
 
-    public final static String TEAM_NAME = "self.usi-user";
+    public final static String TEAM_NAME = "subs.dev-team-1";
     public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
 
     public static Submission generateTestSubmission() {

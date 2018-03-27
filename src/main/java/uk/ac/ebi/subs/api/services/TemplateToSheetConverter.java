@@ -29,11 +29,9 @@ public class TemplateToSheetConverter implements Converter<Template, Sheet> {
                                 entry.getValue().expectedColumnHeaders().stream()
                         ))
                         .collect(Collectors.toList())
-        );
-        rows.add(headerRow);
+        );;
 
-        sheet.addRow(headerRow);
-        sheet.setHeaderRowIndex(0);
+        sheet.setHeaderRow(headerRow);
         sheet.setTemplate(template);
 
         sheet.setSheetName(template.getName() + "_template");

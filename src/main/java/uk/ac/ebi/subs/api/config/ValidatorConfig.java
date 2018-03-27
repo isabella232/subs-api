@@ -12,11 +12,11 @@ import uk.ac.ebi.subs.api.validators.AssayValidator;
 import uk.ac.ebi.subs.api.validators.EgaDacPolicyValidator;
 import uk.ac.ebi.subs.api.validators.EgaDacValidator;
 import uk.ac.ebi.subs.api.validators.EgaDatasetValidator;
+import uk.ac.ebi.subs.api.validators.FileDeleteValidator;
 import uk.ac.ebi.subs.api.validators.ProjectValidator;
 import uk.ac.ebi.subs.api.validators.ProtocolValidator;
 import uk.ac.ebi.subs.api.validators.SampleGroupValidator;
 import uk.ac.ebi.subs.api.validators.SampleValidator;
-import uk.ac.ebi.subs.api.validators.SheetDeleteValidator;
 import uk.ac.ebi.subs.api.validators.SheetValidator;
 import uk.ac.ebi.subs.api.validators.StudyValidator;
 import uk.ac.ebi.subs.api.validators.SubmissionDeleteValidator;
@@ -43,7 +43,6 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
     private static final String BEFORE_SAVE = "beforeSave";
     private static final String BEFORE_LINK_SAVE = "beforeLinkSave";
     private static final String BEFORE_DELETE = "beforeDelete";
-
 
     @NonNull
     private AnalysisValidator analysisValidator;
@@ -78,12 +77,10 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
     @NonNull
     private SheetValidator sheetValidator;
     @NonNull
-    private SheetDeleteValidator sheetDeleteValidator;
-
+    private FileDeleteValidator fileDeleteValidator;
 
     @Override
     public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener eventListener) {
-
         Stream<Validator> stdValidators = Stream.of(
                 analysisValidator,
                 assayValidator,
@@ -99,8 +96,9 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
 
                 submissionValidator,
 
-                sheetValidator
+                sheetValidator,
 
+                fileDeleteValidator
         );
 
         stdValidators.forEach(validator -> {
@@ -111,10 +109,7 @@ public class ValidatorConfig extends RepositoryRestConfigurerAdapter {
         eventListener.addValidator(BEFORE_SAVE, submissionStatusValidator);
 
         eventListener.addValidator(BEFORE_DELETE, submissionDeleteValidator);
-
         eventListener.addValidator(BEFORE_DELETE, submittableDeleteValidator);
-
-        eventListener.addValidator(BEFORE_DELETE, sheetDeleteValidator);
+        eventListener.addValidator(BEFORE_DELETE, fileDeleteValidator);
     }
-
 }

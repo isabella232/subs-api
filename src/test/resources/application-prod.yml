@@ -3,3 +3,11 @@ usi:
     hostname: submission.ebi.ac.uk
     port: 443
     scheme: https
+
+aap:
+  enabled: true
+  password: ${aapPassword}
+  url: "https://api.aai.ebi.ac.uk/auth"
+  username: ${aapUsername}
+jwt:
+  certificate: production.der

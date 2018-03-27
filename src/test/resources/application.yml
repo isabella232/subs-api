@@ -1,10 +1,10 @@
 aap: 
   enabled: true
   password: ${aapPassword}
-  url: "https://explore.api.aap.tsi.ebi.ac.uk/auth"
+  url: "https://explore.api.aai.ebi.ac.uk/auth"
   username: ${aapUsername}
 jwt:
-  certificate: public.der
+  certificate: explore.der
 server: 
   context-path: /api
 spring:

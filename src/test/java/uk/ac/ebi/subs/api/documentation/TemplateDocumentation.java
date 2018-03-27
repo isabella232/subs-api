@@ -1,9 +1,6 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +18,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
@@ -36,7 +32,6 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -45,10 +40,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageNumberDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationPageSizeDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalElementsDescriptor;
-import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationTotalPagesDescriptor;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
 @RunWith(SpringRunner.class)
@@ -78,6 +70,8 @@ public class TemplateDocumentation {
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
+    private Template template;
+
     @Before
     public void setUp() {
         clearDatabases();
@@ -86,7 +80,7 @@ public class TemplateDocumentation {
         this.objectMapper = DocumentationHelper.mapper();
 
 
-        Template template = Template.builder().name("test-template").targetType("samples").build();
+        this.template = Template.builder().name("test-template").targetType("samples").build();
         template
                 .add(
                         "alias",
@@ -99,7 +93,9 @@ public class TemplateDocumentation {
                 .add(
                         "taxon",
                         FieldCapture.builder().fieldName("taxon").build()
-                );
+                )
+                .addTag("tag1")
+                .addTag("tag2");
 
         template.setDefaultCapture(
                 AttributeCapture.builder().build()
@@ -136,10 +132,32 @@ public class TemplateDocumentation {
                                 responseFields(
                                         linksResponseField(),
                                         fieldWithPath("_embedded.templates").description("Spreadsheet templates available"),
-                                        paginationPageSizeDescriptor(),
-                                        paginationTotalElementsDescriptor(),
-                                        paginationTotalPagesDescriptor(),
-                                        paginationPageNumberDescriptor()
+                                        paginationBlock()
+                                )
+
+
+                        )
+                );
+    }
+    @Test
+    public void templateSearchResources() throws Exception {
+        this.mockMvc.perform(
+                get("/api/templates/search")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("templates-search",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink(),
+                                        linkWithRel("by-target-type").description("Search for templates with a specific target type"),
+                                        linkWithRel("by-name").description("Find a template by its name"),
+                                        linkWithRel("by-target-type-and-tags").description("Search for templates matching a target type and a set of tags")
+                                ),
+                                responseFields(
+                                        linksResponseField()
                                 )
 
 
@@ -169,6 +187,7 @@ public class TemplateDocumentation {
                                         fieldWithPath("targetType").description("The type of item to be created from spreadsheets based on this template"),
                                         fieldWithPath("columnCaptures").description("Column names for the spreadsheet, and the definition of how to map values to JSON documents"),
                                         fieldWithPath("defaultCapture").description("Handler for any columns in the spreadsheet that aren't expected based on the template"),
+                                        fieldWithPath("tags").description("Text tags to help users search for templates"),
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
@@ -177,5 +196,59 @@ public class TemplateDocumentation {
                         )
                 );
 
+    }
+
+    @Test
+    public void templateFindByType() throws Exception {
+        this.mockMvc.perform(
+                get("/api/templates/search/findByTargetType?targetType=samples")
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("test-template-by-type",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameter"),
+                                        paginationBlock()
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void templateByTags() throws Exception {
+
+        String[] templateTags = this.template.getTags().toArray(new String[]{});
+
+        this.mockMvc.perform(
+                get("/api/templates/search/findByTargetTypeAndTagsAllMatch?targetType={type}&tags={tagOne}&tags={tagTwo}",
+                        this.template.getTargetType(),
+                        templateTags[0],
+                        templateTags[1]
+                )
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("templates-by-tags-and-type",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink()
+                                ),
+                                responseFields(
+                                        linksResponseField(),
+                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameters")
+                                )
+
+
+                        )
+                );
     }
 }

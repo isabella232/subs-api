@@ -2,18 +2,42 @@
 :docinfo: shared
 :toc: auto
 
-`TODO there isn't a proper entry point for teams yet. If you know the team name, you can access it
-through this endpoint. Teams cannot be created or deleted through this API, they are controlled
-through the AAP`.
+== Finding teams of which you are a member
 
-== Request
+=== Request
+
+include::{snippets}/get-teams/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-teams/http-response.adoc[]
+
+== Fetching one team
+
+If you know the name of team already, you can expand the `team` link from the API root to fetch it directly. The link is
+provided as a https://en.wikipedia.org/wiki/URL_Template[url template].
+
+=== Request
 
 include::{snippets}/get-team/curl-request.adoc[]
 
-== Response
+=== Response
 
 include::{snippets}/get-team/http-response.adoc[]
 
-== Links
+=== Links
 
 include::{snippets}/get-team/links.adoc[]
+
+== Create a new team
+
+You can create a new team by POSTing a `description`. You will need to get a new token before you can use this team. You
+will be set as a member and manager of the team.
+
+=== Request
+
+include::{snippets}/create-team/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/create-team/http-response.adoc[]

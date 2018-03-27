@@ -1,9 +1,9 @@
 package uk.ac.ebi.subs.api.validators;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -13,28 +13,14 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class SubmissionValidator implements Validator {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    public SubmissionValidator(
-            SubmissionRepository submissionRepository,
-            TeamValidator teamValidator,
-            SubmitterValidator submitterValidator,
-            OperationControlService operationControlService
-    ) {
-        this.submissionRepository = submissionRepository;
-        this.teamValidator = teamValidator;
-        this.submitterValidator = submitterValidator;
-        this.operationControlService = operationControlService;
-    }
-
-
-    private SubmissionRepository submissionRepository;
-    private TeamValidator teamValidator;
-    private SubmitterValidator submitterValidator;
-    private OperationControlService operationControlService;
+    @NonNull private SubmissionRepository submissionRepository;
+    @NonNull private TeamValidator teamValidator;
+    @NonNull private SubmitterValidator submitterValidator;
+    @NonNull private OperationControlService operationControlService;
 
 
     @Override
@@ -76,9 +62,9 @@ public class SubmissionValidator implements Validator {
         }
 
         if (errors.hasErrors()) {
-            logger.error("validation has errors {}", errors.getAllErrors());
+            log.debug("validation has errors {}", errors.getAllErrors());
         } else {
-            logger.error("no validation errors");
+            log.debug("no validation errors");
         }
 
     }

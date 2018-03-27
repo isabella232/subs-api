@@ -30,6 +30,8 @@ The API root provides a list of links, in the http://stateless.co/hal_specificat
 
 NOTE: Visit the <<ref_root_endpoint.adoc#,reference documention>> to get the details of using the API root
 
+include::{snippets}/root-endpoint/curl-request.adoc[]
+
 You don't need to worry about most of those links for now, we'll learn about them as we go.
 
 NOTE: We recommend that you always start from the API root and follow the _links_ given in the `_links` section of the
@@ -44,7 +46,7 @@ is up to you. You could create a team for just yourself, everyone in a lab, or o
 Teams are created and administed through the AAP system. Our <<guide_accounts_and_logging_in.adoc#,guide>> provides a
 starting point on how to do this.
 
-From the root endpoint, follow the link labelled `teams`. This will show all that teams that you are a member of:
+From the root endpoint, follow the link labelled `userTeams`. This will show all that teams that you are a member of:
 
 include::{snippets}/get-teams/http-response.adoc[]
 

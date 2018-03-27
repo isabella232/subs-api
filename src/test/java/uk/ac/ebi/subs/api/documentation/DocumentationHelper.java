@@ -95,20 +95,8 @@ public class DocumentationHelper {
         return linkWithRel("self").description("Canonical link for this resource");
     }
 
-    protected static FieldDescriptor paginationPageNumberDescriptor() {
-        return fieldWithPath("page.number").description("The page number");
-    }
-
-    protected static FieldDescriptor paginationTotalPagesDescriptor() {
-        return fieldWithPath("page.totalPages").description("The total number of pages");
-    }
-
-    protected static FieldDescriptor paginationTotalElementsDescriptor() {
-        return fieldWithPath("page.totalElements").description("The total number of resources");
-    }
-
-    protected static FieldDescriptor paginationPageSizeDescriptor() {
-        return fieldWithPath("page.size").description("The number of resources in this page");
+    protected static FieldDescriptor paginationBlock(){
+        return fieldWithPath("page").description("Pagination information including current page number, size of page, total elements and total pages availablee");
     }
 
     protected static LinkDescriptor nextRelLink() {

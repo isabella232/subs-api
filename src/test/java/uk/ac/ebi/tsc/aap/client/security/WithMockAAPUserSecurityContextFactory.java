@@ -7,6 +7,7 @@ import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,16 +17,21 @@ public class WithMockAAPUserSecurityContextFactory implements WithSecurityContex
     @Override
     public SecurityContext createSecurityContext(WithMockAAPUser annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        User user = new User();
-        user.setEmail(annotation.email());
-        user.setUserReference(annotation.userReference());
-        user.setUserName(annotation.userName());
-        user.setDomains( Arrays.stream(annotation.domains())
+        Set<Domain> domains = Arrays.stream(annotation.domains())
                 .map(domainName -> {
                     Domain domain = new Domain();
                     domain.setDomainName(domainName);
                     return domain;
-                }).collect(Collectors.toSet()));
+                }).collect(Collectors.toSet());
+
+        User user = new User(
+                annotation.userName(),
+                annotation.email(),
+                annotation.userReference(),
+                annotation.fullName(),
+                domains
+        );
+
         UserAuthentication userAuthentication = new UserAuthentication(user);
         context.setAuthentication(userAuthentication);
         return context;

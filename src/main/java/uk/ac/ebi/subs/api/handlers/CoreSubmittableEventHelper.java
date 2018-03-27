@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.handlers;
 
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
@@ -14,13 +15,13 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 @RepositoryEventHandler
 public class CoreSubmittableEventHelper {
 
+    private SubmittableHelperService submittableHelperService;
+    private SubmittableValidationDispatcher submittableValidationDispatcher;
+
     public CoreSubmittableEventHelper(SubmittableHelperService submittableHelperService, SubmittableValidationDispatcher submittableValidationDispatcher) {
         this.submittableHelperService = submittableHelperService;
         this.submittableValidationDispatcher = submittableValidationDispatcher;
     }
-
-    private SubmittableHelperService submittableHelperService;
-    private SubmittableValidationDispatcher submittableValidationDispatcher;
 
     /**
      * Give submittable an ID and set Team from submission.
@@ -34,8 +35,10 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
+        /* Actions here should be also made in SheetLoader Service */
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
+
     }
 
     @HandleBeforeSave
@@ -45,6 +48,12 @@ public class CoreSubmittableEventHelper {
 
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
+        /* Actions here should be also made in SheetLoader Service */
         submittableValidationDispatcher.validateUpdate(storedSubmittable);
+    }
+
+    @HandleAfterDelete
+    public void validateOnDelete(StoredSubmittable storedSubmittable) {
+        // TODO - send validation event on deletion
     }
 }

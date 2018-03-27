@@ -142,6 +142,7 @@ public class ApiDocumentation {
 
     @Before
     public void setUp() {
+        storeSubmission();
         clearDatabases();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
@@ -322,6 +323,7 @@ public class ApiDocumentation {
                                 linkWithRel("egaDacs:create").description("Create a new DAC resource"),
                                 linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
                                 linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
                                 linkWithRel("protocols").description("Collection of protocols within this submission"),
                                 linkWithRel("protocols:create").description("Create a new protocol resource"),
@@ -329,7 +331,7 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
@@ -806,6 +808,7 @@ public class ApiDocumentation {
                                 linkWithRel("egaDacs:create").description("Create a new DAC resource"),
                                 linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
                                 linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
                                 linkWithRel("protocols").description("Collection of protocols within this submission"),
                                 linkWithRel("protocols:create").description("Create a new protocol resource"),
@@ -813,7 +816,7 @@ public class ApiDocumentation {
                                 linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samples:sheetUpload").description("Upload a spreadsheet of samples"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("studies").description("Collection of studies within this submission"),
                                 linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
@@ -1116,10 +1119,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.samples").description("Samples within the submission"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1180,70 +1180,13 @@ public class ApiDocumentation {
                                         linkWithRel("by-submission").description("Search for all samples within a submission"),
                                         linkWithRel("by-team").description("Search for samples within a team"),
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
+                                        linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField()
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void team() throws Exception {
-
-        Submission submission = storeSubmission();
-        Team team = submission.getTeam();
-
-        this.mockMvc.perform(
-                get("/api/teams/{teamName}", team.getName())
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("get-team",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        linkWithRel("self").description("This resource"),
-                                        linkWithRel("submissions").description("Collection of submissions within this team"),
-                                        linkWithRel("submissions:create").description("Collection of submissions within this team"),
-                                        linkWithRel("items").description("Items owned by this team")
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("name").description("Name of this team")
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void teams() throws Exception {
-
-        Submission submission = storeSubmission();
-
-        this.mockMvc.perform(
-                get("/api/user/teams")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("get-teams",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        linkWithRel("self").description("This resource list")
-                                ),
-                                responseFields(
-                                        fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                        fieldWithPath("_embedded").description("The list of resources"),
-                                        fieldWithPath("_embedded.teams[].name").description("Name of this team"),
-                                        fieldWithPath("page.size").description("The number of resources in this page"),
-                                        fieldWithPath("page.totalElements").description("The total number of resources"),
-                                        fieldWithPath("page.totalPages").description("The total number of pages"),
-                                        fieldWithPath("page.number").description("The page number")
                                 )
                         )
                 );
@@ -1310,10 +1253,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1341,10 +1281,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.projects").description("Projects available to current user"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
@@ -1421,10 +1358,7 @@ public class ApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
-                                        DocumentationHelper.paginationPageSizeDescriptor(),
-                                        DocumentationHelper.paginationTotalElementsDescriptor(),
-                                        DocumentationHelper.paginationTotalPagesDescriptor(),
-                                        DocumentationHelper.paginationPageNumberDescriptor()
+                                        DocumentationHelper.paginationBlock()
                                 )
                         )
                 );
