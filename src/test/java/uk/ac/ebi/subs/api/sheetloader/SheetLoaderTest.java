@@ -203,10 +203,16 @@ public class SheetLoaderTest {
     }
 
     private List<Pair<Row, ? extends StoredSubmittable>> submittablesWithPairs() {
-        return Arrays.asList(
+        List<Pair<Row, ? extends StoredSubmittable>> pairs = Arrays.asList(
                 Pair.of(sheet.getRows().get(0), sample("s1")),
                 Pair.of(sheet.getRows().get(1), sample("s2"))
         );
+
+        for (Pair<Row, ? extends StoredSubmittable> p : pairs ){
+            p.getSecond().setTeam(submission.getTeam());
+            p.getSecond().setSubmission(submission);
+        }
+        return pairs;
     }
 
 
