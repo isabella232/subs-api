@@ -181,6 +181,8 @@ public class SheetLoaderTest {
 
 
         Sample expectedSample = sample("s1");
+        expectedSample.setSubmission(submission);
+        expectedSample.setTeam(submission.getTeam());
 
         Sample actualSample = (Sample) sheetLoaderService.documentToSubmittable(
                 Sample.class,
