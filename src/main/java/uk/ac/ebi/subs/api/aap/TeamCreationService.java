@@ -7,6 +7,9 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.TokenService;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,9 @@ public class TeamCreationService {
     @NonNull
     private DomainService domainService;
 
+    @NonNull
+    private TokenService tokenService;
+
     public Team createTeam(User user, TeamDto teamDto){
         String description = teamDto.getDescription();
         if (description == null) {
@@ -33,7 +39,15 @@ public class TeamCreationService {
         domainService.addUserToDomain(domain, user, usiTokenService.aapToken());
         domainService.addManagerToDomain(domain,user,usiTokenService.aapToken());
 
-        //TODO remove USI as domain manager
+        //remove USI as domain manager
+        String usiUserRef = tokenService.getUserReference(usiTokenService.aapToken());
+        User usiUser = new User(
+                "", "", usiUserRef, "", Collections.emptySet()
+        );
+
+        domainService.removeManagerFromDomain(usiUser,domain,usiTokenService.aapToken());
+
+
 
         Team team = new Team();
         team.setName(domain.getDomainName());
