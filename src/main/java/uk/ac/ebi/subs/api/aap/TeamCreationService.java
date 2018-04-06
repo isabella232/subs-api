@@ -7,6 +7,7 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
 import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 
@@ -27,13 +28,19 @@ public class TeamCreationService {
     @NonNull
     private DomainService domainService;
 
+
+    //private ProfileService profileService; TODO - use profile service directly once AAP adds it to auto-config
+
     @NonNull
-    private ProfileService profileService;
+    private ProfileRepositoryRest profileRepositoryRest; //TODO remove this once AAP exposes ProfileService
 
     @NonNull
     private TokenService tokenService;
 
     public Team createTeam(User user, TeamDto teamDto){
+        ProfileService profileService = new ProfileService(profileRepositoryRest);
+
+
         String description = teamDto.getDescription();
         if (description == null) {
             description = "";
