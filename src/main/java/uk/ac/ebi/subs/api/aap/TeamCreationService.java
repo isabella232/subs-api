@@ -7,9 +7,12 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
 import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,9 @@ public class TeamCreationService {
 
     @NonNull
     private DomainService domainService;
+
+    @NonNull
+    private ProfileService profileService;
 
     @NonNull
     private TokenService tokenService;
@@ -39,14 +45,22 @@ public class TeamCreationService {
         domainService.addUserToDomain(domain, user, usiTokenService.aapToken());
         domainService.addManagerToDomain(domain,user,usiTokenService.aapToken());
 
-        //remove USI as domain manager
-        String usiUserRef = tokenService.getUserReference(usiTokenService.aapToken());
-        User usiUser = new User(
-                "", "", usiUserRef, "", Collections.emptySet()
+
+        Map<String,String> domainProfileAttributes = new HashMap<>();
+        domainProfileAttributes.put("centre name",teamDto.getCentreName());
+
+        profileService.createDomainProfile(
+           domain.getDomainReference(),
+                domainProfileAttributes,
+                usiTokenService.aapToken()
         );
 
-        domainService.removeManagerFromDomain(usiUser,domain,usiTokenService.aapToken());
 
+        //remove USI as domain manager
+        String usiUserRef = tokenService.getUserReference(usiTokenService.aapToken());
+        User usiUser = new User.Builder(usiUserRef).build();
+
+        domainService.removeManagerFromDomain(usiUser,domain,usiTokenService.aapToken());
 
 
         Team team = new Team();
