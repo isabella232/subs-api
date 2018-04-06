@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
@@ -13,6 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,11 +27,13 @@ import uk.ac.ebi.subs.api.aap.TeamCreationService;
 import uk.ac.ebi.subs.api.aap.TeamDto;
 import uk.ac.ebi.subs.api.processors.TeamResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTeamService;
+import uk.ac.ebi.subs.api.validators.TeamDtoValidator;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
+import javax.validation.Valid;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -51,6 +58,9 @@ public class TeamController {
 
     @NonNull
     private TeamResourceProcessor teamResourceProcessor;
+
+    @NonNull
+    private TeamDtoValidator teamDtoValidator;
 
     @RequestMapping("/user/teams")
     public Resources<Resource<Team>> getTeams(Pageable pageable) {
@@ -88,11 +98,16 @@ public class TeamController {
     }
 
     @RequestMapping(value = "/user/teams", method = RequestMethod.POST)
-    public ResponseEntity<Resource<Team>> createTeam(@RequestBody TeamDto teamDto) {
+    public ResponseEntity<Resource<Team>> createTeam(@RequestBody TeamDto teamDto, BindingResult result) {
+
+        teamDtoValidator.validate(teamDto,result);
+
+        if (result.hasErrors()){
+            throw new RepositoryConstraintViolationException(result);
+        }
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getDetails();
-
 
         Team team = teamCreationService.createTeam(user,teamDto);
 
@@ -106,7 +121,5 @@ public class TeamController {
                 HttpStatus.CREATED
         );
     }
-
-
 
 }
