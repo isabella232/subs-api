@@ -608,9 +608,8 @@ public class ApiDocumentation {
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
-                                        fieldWithPath("assayRef").description("Reference to the assay that this assay data is generated from"),
+                                        fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
 
-                                        fieldWithPath("sampleRef").description("Reference to the sample that this assay data is generated from"),
                                         fieldWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
                                         fieldWithPath("files[0].checksum").description("File checksum using md5"),

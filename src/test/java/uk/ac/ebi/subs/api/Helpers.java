@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -178,7 +179,7 @@ public class Helpers {
             AssayRef assayRef = new AssayRef();
             assayRef.setAlias(assays.get(i-1).getAlias());
             assayRef.setTeam(TEAM_NAME);
-            ad.setAssayRef(assayRef);
+            ad.setAssayRefs(Arrays.asList(assayRef));
 
             File file = new File();
             file.setName("sequencingData.cram");
