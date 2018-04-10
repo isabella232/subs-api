@@ -1,6 +1,5 @@
 package uk.ac.ebi.subs.api.controllers;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,7 +29,6 @@ import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
-import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 
 import java.net.URI;
 import java.util.Collection;
@@ -75,21 +72,21 @@ public class TeamSubmissionController {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
 
-        String token = authorizationHeader.replaceFirst("Bearer ","");
+        String token = authorizationHeader.replaceFirst("Bearer ", "");
         Collection<Domain> userDomains = domainService.getMyDomains(token);
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
 
-        if (!domainOptional.isPresent()){
+        if (!domainOptional.isPresent()) {
             System.out.println("domain not present");
             return ResponseEntity.unprocessableEntity().build(); //TODO make a better error response
         }
 
         Domain domain = domainOptional.get();
-        Profile profile = profileService.getDomainProfile(domain.getDomainReference(),token);
+        Profile profile = profileService.getDomainProfile(domain.getDomainReference(), token);
         Team team = new Team();
         team.setName(teamName);
-        team.setDescription( domain.getDomainDesc() );
-        team.setProfile( profile.getAttributes() );
+        team.setDescription(domain.getDomainDesc());
+        team.setProfile(profile.getAttributes());
 
 
         submission.setTeam(team);
@@ -98,7 +95,7 @@ public class TeamSubmissionController {
 
         Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
 
-        HttpHeaders httpHeaders = buildHeaders(resource,savedSubmission);
+        HttpHeaders httpHeaders = buildHeaders(resource, savedSubmission);
 
         return buildResponseEntity(acceptHeader, resource, httpHeaders);
     }
