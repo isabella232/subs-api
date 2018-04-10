@@ -11,11 +11,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -26,10 +28,15 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.Profile;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,16 +72,24 @@ public class ApiIntegrationTestRabbitDependent {
     @Autowired
     private SampleRepository sampleRepository;
 
+    @MockBean
+    private DomainService domainService;
+    @MockBean
+    private ProfileRepositoryRest profileRepositoryRest;
+
 
     @Before
     public void buildUp() throws URISyntaxException {
         rootUri = "http://localhost:" + port + "/api";
         final Map<String, String> standardGetContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
-        standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER,TestWebSecurityConfig.USI_PASSWORD));
+        standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER, TestWebSecurityConfig.USI_PASSWORD));
         final Map<String, String> standardPostContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
-        standardPostContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER,TestWebSecurityConfig.USI_PASSWORD));
+        standardPostContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER, TestWebSecurityConfig.USI_PASSWORD));
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
-                Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),standardGetContentHeader,standardPostContentHeader);
+                Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), standardGetContentHeader, standardPostContentHeader);
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+
     }
 
     @After
@@ -122,9 +137,9 @@ public class ApiIntegrationTestRabbitDependent {
         assertThat(submissionGetResponse.getStatus(), is(equalTo(HttpStatus.OK.value())));
         JSONObject payload = submissionGetResponse.getBody().getObject();
 
-        Map<String,String> rels = testHelper.relsFromPayload(payload);
+        Map<String, String> rels = testHelper.relsFromPayload(payload);
 
-        assertThat(rels.get("submissionStatus"),notNullValue());
+        assertThat(rels.get("submissionStatus"), notNullValue());
         String submissionStatusLocation = rels.get("submissionStatus");
 
         HttpResponse<JsonNode> submissionStatusGetResponse = Unirest
@@ -140,7 +155,7 @@ public class ApiIntegrationTestRabbitDependent {
 
         rels = testHelper.relsFromPayload(statusPayload);
 
-        assertThat(rels.get("self"),notNullValue());
+        assertThat(rels.get("self"), notNullValue());
         submissionStatusLocation = rels.get("self");
 
         //update the submission

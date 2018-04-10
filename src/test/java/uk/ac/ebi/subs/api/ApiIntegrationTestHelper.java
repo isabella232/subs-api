@@ -10,6 +10,7 @@ import com.mashape.unirest.http.utils.Base64Coder;
 import org.apache.http.HttpHeaders;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mockito.Mockito;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -19,8 +20,13 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.Profile;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -248,6 +254,23 @@ public class ApiIntegrationTestHelper {
 
     public Map<String, String> getPostHeaders() {
         return postHeaders;
+    }
+
+    public static void mockAapProfileAndDomain(DomainService domainService, ProfileRepositoryRest profileRepositoryRest){
+        Domain domain = new Domain();
+        domain.setDomainReference("1234");
+        domain.setDomainName(Helpers.TEAM_NAME);
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("centre name", "An Institute");
+        Profile profile = new Profile(domain.getDomainReference(), null, domain, attributes);
+
+        Mockito.when(domainService.getMyDomains(Mockito.anyString()))
+                .thenReturn(Arrays.asList(
+                        domain
+                ));
+
+        Mockito.when(profileRepositoryRest.getDomainProfile(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(profile);
     }
 
 }

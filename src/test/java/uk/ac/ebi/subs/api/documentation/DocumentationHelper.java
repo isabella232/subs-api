@@ -21,6 +21,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 
 public class DocumentationHelper {
 
+    public final static String AUTHORIZATION_HEADER_NAME = "Authorization";
+    public final static String AUTHORIZATION_HEADER_VALUE = "Bearer $TOKEN";
+
     protected static JUnitRestDocumentation jUnitRestDocumentation(){
         return new JUnitRestDocumentation("build/generated-snippets");
     }
@@ -84,7 +87,7 @@ public class DocumentationHelper {
     }
 
     protected static HeaderAddingPreprocessor addAuthTokenHeader(){
-        return DocumentationHelper.addHeader("Authorization","Bearer $TOKEN");
+        return DocumentationHelper.addHeader(AUTHORIZATION_HEADER_NAME,AUTHORIZATION_HEADER_VALUE);
     }
 
     protected static FieldDescriptor linksResponseField() {
