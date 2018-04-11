@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
+import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -55,6 +56,8 @@ import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -135,6 +138,10 @@ public class ApiDocumentation {
 
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @MockBean
+    private DomainService domainService;
+    @MockBean
+    private ProfileRepositoryRest profileRepositoryRest;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
@@ -147,6 +154,8 @@ public class ApiDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
     }
 
     @Test
@@ -265,11 +274,12 @@ public class ApiDocumentation {
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
+                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME,DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
