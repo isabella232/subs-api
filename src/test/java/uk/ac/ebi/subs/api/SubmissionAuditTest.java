@@ -77,7 +77,6 @@ public class SubmissionAuditTest {
         clientSubmission.getSubmitter().setEmail(USI_USER_EMAIL);
         Team team = new Team();
         team.setName(Helpers.TEAM_NAME);
-        team.getProfile().put("centre name", "An Institute");
         clientSubmission.setTeam(team);
         String submissionJson = objectMapper.writeValueAsString(clientSubmission);
         this.mockMvc.perform(
