@@ -1,7 +1,6 @@
 language: java
 jdk:
 - oraclejdk8
-install: "./gradlew assemble"
 before_install:
 - openssl aes-256-cbc -K $encrypted_13c6474f5967_key -iv $encrypted_13c6474f5967_iv
   -in gradle.properties.enc -out gradle.properties -d
