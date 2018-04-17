@@ -26,7 +26,7 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@WithMockUser(username = "usi_user", roles = {CoreValidatorTest.TEST_TEAM_1,Helpers.ADMIN_TEAM_NAME})
+@WithMockUser(username = "project_validation_test_usi_user", roles = {CoreValidatorTest.TEST_TEAM_1,Helpers.ADMIN_TEAM_NAME})
 public class ProjectValidationTest {
 
     @Autowired

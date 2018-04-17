@@ -49,7 +49,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
+@WithMockUser(username = "ui_support_item_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
 public class UiItemSupportDocumentation {
 
     @Rule

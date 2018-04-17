@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
@@ -32,6 +33,8 @@ import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -77,8 +80,8 @@ public class TeamSubmissionController {
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
 
         if (!domainOptional.isPresent()) {
-            System.out.println("domain not present");
-            return ResponseEntity.unprocessableEntity().build(); //TODO make a better error response
+            // possible to reach this if the user does not currently belong to the domain in AAP
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
         }
 
         Domain domain = domainOptional.get();
@@ -86,8 +89,14 @@ public class TeamSubmissionController {
         Team team = new Team();
         team.setName(teamName);
         team.setDescription(domain.getDomainDesc());
-        team.setProfile(profile.getAttributes());
 
+        Map<String,String> attributes = Collections.emptyMap();
+
+        if (profile != null && profile.getAttributes() != null){
+            attributes = profile.getAttributes();
+        }
+        // profile requirements are checked in the team validator
+        team.setProfile(attributes);
 
         submission.setTeam(team);
 
