@@ -20,7 +20,8 @@ public enum SubsApiErrors {
     resource_locked("The resource cannot be changed"),
     already_exists("Another resource with the same value already exists"),
     already_exists_and_not_completed("Another resource with the same alias already exists within the team and is not 'Completed'."),
-    file_is_not_in_deletable_status("The file is currently not in a deletable status.");
+    file_is_not_in_deletable_status("The file is currently not in a deletable status."),
+    missing_profile_attribute("The team profile is missing a required attribute.");
 
     private String description;
 
