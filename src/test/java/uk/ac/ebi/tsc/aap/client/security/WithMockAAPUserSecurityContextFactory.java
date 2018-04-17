@@ -3,12 +3,7 @@ package uk.ac.ebi.tsc.aap.client.security;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
-import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Injects a mocked AAP user into the security context.
@@ -16,24 +11,20 @@ import java.util.stream.Collectors;
 public class WithMockAAPUserSecurityContextFactory implements WithSecurityContextFactory<WithMockAAPUser> {
     @Override
     public SecurityContext createSecurityContext(WithMockAAPUser annotation) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Set<Domain> domains = Arrays.stream(annotation.domains())
-                .map(domainName -> {
-                    Domain domain = new Domain();
-                    domain.setDomainName(domainName);
-                    return domain;
-                }).collect(Collectors.toSet());
+        User user = User.builder()
+                .withReference(annotation.userReference())
+                .withUsername(annotation.userName())
+                .withEmail(annotation.email())
+                .withFullName(annotation.fullName())
+                .withDomains(annotation.domains())
+                .build();
 
-        User user = new User(
-                annotation.userName(),
-                annotation.email(),
-                annotation.userReference(),
-                annotation.fullName(),
-                domains
-        );
+        return this.setUserInSecurityContext(user);
+    }
 
-        UserAuthentication userAuthentication = new UserAuthentication(user);
-        context.setAuthentication(userAuthentication);
-        return context;
+    public static SecurityContext setUserInSecurityContext(User user) {
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(new UserAuthentication(user));
+        return sc;
     }
 }

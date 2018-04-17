@@ -10,7 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,9 +23,14 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.tsc.aap.client.model.User;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
+import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 import uk.ac.ebi.tsc.aap.client.security.WithMockAAPUser;
+import uk.ac.ebi.tsc.aap.client.security.WithMockAAPUserSecurityContextFactory;
+
+import java.util.Arrays;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,17 +72,10 @@ public class SubmissionAuditTest {
     }
 
     @Test
-    @WithMockAAPUser(userName = USI_USER, email = USI_USER_EMAIL, userReference = DEFAULT_USER_REFERENCE, fullName = USER_FULL_NAME, domains = {Helpers.TEAM_NAME})
     public void postSubmissionAndCheckAAPAuditInfo() throws Exception {
+        createAapSecurityContext();
         final Submission submission = postSubmission();
         Assert.assertEquals(DEFAULT_USER_REFERENCE, submission.getCreatedBy());
-    }
-
-    @Test
-    @WithMockUser(username = USI_USER, roles = {Helpers.TEAM_NAME})
-    public void postSubmissionAndCheckAuditInfo() throws Exception {
-        final Submission submission = postSubmission();
-        Assert.assertEquals(USI_USER, submission.getCreatedBy());
     }
 
     private Submission postSubmission() throws Exception {
@@ -85,6 +87,19 @@ public class SubmissionAuditTest {
                         .accept(RestMediaTypes.HAL_JSON)).andExpect(status().isCreated());
 
         return submissionRepository.findAll().get(0);
+    }
+
+    private void createAapSecurityContext(){
+        User user = User.builder()
+                .withReference(DEFAULT_USER_REFERENCE)
+                .withUsername(USI_USER)
+                .withEmail(USI_USER_EMAIL)
+                .withFullName(USER_FULL_NAME)
+                .withDomains(Helpers.TEAM_NAME)
+                .build();
+
+
+        SecurityContext sc = WithMockAAPUserSecurityContextFactory.setUserInSecurityContext(user);
     }
 
 }
