@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -17,10 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.data.component.Submitter;
-import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 import uk.ac.ebi.tsc.aap.client.security.WithMockAAPUser;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -43,13 +44,18 @@ public class SubmissionAuditTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    protected ObjectMapper objectMapper;
+    @MockBean
+    private DomainService domainService;
+
+    @MockBean
+    private ProfileRepositoryRest profileRepositoryRest;
 
     @Before
     public void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
                 .build();
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
     }
 
     @After
@@ -58,32 +64,29 @@ public class SubmissionAuditTest {
     }
 
     @Test
-    @WithMockAAPUser(userName = USI_USER,email = USI_USER_EMAIL,userReference = DEFAULT_USER_REFERENCE, fullName = USER_FULL_NAME, domains = {Helpers.TEAM_NAME})
-    public void postSubmissionAndCheckAAPAuditInfo () throws Exception {
+    @WithMockAAPUser(userName = USI_USER, email = USI_USER_EMAIL, userReference = DEFAULT_USER_REFERENCE, fullName = USER_FULL_NAME, domains = {Helpers.TEAM_NAME})
+    public void postSubmissionAndCheckAAPAuditInfo() throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(DEFAULT_USER_REFERENCE,submission.getCreatedBy());
+        Assert.assertEquals(DEFAULT_USER_REFERENCE, submission.getCreatedBy());
     }
 
     @Test
-    @WithMockUser(username= USI_USER,roles={Helpers.TEAM_NAME})
-    public void postSubmissionAndCheckAuditInfo () throws Exception {
+    @WithMockUser(username = USI_USER, roles = {Helpers.TEAM_NAME})
+    public void postSubmissionAndCheckAuditInfo() throws Exception {
         final Submission submission = postSubmission();
-        Assert.assertEquals(USI_USER,submission.getCreatedBy());
+        Assert.assertEquals(USI_USER, submission.getCreatedBy());
     }
 
     private Submission postSubmission() throws Exception {
-        uk.ac.ebi.subs.data.Submission clientSubmission = new uk.ac.ebi.subs.data.Submission();
-        clientSubmission.setSubmitter(new Submitter());
-        clientSubmission.getSubmitter().setEmail(USI_USER_EMAIL);
-        Team team = new Team();
-        team.setName(Helpers.TEAM_NAME);
-        team.getProfile().put("centre name", "An Institute");
-        clientSubmission.setTeam(team);
-        String submissionJson = objectMapper.writeValueAsString(clientSubmission);
+
+        String url = "/teams/" + Helpers.TEAM_NAME + "/submissions";
+
         this.mockMvc.perform(
-                post("/submissions").content(submissionJson)
+                post(url).content("{}")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .header("Authorization", "Bearer token")
                         .accept(RestMediaTypes.HAL_JSON)).andExpect(status().isCreated());
+
         return submissionRepository.findAll().get(0);
     }
 
