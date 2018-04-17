@@ -78,9 +78,19 @@ public class SubmissionAuditTest {
     }
 
     private Submission postSubmission() throws Exception {
+<<<<<<< HEAD
 
         String url = "/teams/" + Helpers.TEAM_NAME + "/submissions";
 
+=======
+        uk.ac.ebi.subs.data.Submission clientSubmission = new uk.ac.ebi.subs.data.Submission();
+        clientSubmission.setSubmitter(new Submitter());
+        clientSubmission.getSubmitter().setEmail(USI_USER_EMAIL);
+        Team team = new Team();
+        team.setName(Helpers.TEAM_NAME);
+        clientSubmission.setTeam(team);
+        String submissionJson = objectMapper.writeValueAsString(clientSubmission);
+>>>>>>> origin/experiment-test-fails-on-pr-build
         this.mockMvc.perform(
                 post(url).content("{}")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
