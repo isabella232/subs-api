@@ -101,7 +101,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
+@WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class ApiDocumentation {
 
     @Rule

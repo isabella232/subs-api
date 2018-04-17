@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@WithMockUser(username="usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
+@WithMockUser(username="core_validator_usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
 public class CoreValidatorTest {
 
     public static final String TEST_TEAM_1 = "subs.team-1234";

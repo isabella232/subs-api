@@ -46,8 +46,6 @@ public class ApiIntegrationTestHelper {
 
     private ObjectMapper objectMapper;
     private String rootUri;
-    public static String DEFAULT_USER = "usi_user";
-    public static String DEFAULT_PASSWORD = "password";
 
     private Map<String, String> getHeaders = new HashMap<>();
     private Map<String, String> postHeaders = new HashMap<>();

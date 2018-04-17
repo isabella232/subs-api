@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
+@WithMockUser(username = "team_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class TeamDocumentation {
 
     @Rule
