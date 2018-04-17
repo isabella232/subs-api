@@ -94,17 +94,5 @@ public class SubmissionAuditTest {
         return submissionRepository.findAll().get(0);
     }
 
-    private void createAapSecurityContext(){
-        User user = User.builder()
-                .withReference(DEFAULT_USER_REFERENCE)
-                .withUsername(USI_USER)
-                .withEmail(USI_USER_EMAIL)
-                .withFullName(USER_FULL_NAME)
-                .withDomains(Helpers.TEAM_NAME)
-                .build();
-
-
-        SecurityContext sc = WithMockAAPUserSecurityContextFactory.setUserInSecurityContext(user);
-    }
 
 }
