@@ -11,6 +11,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.config.AapLinkConfig;
+import uk.ac.ebi.subs.api.config.TusUploadConfig;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
@@ -40,6 +41,9 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     @NonNull
     private AapLinkConfig aapLinkConfig;
 
+    @NonNull
+    private TusUploadConfig tusUploadConfig;
+
 
     private void addLinks(List<Link> links) {
         addStatusDescriptions(links);
@@ -48,8 +52,18 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addUserSubmissions(links);
         addStudyDataType(links);
         addAapApiLink(links);
+        addTusUploadLink(links);
         addUiSupportLinks(links);
         addTemplatesLinks(links);
+    }
+
+    private void addTusUploadLink(List<Link> links) {
+        links.add(
+                new Link(
+                        tusUploadConfig.getUrl(),
+                        "tus-upload"
+                )
+        );
     }
 
     private void addUiSupportLinks(List<Link> links) {
