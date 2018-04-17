@@ -57,7 +57,7 @@ public class TeamValidatorTest {
         String name = teamValidator.getExpectedTeamNamePrefix() + "1234";
 
         Team team = Team.build(name);
-
+        team.getProfile().put("centre name","An Institute");
         teamValidator.validate(team,errors);
 
         verify(errors, never()).rejectValue(
