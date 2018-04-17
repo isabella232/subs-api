@@ -1233,7 +1233,9 @@ public class ApiDocumentation {
                                         linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
                                         //profile
                                         linkWithRel("profile").description("Application level details"),
-                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API")
+                                        //related services
+                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
+                                        linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField()
