@@ -213,6 +213,7 @@ task('externalCiTest', type: Test) {
     }
     testLogging {
         exceptionFormat = 'full'
+        events "skipped", "failed"
     }
     runWithMongoDb = true
 }
