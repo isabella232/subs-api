@@ -37,13 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@ActiveProfiles("aap")
 public class SubmissionAuditTest {
 
-    public static final String DEFAULT_USER_REFERENCE = "usr-12345";
-    public static final String USI_USER = "usi_user";
-    public static final String USI_USER_EMAIL = "usi-user@usi.org";
-    public static final String USER_FULL_NAME = "Test User";
+    public static final String DEFAULT_USER_REFERENCE = "submission_audit_test_usr-12345";
+    public static final String USI_USER = "submission_audit_test_usi_user";
+    public static final String USI_USER_EMAIL = "submission_audit_test_user@usi.org";
+    public static final String USER_FULL_NAME = "submission_audit_test_full_name";
     private MockMvc mockMvc;
 
     @Autowired
