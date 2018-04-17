@@ -37,6 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
+@WithMockAAPUser(
+        userName = SubmissionAuditTest.USI_USER,
+        email = SubmissionAuditTest.USI_USER_EMAIL,
+        fullName = SubmissionAuditTest.USER_FULL_NAME,
+        userReference = SubmissionAuditTest.DEFAULT_USER_REFERENCE,
+        domains = {Helpers.TEAM_NAME}
+)
 public class SubmissionAuditTest {
 
     public static final String DEFAULT_USER_REFERENCE = "submission_audit_test_usr-12345";
@@ -72,7 +79,6 @@ public class SubmissionAuditTest {
 
     @Test
     public void postSubmissionAndCheckAAPAuditInfo() throws Exception {
-        createAapSecurityContext();
         final Submission submission = postSubmission();
         Assert.assertEquals(DEFAULT_USER_REFERENCE, submission.getCreatedBy());
     }
