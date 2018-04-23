@@ -85,11 +85,13 @@ represent groups of people working together, so team seemed like a more appropri
 == How to setup a team
 
 To create a new team, send a `POST` request to the domains URL. The request body should be a
-https://en.wikipedia.org/wiki/JSON[JSON document], with one field:
+https://en.wikipedia.org/wiki/JSON[JSON document], with these fields:
 
- * `description` - a description of your team
+ * `description` - a description of your team (optional)
+ * `centreName` - name of your institute or project (required)
 
-Creating a team will automatically make you a manager of that team, so you can add and remove people from it.
+Creating a team will automatically make you a manager of that team, so you can add and remove people from it through the
+AAP API or website.
 
 === Example request
 
