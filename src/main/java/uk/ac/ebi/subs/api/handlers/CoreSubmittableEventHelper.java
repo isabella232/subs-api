@@ -32,7 +32,7 @@ public class CoreSubmittableEventHelper {
     @HandleBeforeCreate
     public void addDependentObjectsToSubmittable(StoredSubmittable submittable) {
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(submittable);
-        fillInReferenceTeamsWithDefault(submittable);
+        fillInReferenceWithDefaultTeam(submittable);
     }
 
     @HandleAfterCreate
@@ -46,7 +46,7 @@ public class CoreSubmittableEventHelper {
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
         submittableHelperService.setTeamFromSubmission(storedSubmittable);
-        fillInReferenceTeamsWithDefault(storedSubmittable);
+        fillInReferenceWithDefaultTeam(storedSubmittable);
     }
 
     @HandleAfterSave
@@ -60,7 +60,7 @@ public class CoreSubmittableEventHelper {
         // TODO - send validation event on deletion
     }
 
-    private void fillInReferenceTeamsWithDefault(StoredSubmittable storedSubmittable){
+    private void fillInReferenceWithDefaultTeam(StoredSubmittable storedSubmittable){
         String teamName = storedSubmittable.getTeam().getName();
 
         storedSubmittable.refs()
