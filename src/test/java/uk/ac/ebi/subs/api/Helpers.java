@@ -126,7 +126,6 @@ public class Helpers {
         Study study = generateTestClientStudies(1).get(0);
         StudyRef studyRef = new StudyRef();
         studyRef.setAlias(study.getAlias());
-        studyRef.setTeam(TEAM_NAME);
 
         List<uk.ac.ebi.subs.data.client.Sample> samples = generateTestClientSamples(numberOfAssaysRequired);
 
@@ -142,7 +141,6 @@ public class Helpers {
 
             SampleRef sampleRef = new SampleRef();
             sampleRef.setAlias(samples.get(i-1).getAlias());
-            sampleRef.setTeam(TEAM_NAME);
 
             SampleUse sampleUse = new SampleUse();
             sampleUse.setSampleRef( sampleRef);
@@ -178,7 +176,6 @@ public class Helpers {
 
             AssayRef assayRef = new AssayRef();
             assayRef.setAlias(assays.get(i-1).getAlias());
-            assayRef.setTeam(TEAM_NAME);
             ad.setAssayRefs(Arrays.asList(assayRef));
 
             File file = new File();

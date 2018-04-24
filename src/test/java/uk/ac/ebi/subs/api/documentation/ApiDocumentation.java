@@ -891,7 +891,6 @@ public class ApiDocumentation {
         String sampleId = sampleRepository.findAll().get(0).getId();
         SampleRelationship sampleRelationship = new SampleRelationship();
         sampleRelationship.setAlias("D0");
-        sampleRelationship.setTeam(sub.getTeam().getName());
         sampleRelationship.setRelationshipNature("Child of");
 
         sample.getSampleRelationships().add(sampleRelationship);
