@@ -8,6 +8,7 @@ import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
+import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
@@ -31,6 +32,7 @@ public class CoreSubmittableEventHelper {
     @HandleBeforeCreate
     public void addDependentObjectsToSubmittable(StoredSubmittable submittable) {
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(submittable);
+        fillInReferenceTeamsWithDefault(submittable);
     }
 
     @HandleAfterCreate
@@ -44,6 +46,7 @@ public class CoreSubmittableEventHelper {
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
         submittableHelperService.setTeamFromSubmission(storedSubmittable);
+        fillInReferenceTeamsWithDefault(storedSubmittable);
     }
 
     @HandleAfterSave
@@ -55,5 +58,16 @@ public class CoreSubmittableEventHelper {
     @HandleAfterDelete
     public void validateOnDelete(StoredSubmittable storedSubmittable) {
         // TODO - send validation event on deletion
+    }
+
+    private void fillInReferenceTeamsWithDefault(StoredSubmittable storedSubmittable){
+        String teamName = storedSubmittable.getTeam().getName();
+
+        storedSubmittable.refs()
+                .filter(r -> r.getTeam() == null)
+                .filter(r -> r.getAlias() != null)
+                .filter(r -> r.getAccession() == null)
+                .forEach(r -> r.setTeam(teamName));
+
     }
 }
