@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.handlers;
 
+import lombok.NonNull;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
@@ -11,18 +12,19 @@ import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 @Component
 @RepositoryEventHandler
 public class CoreSubmittableEventHelper {
 
+    @NonNull
     private SubmittableHelperService submittableHelperService;
+    @NonNull
     private SubmittableValidationDispatcher submittableValidationDispatcher;
-
-    public CoreSubmittableEventHelper(SubmittableHelperService submittableHelperService, SubmittableValidationDispatcher submittableValidationDispatcher) {
-        this.submittableHelperService = submittableHelperService;
-        this.submittableValidationDispatcher = submittableValidationDispatcher;
-    }
+    @NonNull
+    private ValidationResultRepository validationResultRepository;
 
     /**
      * Give submittable an ID and set Team from submission.
@@ -56,8 +58,8 @@ public class CoreSubmittableEventHelper {
     }
 
     @HandleAfterDelete
-    public void validateOnDelete(StoredSubmittable storedSubmittable) {
-        // TODO - send validation event on deletion
+    public void handleAfterSubmittableDeletion(StoredSubmittable storedSubmittable) {
+        deleteRelatedValidationResult(storedSubmittable);
     }
 
     private void fillInReferenceWithDefaultTeam(StoredSubmittable storedSubmittable){
@@ -69,5 +71,11 @@ public class CoreSubmittableEventHelper {
                 .filter(r -> r.getAccession() == null)
                 .forEach(r -> r.setTeam(teamName));
 
+    }
+
+    private void deleteRelatedValidationResult(StoredSubmittable storedSubmittable) {
+        ValidationResult validationResult = storedSubmittable.getValidationResult();
+
+        validationResultRepository.delete(validationResult);
     }
 }
