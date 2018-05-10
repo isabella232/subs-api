@@ -180,7 +180,7 @@ public class Helpers {
 
             File file = new File();
             file.setName("sequencingData.cram");
-            file.setType("CRAM");
+            file.setType("cram");
             file.setChecksum("4bb1c4561d99d88c8b38a40d694267dc");
             ad.getFiles().add(file);
 
