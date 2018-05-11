@@ -40,7 +40,7 @@ public class FileDeletionEventHandlerTest {
 
         fileDeletionEventHandler.handleAfterFileDeletion(file);
 
-        verify(rabbitMessagingTemplate).convertAndSend(eq(Exchanges.SUBMISSIONS), eq("usi.file.deletion"), any(FileDeleteMessage.class));
+        verify(rabbitMessagingTemplate).convertAndSend(eq(Exchanges.SUBMISSIONS), eq("file.deleted"), any(FileDeleteMessage.class));
     }
 
 
