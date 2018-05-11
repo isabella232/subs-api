@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.handlers;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
@@ -17,6 +18,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 @Component
 @RepositoryEventHandler
+@RequiredArgsConstructor
 public class CoreSubmittableEventHelper {
 
     @NonNull

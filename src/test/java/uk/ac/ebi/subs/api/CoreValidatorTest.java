@@ -13,7 +13,6 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.api.handlers.CoreSubmittableEventHelper;
 import uk.ac.ebi.subs.api.validators.CoreSubmittableValidationHelper;
 import uk.ac.ebi.subs.api.validators.SubsApiErrors;
 import uk.ac.ebi.subs.data.component.Submitter;
