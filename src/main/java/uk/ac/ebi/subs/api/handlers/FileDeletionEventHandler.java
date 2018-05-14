@@ -23,7 +23,7 @@ public class FileDeletionEventHandler {
     @NonNull
     private ValidationResultRepository validationResultRepository;
 
-    private final String FILE_DELETION_ROUTING_KEY = "file.deleted";
+    private final String FILE_DELETION_ROUTING_KEY = "usi.file.deletion";
 
     @HandleAfterDelete
     void handleAfterFileDeletion(File file) {
