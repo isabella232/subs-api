@@ -4,11 +4,9 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Data
-public class FileDeleteMessage {
-    @NonNull
-    private String targetFilePath;
+@RequiredArgsConstructor
+public class StoredSubmittableDeleteMessage {
     @NonNull
     private String submissionId;
 }

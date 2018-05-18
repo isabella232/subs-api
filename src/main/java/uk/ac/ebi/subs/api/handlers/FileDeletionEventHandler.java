@@ -34,9 +34,10 @@ public class FileDeletionEventHandler {
     }
 
     private void sendFileDeletionMessage(File file) {
-        FileDeleteMessage fileDeleteMessage = new FileDeleteMessage();
-        fileDeleteMessage.setTargetFilePath(file.getTargetPath());
-        fileDeleteMessage.setSubmissionId(file.getSubmissionId());
+        FileDeleteMessage fileDeleteMessage = new FileDeleteMessage(
+                file.getTargetPath(),
+                file.getSubmissionId()
+        );
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
