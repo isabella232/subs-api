@@ -90,8 +90,9 @@ public class CoreSubmittableEventHandler {
     }
 
     private void sendStoredSubmittableDeletionMessage(StoredSubmittable storedSubmittable) {
-        StoredSubmittableDeleteMessage storedSubmittableDeleteMessage = new StoredSubmittableDeleteMessage();
-        storedSubmittableDeleteMessage.setSubmissionId(storedSubmittable.getSubmission().getId());
+        StoredSubmittableDeleteMessage storedSubmittableDeleteMessage = new StoredSubmittableDeleteMessage(
+                storedSubmittable.getSubmission().getId()
+        );
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
