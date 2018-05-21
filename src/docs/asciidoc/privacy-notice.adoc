@@ -1,0 +1,2 @@
+This website and the API it describes require limited processing of personal data. For more information, please read our
+https://www.ebi.ac.uk/data-protection/privacy-notice/ebi-wide-submission[privacy policy].
