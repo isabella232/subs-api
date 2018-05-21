@@ -1,0 +1,18 @@
+= About
+:docinfo: shared
+
+== Team
+
+The EBI submission inteface is primarily developed by members of the Molecular Archive Resources cluster, lead
+by https://www.ebi.ac.uk/about/people/helen-parkinson[Helen Parkinson], in collaboration with groups across the
+institute.
+
+== Announcements
+
+If you use the submission interface regularly, or maintain software that interacts with it, you may want to keep up to
+date with any changes and improvements by subscribing to the
+[https://listserver.ebi.ac.uk/mailman/listinfo/submission-announce]announcement mailing list.
+
+== Privacy
+
+include::privacy-notice.adoc[]
