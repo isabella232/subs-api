@@ -11,7 +11,7 @@ institute.
 
 If you use the submission interface regularly, or maintain software that interacts with it, you may want to keep up to
 date with any changes and improvements by subscribing to the
-[https://listserver.ebi.ac.uk/mailman/listinfo/submission-announce]announcement mailing list.
+https://listserver.ebi.ac.uk/mailman/listinfo/submission-announce[announcement mailing list].
 
 == Privacy
 
