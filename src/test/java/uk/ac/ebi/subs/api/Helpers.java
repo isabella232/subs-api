@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -125,7 +126,6 @@ public class Helpers {
         Study study = generateTestClientStudies(1).get(0);
         StudyRef studyRef = new StudyRef();
         studyRef.setAlias(study.getAlias());
-        studyRef.setTeam(TEAM_NAME);
 
         List<uk.ac.ebi.subs.data.client.Sample> samples = generateTestClientSamples(numberOfAssaysRequired);
 
@@ -141,7 +141,6 @@ public class Helpers {
 
             SampleRef sampleRef = new SampleRef();
             sampleRef.setAlias(samples.get(i-1).getAlias());
-            sampleRef.setTeam(TEAM_NAME);
 
             SampleUse sampleUse = new SampleUse();
             sampleUse.setSampleRef( sampleRef);
@@ -177,12 +176,11 @@ public class Helpers {
 
             AssayRef assayRef = new AssayRef();
             assayRef.setAlias(assays.get(i-1).getAlias());
-            assayRef.setTeam(TEAM_NAME);
-            ad.setAssayRef(assayRef);
+            ad.setAssayRefs(Arrays.asList(assayRef));
 
             File file = new File();
             file.setName("sequencingData.cram");
-            file.setType("CRAM");
+            file.setType("cram");
             file.setChecksum("4bb1c4561d99d88c8b38a40d694267dc");
             ad.getFiles().add(file);
 

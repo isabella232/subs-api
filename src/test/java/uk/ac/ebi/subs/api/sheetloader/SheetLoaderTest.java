@@ -35,6 +35,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,6 +203,24 @@ public class SheetLoaderTest {
         List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class);
 
         Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void convert_sheet_to_submittables_without_alias() {
+
+        //clear all alias fields, should not get converted to submittables
+        sheet.getRows().forEach(r -> r.getCells().set(0,""));
+
+        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class);
+
+        Assert.assertTrue(actual.isEmpty());
+
+        for (Row row : sheet.getRows()){
+            Assert.assertTrue(row.hasErrors());
+        }
+
+
+
     }
 
     private List<Pair<Row, ? extends StoredSubmittable>> submittablesWithPairs() {

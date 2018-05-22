@@ -32,13 +32,9 @@ import uk.ac.ebi.subs.repository.security.RoleLookup;
 @Order(1)
 public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static final String USI_USER = "usi_user";
+    public static final String USI_USER = "test_web_security_usi_user";
     public static final String USI_PASSWORD = "password";
-    public static final String USI_ADMIN = "usi_admin";
-    public static final String USI_USER_ROLE = "user";
-    public static final String USI_ADMIN_ROLE = "admin";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestWebSecurityConfig.class);
+    public static final String USI_ADMIN = "test_web_security_usi_admin";
 
     @Autowired
     UserDetailsService userDetailsService;

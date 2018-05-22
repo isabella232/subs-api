@@ -60,6 +60,7 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
                         .createTeamSubmission(
                                 resource.getContent().getName(),
                                 null,
+                                null,
                                 null
                         )
         ).withRel("submissions"+LinkHelper.CREATE_REL_SUFFIX)

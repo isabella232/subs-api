@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
@@ -13,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -25,8 +25,17 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.Profile;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -44,13 +53,17 @@ public class TeamSubmissionController {
     private RepositoryRestConfiguration config;
     private RepositoryEntityLinks repositoryEntityLinks;
     private SubmissionResourceProcessor submissionResourceProcessor;
+    private ProfileService profileService;
+    private DomainService domainService;
 
-    public TeamSubmissionController(SubmissionRepository submissionRepository, ApplicationEventPublisher publisher, RepositoryRestConfiguration config, RepositoryEntityLinks repositoryEntityLinks, SubmissionResourceProcessor submissionResourceProcessor) {
+    public TeamSubmissionController(SubmissionRepository submissionRepository, ApplicationEventPublisher publisher, RepositoryRestConfiguration config, RepositoryEntityLinks repositoryEntityLinks, SubmissionResourceProcessor submissionResourceProcessor, ProfileRepositoryRest profileRepositoryRest, DomainService domainService) {
         this.submissionRepository = submissionRepository;
         this.publisher = publisher;
         this.config = config;
         this.repositoryEntityLinks = repositoryEntityLinks;
         this.submissionResourceProcessor = submissionResourceProcessor;
+        this.profileService = new ProfileService(profileRepositoryRest);
+        this.domainService = domainService;
     }
 
     @PreAuthorizeParamTeamName
@@ -58,16 +71,40 @@ public class TeamSubmissionController {
     public ResponseEntity<ResourceSupport> createTeamSubmission(
             @PathVariable @P("teamName") String teamName,
             @RequestBody Submission submission,
-            @RequestHeader(value = "Accept", required = false) String acceptHeader
+            @RequestHeader(value = "Accept", required = false) String acceptHeader,
+            @RequestHeader("Authorization") String authorizationHeader
     ) {
 
-        submission.setTeam(Team.build(teamName));
+        String token = authorizationHeader.replaceFirst("Bearer ", "");
+        Collection<Domain> userDomains = domainService.getMyDomains(token);
+        Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
+
+        if (!domainOptional.isPresent()) {
+            // possible to reach this if the user does not currently belong to the domain in AAP
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+        }
+
+        Domain domain = domainOptional.get();
+        Profile profile = profileService.getDomainProfile(domain.getDomainReference(), token);
+        Team team = new Team();
+        team.setName(teamName);
+        team.setDescription(domain.getDomainDesc());
+
+        Map<String,String> attributes = Collections.emptyMap();
+
+        if (profile != null && profile.getAttributes() != null){
+            attributes = profile.getAttributes();
+        }
+        // profile requirements are checked in the team validator
+        team.setProfile(attributes);
+
+        submission.setTeam(team);
 
         Submission savedSubmission = createSubmission(submission);
 
         Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
 
-        HttpHeaders httpHeaders = buildHeaders(resource,savedSubmission);
+        HttpHeaders httpHeaders = buildHeaders(resource, savedSubmission);
 
         return buildResponseEntity(acceptHeader, resource, httpHeaders);
     }

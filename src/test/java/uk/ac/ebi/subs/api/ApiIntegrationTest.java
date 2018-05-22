@@ -11,14 +11,13 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -38,18 +37,18 @@ import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
-import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.Profile;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -91,6 +90,13 @@ public abstract class ApiIntegrationTest {
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
+    @MockBean
+    private DomainService domainService;
+
+    @MockBean
+    private ProfileRepositoryRest profileRepositoryRest;
+
+
     @Autowired
     private SubmittableHelperService submittableHelperService;
 
@@ -101,6 +107,9 @@ public abstract class ApiIntegrationTest {
         rootUri = "http://localhost:" + port + "/api";
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+
     }
 
     public void clearDbs() {
@@ -162,13 +171,13 @@ public abstract class ApiIntegrationTest {
                 .getJSONObject("spreadsheet-csv-download")
                 .getString("href");
 
-        Map<String,String> requestHeaders = testHelper.getGetHeaders();
-        requestHeaders.put("Accept","text/csv");
+        Map<String, String> requestHeaders = testHelper.getGetHeaders();
+        requestHeaders.put("Accept", "text/csv");
 
         HttpResponse<String> templateResponse = Unirest.get(spreadsheetLink).headers(requestHeaders).asString();
         Headers responseHeaders = templateResponse.getHeaders();
 
-        assertThat(responseHeaders.getFirst("Content-Disposition"),equalTo("attachment; filename=\"test-template_template.csv\""));
+        assertThat(responseHeaders.getFirst("Content-Disposition"), equalTo("attachment; filename=\"test-template_template.csv\""));
     }
 
     @Test
@@ -359,7 +368,7 @@ public abstract class ApiIntegrationTest {
             submissionRepository.insert(submission);
 
             HttpResponse<JsonNode> submissionResponse = Unirest.get(rootUri + "/submissions/" + submission.getId())
-                            .headers(testHelper.getGetHeaders()).asJson();
+                    .headers(testHelper.getGetHeaders()).asJson();
             assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
             for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {

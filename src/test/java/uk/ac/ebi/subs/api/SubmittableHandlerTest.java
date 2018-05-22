@@ -21,6 +21,8 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -56,8 +58,9 @@ public class SubmittableHandlerTest {
     @Autowired
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
-    @MockBean
-    private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @MockBean private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @MockBean private DomainService domainService;
+    @MockBean private ProfileRepositoryRest profileRepositoryRest;
 
     @Before
     public void buildUp() {
@@ -72,6 +75,8 @@ public class SubmittableHandlerTest {
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository),standardGetContentHeader,standardPostContentHeader);
 
         submittableValidationDispatcher.setRabbitMessagingTemplate(rabbitMessagingTemplate);
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
     }
 
     @Test

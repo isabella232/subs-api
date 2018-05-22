@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.submittable.BaseSubmittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.validator.data.SubmittableValidationEnvelope;
+import uk.ac.ebi.subs.validator.data.ValidationEnvelopeToCoordinator;
 
 
 /**
@@ -47,7 +47,7 @@ public class SubmittableValidationDispatcher {
     protected void sendEvent(StoredSubmittable storedSubmittable, String routingKeyPrefix) {
         ensureBaseSubmittable(storedSubmittable);
 
-        SubmittableValidationEnvelope<BaseSubmittable> validationEnvelope = new SubmittableValidationEnvelope(
+        ValidationEnvelopeToCoordinator<BaseSubmittable> validationEnvelope = new ValidationEnvelopeToCoordinator(
                 storedSubmittable.getSubmission().getId(),
                 (BaseSubmittable) storedSubmittable
         );

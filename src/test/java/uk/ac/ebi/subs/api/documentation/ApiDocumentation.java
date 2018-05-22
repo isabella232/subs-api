@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
+import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -55,6 +56,8 @@ import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -98,7 +101,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
+@WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class ApiDocumentation {
 
     @Rule
@@ -135,6 +138,10 @@ public class ApiDocumentation {
 
     @MockBean
     private RabbitMessagingTemplate rabbitMessagingTemplate;
+    @MockBean
+    private DomainService domainService;
+    @MockBean
+    private ProfileRepositoryRest profileRepositoryRest;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
@@ -147,6 +154,8 @@ public class ApiDocumentation {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
     }
 
     @Test
@@ -265,11 +274,12 @@ public class ApiDocumentation {
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
+                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME,DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -608,9 +618,8 @@ public class ApiDocumentation {
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
-                                        fieldWithPath("assayRef").description("Reference to the assay that this assay data is generated from"),
+                                        fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
 
-                                        fieldWithPath("sampleRef").description("Reference to the sample that this assay data is generated from"),
                                         fieldWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
                                         fieldWithPath("files[0].checksum").description("File checksum using md5"),
@@ -882,7 +891,6 @@ public class ApiDocumentation {
         String sampleId = sampleRepository.findAll().get(0).getId();
         SampleRelationship sampleRelationship = new SampleRelationship();
         sampleRelationship.setAlias("D0");
-        sampleRelationship.setTeam(sub.getTeam().getName());
         sampleRelationship.setRelationshipNature("Child of");
 
         sample.getSampleRelationships().add(sampleRelationship);
@@ -1224,7 +1232,9 @@ public class ApiDocumentation {
                                         linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
                                         //profile
                                         linkWithRel("profile").description("Application level details"),
-                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API")
+                                        //related services
+                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
+                                        linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField()

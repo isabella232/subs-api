@@ -23,6 +23,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.aap.TeamCreationService;
+import uk.ac.ebi.subs.api.aap.TeamDto;
 import uk.ac.ebi.subs.data.component.Team;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
@@ -44,7 +45,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
+@WithMockUser(username = "team_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class TeamDocumentation {
 
     @Rule
@@ -76,7 +77,12 @@ public class TeamDocumentation {
 
     @Test
     public void createTeam() throws Exception {
-        String teamDescJson = "{\"description\": \"10,000 Horses project group\"}";
+        TeamDto teamDto = TeamDto.builder()
+                .description("My lab group")
+                .centreName("An Institute")
+                .build();
+
+        String teamDescJson = objectMapper.writeValueAsString(teamDto);
         Team team = Team.build("subs.team-1234");
 
         Mockito.when(teamCreationService.createTeam(Mockito.anyObject(),Mockito.anyObject()))
@@ -105,6 +111,22 @@ public class TeamDocumentation {
                                 )
                         )
                 );
+    }
+
+    @Test
+    public void createTeam_requiresCentreName() throws Exception {
+        TeamDto teamDto = TeamDto.builder()
+                .description("My lab group")
+                .build();
+
+        String teamDescJson = objectMapper.writeValueAsString(teamDto);
+
+        this.mockMvc.perform(
+                post("/api/user/teams", Helpers.TEAM_NAME)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .content(teamDescJson)
+        ).andExpect(status().isBadRequest());
     }
 
     @Test

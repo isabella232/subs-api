@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -84,6 +85,8 @@ public class SheetLoaderService {
         stopWatch.stop(); stopWatch.start("convert");
 
         Collection<Pair<Row, ? extends StoredSubmittable>> submittablesWithRows = convertToSubmittables(sheet, targetTypeClass);
+
+
 
         stopWatch.stop(); stopWatch.start("lookup");
 
@@ -143,18 +146,23 @@ public class SheetLoaderService {
                 Optional.of(sheet.getTemplate().getDefaultCapture())
         );
 
-        List<Pair<Row, ? extends StoredSubmittable>> submittables = sheet.getRows().stream()
-                .map(row -> Pair.of(
-                        row,
-                        rowToSubmittable(
-                                columnMappings,
-                                targetTypeClass,
-                                sheet.getSubmission(),
-                                row,
-                                sheet.getHeaderRow().getCells()
-                        ))
-                )
-                .collect(Collectors.toList());
+        List<Pair<Row, ? extends StoredSubmittable>> submittables = new LinkedList<>();
+
+        for (Row row : sheet.getRows()){
+            StoredSubmittable storedSubmittable = rowToSubmittable(
+                    columnMappings,
+                    targetTypeClass,
+                    sheet.getSubmission(),
+                    row,
+                    sheet.getHeaderRow().getCells()
+            );
+
+            if (storedSubmittable != null){
+                Pair<Row, ? extends StoredSubmittable> pair = Pair.of(row,storedSubmittable);
+                submittables.add(pair);
+            }
+        }
+
         return submittables;
     }
 

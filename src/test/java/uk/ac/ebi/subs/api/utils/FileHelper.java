@@ -9,7 +9,7 @@ public class FileHelper {
     private static final String TUS_ID = UUID.randomUUID().toString();
     private static final String FILENAME = "test.cram";
     private static final long TOTAL_SIZE = 123456L;
-
+    private static final String TARGET_PATH ="/target/path/to/the/file";
 
     public static File createFile(String submissionId) {
         File file = new File();
@@ -17,6 +17,7 @@ public class FileHelper {
         file.setSubmissionId(submissionId);
         file.setFilename(FILENAME);
         file.setTotalSize(TOTAL_SIZE);
+        file.setTargetPath(TARGET_PATH);
 
         return file;
     }

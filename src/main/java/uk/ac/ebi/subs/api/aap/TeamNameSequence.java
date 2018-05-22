@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Tracks the maximum number assigned for using
+ * Tracks the maximum number assigned for team names with a specific prefix
  */
 @Document
 @Data

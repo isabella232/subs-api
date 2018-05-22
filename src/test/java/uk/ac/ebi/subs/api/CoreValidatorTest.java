@@ -13,7 +13,6 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.api.handlers.CoreSubmittableEventHelper;
 import uk.ac.ebi.subs.api.validators.CoreSubmittableValidationHelper;
 import uk.ac.ebi.subs.api.validators.SubsApiErrors;
 import uk.ac.ebi.subs.data.component.Submitter;
@@ -38,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@WithMockUser(username="usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
+@WithMockUser(username="core_validator_usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
 public class CoreValidatorTest {
 
     public static final String TEST_TEAM_1 = "subs.team-1234";

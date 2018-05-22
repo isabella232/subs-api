@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@WithMockUser(username = "usi_user", roles = {Helpers.TEAM_NAME})
+@WithMockUser(username = "submission_controller_test_usi_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionControllerTest {
 
     @Autowired

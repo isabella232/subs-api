@@ -16,11 +16,11 @@ import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.utils.FileHelper;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
-@WithMockUser(username = "usi_user", roles = {CoreValidatorTest.TEST_TEAM_1, Helpers.ADMIN_TEAM_NAME})
+@WithMockUser(username = "file_delete_usi_user", roles = {CoreValidatorTest.TEST_TEAM_1, Helpers.ADMIN_TEAM_NAME})
 public class FileDeleteValidatorTest {
 
     @Autowired

@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.controllers;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Resource;
@@ -8,6 +10,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.services.FileService;
 import uk.ac.ebi.subs.api.services.ValidationResultService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -27,24 +30,24 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 /**
  * Created by karoly on 13/07/2017.
  */
+@RequiredArgsConstructor
 @RestController
 @BasePathAwareController
 @RequestMapping("/submissions/{submissionId}")
 public class SubmissionStatusController {
 
+    @NonNull
     private Map<String, StatusDescription> submissionStatusDescriptionMap;
+    @NonNull
     private SubmissionRepository submissionRepository;
+    @NonNull
     private ValidationResultService validationResultService;
+    @NonNull
+    private FileService fileService;
+    @NonNull
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
+    @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
-
-    public SubmissionStatusController(Map<String, StatusDescription> submissionStatusDescriptionMap, SubmissionRepository submissionRepository, ValidationResultService validationResultService, ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler, RepositoryEntityLinks repositoryEntityLinks) {
-        this.submissionStatusDescriptionMap = submissionStatusDescriptionMap;
-        this.submissionRepository = submissionRepository;
-        this.validationResultService = validationResultService;
-        this.submissionStatusResourceAssembler = submissionStatusResourceAssembler;
-        this.repositoryEntityLinks = repositoryEntityLinks;
-    }
 
     @RequestMapping("/availableSubmissionStatuses")
     @PreAuthorizeSubmissionIdTeamName
@@ -53,7 +56,8 @@ public class SubmissionStatusController {
 
         Collection<String> statusNames;
 
-        if (validationResultService.isValidationFinishedAndPassed(currentSubmission.getSubmissionStatus().getId())) {
+        if (validationResultService.isValidationFinishedAndPassed(currentSubmission.getSubmissionStatus().getId())
+                && fileService.allFilesBySubmissionIDReadyForArchive(submissionId)) {
             StatusDescription statusDescription = submissionStatusDescriptionMap.get(currentSubmission.getSubmissionStatus().getStatus());
 
             statusNames = statusDescription.getUserTransitions();
