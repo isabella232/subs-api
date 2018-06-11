@@ -57,9 +57,7 @@ public class ValidationResultServiceImpl implements ValidationResultService {
         relevantAuthorsForSample.add(ValidationAuthor.Biosamples);
 
         for (ValidationResult validationResult : validationResults) {
-            Map<ValidationAuthor, List<SingleValidationResult>> expectedResults = validationResult.getExpectedResults();
-
-            Map<ValidationAuthor,String> outcomeByAuthor = validationResult.getOverallValidationOutcomeByAuthor();
+           Map<ValidationAuthor,String> outcomeByAuthor = validationResult.getOverallValidationOutcomeByAuthor();
 
             if (outcomeByAuthor.isEmpty()){
                 return false;

@@ -358,12 +358,12 @@ public class ApiDocumentation {
 
         SingleValidationResult svr = new SingleValidationResult();
         svr.setValidationStatus(SingleValidationResultStatus.Pass);
+
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
-
-        vr.setValidationStatus(GlobalValidationStatus.Complete);
         vr.getExpectedResults().put(ValidationAuthor.Core,Arrays.asList(svr));
+        vr.setValidationStatus(GlobalValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
