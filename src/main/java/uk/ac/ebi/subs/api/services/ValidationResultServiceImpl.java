@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,21 +52,34 @@ public class ValidationResultServiceImpl implements ValidationResultService {
     }
 
     private boolean isValidationPassed(List<ValidationResult> validationResults) {
+        Set<ValidationAuthor> relevantAuthorsForSample = new HashSet<>();
+        relevantAuthorsForSample.add(ValidationAuthor.Core);
+        relevantAuthorsForSample.add(ValidationAuthor.Biosamples);
+
         for (ValidationResult validationResult : validationResults) {
-            Map<ValidationAuthor, List<SingleValidationResult>> expectedResults = validationResult.getExpectedResults();
-            Set<ValidationAuthor> authors = expectedResults.keySet();
-            for (ValidationAuthor validationAuthor : authors) {
-                List<SingleValidationResult> singleValidationResults = expectedResults.get(validationAuthor);
-                if (singleValidationResults.size() == 0) {
+           Map<ValidationAuthor,String> outcomeByAuthor = validationResult.getOverallValidationOutcomeByAuthor();
+
+            if (outcomeByAuthor.isEmpty()){
+                return false;
+            }
+
+            boolean validatedDocumentIsSample = outcomeByAuthor.containsKey(ValidationAuthor.Biosamples);
+
+            for (Map.Entry<ValidationAuthor,String> entry : outcomeByAuthor.entrySet()){
+                ValidationAuthor author = entry.getKey();
+                String outcome = entry.getValue();
+
+                if (validatedDocumentIsSample && !relevantAuthorsForSample.contains(author)){
+                    continue;
+                }
+
+                boolean hasError = SingleValidationResultStatus.Error.toString().equals(outcome);
+
+                if (hasError) {
                     return false;
                 }
-                boolean isPassed = singleValidationResults.stream()
-                        .filter(singleValidationResult -> singleValidationResult.getValidationStatus().equals(SingleValidationResultStatus.Error))
-                        .findFirst()
-                        .orElse(null) == null;
-                if (!isPassed) {
-                    return false;
-                }
+
+
             }
         }
 
