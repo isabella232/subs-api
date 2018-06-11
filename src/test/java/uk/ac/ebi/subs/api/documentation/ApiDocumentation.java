@@ -53,8 +53,11 @@ import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
@@ -353,10 +356,14 @@ public class ApiDocumentation {
                 ));
 
 
+        SingleValidationResult svr = new SingleValidationResult();
+        svr.setValidationStatus(SingleValidationResultStatus.Pass);
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
+
         vr.setValidationStatus(GlobalValidationStatus.Complete);
+        vr.getExpectedResults().put(ValidationAuthor.Core,Arrays.asList(svr));
         validationResultRepository.insert(vr);
 
         SubmissionStatus status = submissionStatusRepository.findAll().get(0);
