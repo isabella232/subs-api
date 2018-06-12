@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.4.10-SNAPSHOT'
+version '2.4.11-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -97,10 +97,16 @@ configure(testsMakesDocs) {
     description = 'Run tests that generate documentation snippets'
 }
 
-ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1', project:'1']
+ext.asciiDoctorIncludes = [study:'1',sample:'1',assay:'1',assayData:'1', project:'1',
+                           'aapServerRootURL': 'https://aai.ebi.ac.uk',
+                           'aapServerAPIRootURL': 'https://api.aai.ebi.ac.uk'
+]
 
 if (gradle_env == "test" || gradle_env.startsWith("prod") ) {
-    ext.asciiDoctorIncludes = [sample:'1']
+    ext.asciiDoctorIncludes = [sample:'1',
+                               'aapServerRootURL': 'https://explore.aai.ebi.ac.uk',
+                               'aapServerAPIRootURL': 'https://explore.api.aai.ebi.ac.uk'
+    ]
 }
 
 asciidoctor {
