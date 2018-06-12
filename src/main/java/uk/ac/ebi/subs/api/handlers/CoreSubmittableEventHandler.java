@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.model.StoredSubmittableDeleteMessage;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
@@ -31,6 +33,9 @@ public class CoreSubmittableEventHandler {
     private SubmittableValidationDispatcher submittableValidationDispatcher;
     @NonNull
     private ValidationResultRepository validationResultRepository;
+
+    @NonNull
+    private ProcessingStatusRepository processingStatusRepository;
 
     public final static String STORED_SUBMITTABLE_DELETION_ROUTING_KEY = "usi.submittable.deletion";
 
@@ -68,9 +73,11 @@ public class CoreSubmittableEventHandler {
     @HandleAfterDelete
     public void handleAfterSubmittableDeletion(StoredSubmittable storedSubmittable) {
         deleteRelatedValidationResult(storedSubmittable);
-
+        deleteRelatedProcessingStatus(storedSubmittable);
         sendStoredSubmittableDeletionMessage(storedSubmittable);
     }
+
+
 
     private void fillInReferenceWithDefaultTeam(StoredSubmittable storedSubmittable){
         String teamName = storedSubmittable.getTeam().getName();
@@ -87,6 +94,12 @@ public class CoreSubmittableEventHandler {
         ValidationResult validationResult = storedSubmittable.getValidationResult();
 
         validationResultRepository.delete(validationResult);
+    }
+
+    private void deleteRelatedProcessingStatus(StoredSubmittable storedSubmittable) {
+        ProcessingStatus processingStatus = storedSubmittable.getProcessingStatus();
+
+        processingStatusRepository.delete(processingStatus);
     }
 
     private void sendStoredSubmittableDeletionMessage(StoredSubmittable storedSubmittable) {

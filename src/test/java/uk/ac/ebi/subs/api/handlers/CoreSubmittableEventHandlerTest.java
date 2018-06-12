@@ -11,6 +11,7 @@ import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.api.utils.SubmittableHelper;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
@@ -33,11 +34,19 @@ public class CoreSubmittableEventHandlerTest {
     private SubmittableHelperService submittableHelperService;
     @MockBean
     private SubmittableValidationDispatcher submittableValidationDispatcher;
+    @MockBean
+    private ProcessingStatusRepository processingStatusRepository;
+
 
     @Before
     public void buildUp() {
-        coreSubmittableEventHandler = new CoreSubmittableEventHandler(rabbitMessagingTemplate,
-                submittableHelperService, submittableValidationDispatcher, validationResultRepository);
+        coreSubmittableEventHandler = new CoreSubmittableEventHandler(
+                rabbitMessagingTemplate,
+                submittableHelperService,
+                submittableValidationDispatcher,
+                validationResultRepository,
+                processingStatusRepository
+        );
     }
 
     @Test
