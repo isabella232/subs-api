@@ -30,6 +30,7 @@ public class SubmissionEventHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String DEFAULT_USER_EMAIL = "alice@example.com";
+    private static final String DEFAULT_USER_NAME = "no name";
 
     public SubmissionEventHandler(
             SubmissionRepository submissionRepository,
@@ -91,22 +92,31 @@ public class SubmissionEventHandler {
     }
 
     private void setSubmitterEmailOnSubmission(Submission submission) {
-        Submitter submitter = Submitter.build(getEmailFromLoggedInUser());
+        Submitter submitter = getSubmitterFromLoggedInUser();
         submission.setSubmitter(submitter);
     }
 
-    private String getEmailFromLoggedInUser() {
+    private Submitter getSubmitterFromLoggedInUser() {
         String email = DEFAULT_USER_EMAIL;
+        String name = DEFAULT_USER_NAME;
+
+
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
 
             final Object details = authentication.getDetails();
             if (details instanceof User) {
-                email = ((User) details).getEmail();
+                User user = (User) details;
+                email = user.getEmail();
+                name = user.getFullName();
+
             }
         }
 
-        return email;
+        Submitter s = new Submitter();
+        s.setEmail(email);
+        s.setName(name);
+        return s;
     }
 }
