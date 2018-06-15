@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.services.FileService;
+import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.api.services.ValidationResultService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -43,7 +44,7 @@ public class SubmissionStatusController {
     @NonNull
     private ValidationResultService validationResultService;
     @NonNull
-    private FileService fileService;
+    private SubmissionStatusService submissionStatusService;
     @NonNull
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
     @NonNull
@@ -54,16 +55,8 @@ public class SubmissionStatusController {
     public Resources<Resource<StatusDescription>> availableSubmissionStatuses(@PathVariable String submissionId) {
         Submission currentSubmission = submissionRepository.findOne(submissionId);
 
-        Collection<String> statusNames;
-
-        if (validationResultService.isValidationFinishedAndPassed(currentSubmission.getSubmissionStatus().getId())
-                && fileService.allFilesBySubmissionIDReadyForArchive(submissionId)) {
-            StatusDescription statusDescription = submissionStatusDescriptionMap.get(currentSubmission.getSubmissionStatus().getStatus());
-
-            statusNames = statusDescription.getUserTransitions();
-        } else {
-            statusNames = Collections.emptySet();
-        }
+        Collection<String> statusNames =
+                submissionStatusService.getAvailableStatusNames(currentSubmission, submissionStatusDescriptionMap);
 
         List<Resource<StatusDescription>> statusResources = statusNames
                 .stream()
