@@ -1,0 +1,113 @@
+= Getting started with file uploads
+:docinfo: shared
+:toc: auto
+:markup-in-source: attributes+
+
+This guide describes how to upload a file to a biological archive with our submission system.
+
+== Overview and prerequisites
+
+We selected the TUS protocol (https://tus.io/) as the base of our file upload service.
+There are a number of client and server applications written for this protocol.
+They can be found here: https://tus.io/implementations.html.
+
+To follow along in this guide we are using a python client provided by the TUS community for the example script.
+This client can be found here: https://github.com/cenkalti/tus.py.
+You have to download and install it to your machine.
+
+To follow these steps, you will also need to have setup an account and have a valid API token. This is covered in a
+<<guide_accounts_and_logging_in.adoc#,separate guide>>.
+
+You also need to create a submission before starting a file upload, because you have to provide the submission ID
+for the file upload. How to create a submission is covered in a <<guide_getting_started.adoc#_creating_a_submission,separate guide>>.
+You would need a modifiable submission. That means it should be in Draft state.
+A freshly created submission is in that state.
+
+== How to upload a file
+
+1. Generate a new JWT (API) token to use with the file upload request. See above.
+2. Use the command line interface of the installed python client to send your file upload request.
+
+[source,bash,subs={markup-in-source}]
+----
+tus-upload --chunk-size 1024000 --metadata filename <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
+----
+
+Where the parameters are:
+
+- chunk-size: this number defines how much data is uploaded in a single take
+- metadata
+  * filename: the name of the file at its destination
+  * submissionID: the ID of the submission you would like the file to be associated with
+  * jwtToken: your generated JWT token from the previous step
+- source_test_filename: the name of the file you would like to upload
+
+
+NOTE: You could use any other tus-client, but the important thing is that
+you need to provide the following parameters as metadata: *filename*, *submissionID*, *jwtToken*.
+They are mandatory parameters.
+
+== How to query an uploaded file
+
+=== Request
+
+include::{snippets}/get-file/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-file/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/get-file/links.adoc[]
+
+== How to get a list of files by a given submission
+
+=== Request
+
+include::{snippets}/get-files-by-submissionID/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-files-by-submissionID/http-response.adoc[]
+
+=== Response fields
+
+include::{snippets}/get-files-by-submissionID/response-fields.adoc[]
+
+== Update an already uploaded file
+
+You can not update an already uploaded file, unfortunately.
+If you would like to replace the uploaded file,
+then first you have to <<guide_file_upload.adoc#_how_to_delete_an_uploaded_file,delete>> it
+and then you have to <<guide_file_upload.adoc#_how_to_upload_a_file,upload>> it again.
+
+== How to delete an uploaded file
+
+=== Request
+
+include::{snippets}/delete-file/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/delete-file/http-response.adoc[]
+
+== Other actions
+
+== How to list all the uploaded files
+
+=== Request
+
+include::{snippets}/get-all-files/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-all-files/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/get-all-files/links.adoc[]
+
+=== Response fields
+
+include::{snippets}/get-all-files/response-fields.adoc[]
