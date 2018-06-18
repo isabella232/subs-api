@@ -3,37 +3,26 @@
 :toc: auto
 :markup-in-source: attributes+
 
-This guide describes how to upload a file to a biological archive with our submission system.
+This guide describes how to upload files to our submission system. It is intended for people submitting data programatically.
 
 == Overview and prerequisites
 
-We selected the TUS protocol (https://tus.io/) as the base of our file upload service.
-There are a number of client and server applications written for this protocol.
-They can be found here: https://tus.io/implementations.html.
+We use the https://tus.io/[tus protocol] for resumable file uploads. Several upload client implementations are available from the https://tus.io/implementations.html[tus.io website]. The examples in this guide use a python client, https://github.com/cenkalti/tus.py[tus.py]. You can either download and install tus.py and follow these examples, or adapt them for the tus implementation you choose.
 
-To follow along in this guide we are using a python client provided by the TUS community for the example script.
-This client can be found here: https://github.com/cenkalti/tus.py.
-You have to download and install it to your machine.
 
-To follow these steps, you will also need to have setup an account and have a valid API token. This is covered in a
-<<guide_accounts_and_logging_in.adoc#,separate guide>>.
-
-You also need to create a submission before starting a file upload, because you have to provide the submission ID
-for the file upload. How to create a submission is covered in a <<guide_getting_started.adoc#_creating_a_submission,separate guide>>.
-You would need a modifiable submission. That means it should be in Draft state.
-A freshly created submission is in that state.
+To follow these steps, you will also need to have setup an account and have a valid AAP token (covered 
+<<guide_accounts_and_logging_in.adoc#,here>>), and created a submission (covered <<guide_getting_started.adoc#_creating_a_submission,here>>). You will need the token and submission ID to upload files.
 
 == How to upload a file
 
-1. Generate a new JWT (API) token to use with the file upload request. See above.
-2. Use the command line interface of the installed python client to send your file upload request.
+Use the command line interface of https://github.com/cenkalti/tus.py[tus.py] to send your file upload request, using the submission ID and AAP token:
 
 [source,bash,subs={markup-in-source}]
 ----
 tus-upload --chunk-size 1024000 --metadata filename <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
 ----
 
-Where the parameters are:
+What the parameters mean:
 
 - chunk-size: this number defines how much data is uploaded in a single take
 - metadata
@@ -77,8 +66,7 @@ include::{snippets}/get-files-by-submissionID/response-fields.adoc[]
 
 == Update an already uploaded file
 
-You can not update an already uploaded file, unfortunately.
-If you would like to replace the uploaded file,
+You can not update a file that has been uploaded. If you would like to replace the uploaded file,
 then first you have to <<guide_file_upload.adoc#_how_to_delete_an_uploaded_file,delete>> it
 and then you have to <<guide_file_upload.adoc#_how_to_upload_a_file,upload>> it again.
 
