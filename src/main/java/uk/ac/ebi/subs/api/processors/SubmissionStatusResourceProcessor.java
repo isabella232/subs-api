@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.processors;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.SubmissionStatusController;
+import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.api.services.ValidationResultService;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -18,20 +21,20 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
 public class SubmissionStatusResourceProcessor implements ResourceProcessor<Resource<SubmissionStatus>> {
 
-    private ValidationResultService validationResultService;
+    @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
+
+    @NonNull
     private SubmissionRepository submissionRepository;
+
+    @NonNull
+    private SubmissionStatusService submissionStatusService;
 
     public static final String AVAILABLE_STATUSES_REL = "availableStatuses";
 
-    public SubmissionStatusResourceProcessor(ValidationResultService validationResultService,
-                                             RepositoryEntityLinks repositoryEntityLinks, SubmissionRepository submissionRepository) {
-        this.validationResultService = validationResultService;
-        this.repositoryEntityLinks = repositoryEntityLinks;
-        this.submissionRepository = submissionRepository;
-    }
 
     @Override
     public Resource<SubmissionStatus> process(Resource<SubmissionStatus> resource) {
@@ -57,7 +60,7 @@ public class SubmissionStatusResourceProcessor implements ResourceProcessor<Reso
     private void addStatusUpdateRel(Resource<SubmissionStatus> submissionStatusResource) {
         SubmissionStatus submissionStatus = submissionStatusResource.getContent();
 
-        if (submissionStatus.getStatus().equals(SubmissionStatusEnum.Draft.name()) && validationResultService.isValidationFinishedAndPassed(submissionStatus.getId())) {
+        if (submissionStatusService.isSubmissionStatusChangeable(submissionStatus)) {
             Link submissionStatusResourceLink = repositoryEntityLinks.linkToSingleResource(submissionStatus).expand();
 
             Assert.notNull(submissionStatusResourceLink);
