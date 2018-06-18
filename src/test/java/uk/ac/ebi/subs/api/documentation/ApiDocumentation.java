@@ -408,6 +408,7 @@ public class ApiDocumentation {
                                 links(
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
+                                        linkWithRel("self:update").description("This resource is updateable"),
                                         linkWithRel("submissionStatus").description("This resource"),
                                         linkWithRel("statusDescription").description("Description of this status"),
                                         linkWithRel("availableStatuses").description("List of status values that you can currently use in this resource")
