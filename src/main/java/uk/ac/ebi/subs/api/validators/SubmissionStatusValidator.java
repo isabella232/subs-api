@@ -1,37 +1,35 @@
 package uk.ac.ebi.subs.api.validators;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.api.services.ValidationResultService;
 import uk.ac.ebi.subs.data.status.StatusDescription;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class SubmissionStatusValidator implements Validator {
 
-    @Autowired
-    public SubmissionStatusValidator(
-            SubmissionStatusRepository submissionStatusRepository,
-            OperationControlService operationControlService,
-            ValidationResultService validationResultService,
-            Map<String, StatusDescription> submissionStatusDescriptionMap
-    ) {
-        this.submissionStatusRepository = submissionStatusRepository;
-        this.submissionStatusDescriptionMap = submissionStatusDescriptionMap;
-        this.validationResultService = validationResultService;
-    }
-
-
+    @NonNull
     private Map<String, StatusDescription> submissionStatusDescriptionMap;
+    @NonNull
     private SubmissionStatusRepository submissionStatusRepository;
-    private OperationControlService operationControlService;
+    @NonNull
     private ValidationResultService validationResultService;
+    @NonNull
+    private SubmissionRepository submissionRepository;
+    @NonNull
+    private SubmissionStatusService submissionStatusService;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -50,6 +48,13 @@ public class SubmissionStatusValidator implements Validator {
         String targetStatusName = submissionStatus.getStatus();
 
         if (!submissionStatusDescriptionMap.containsKey(targetStatusName)) {
+            SubsApiErrors.invalid.addError(errors,"status");
+            return;
+        }
+
+        Submission submission = submissionRepository.findBySubmissionStatusId(submissionStatus.getId());
+        if (!submissionStatusService.getAvailableStatusNames(submission, submissionStatusDescriptionMap)
+                .contains(SubmissionStatusEnum.Submitted.name())) {
             SubsApiErrors.invalid.addError(errors,"status");
             return;
         }
