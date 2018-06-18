@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.data.status.StatusDescription;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +38,9 @@ public class SubmissionStatusServiceTest {
     @MockBean
     private FileService fileService;
 
+    @MockBean
+    private SubmissionRepository submissionRepository;
+
     private static final String SUBMISSION_ID = "1234567890";
 
     @Before
@@ -44,7 +48,7 @@ public class SubmissionStatusServiceTest {
         when(validationResultService.isValidationFinishedAndPassed(any(String.class))).thenReturn(true);
         when(fileService.allFilesBySubmissionIDReadyForArchive(any(String.class))).thenReturn(true);
 
-        submissionStatusService = new SubmissionStatusService(validationResultService, fileService);
+        submissionStatusService = new SubmissionStatusService(validationResultService, fileService, submissionRepository);
     }
 
     @Test
