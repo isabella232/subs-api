@@ -97,7 +97,7 @@ public class SubmissionStatusController {
 
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.GET})
     @PreAuthorizeSubmissionIdTeamName
-    public Resource<SubmissionStatus> updateStatus(
+    public Resource<SubmissionStatus> getStatus(
             @PathVariable @P("submissionId") String submissionId) {
 
         Submission submission = submissionRepository.findOne(submissionId);
