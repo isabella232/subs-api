@@ -1,0 +1,97 @@
+= Getting started with file uploads
+:docinfo: shared
+:toc: auto
+:markup-in-source: attributes+
+
+This guide describes how to upload files to our submission system. It is intended for people submitting data programatically.
+
+== Overview and prerequisites
+
+We use the https://tus.io/[tus protocol] for resumable file uploads. Several upload client implementations are available from the https://tus.io/implementations.html[tus.io website]. The examples in this guide use a python client, https://github.com/cenkalti/tus.py[tus.py]. You can either download and install tus.py and follow these examples, or adapt them for the tus implementation you choose.
+
+
+To follow these steps, you will also need to have setup an account and have a valid AAP token (covered 
+<<guide_accounts_and_logging_in.adoc#,here>>), and created a submission (covered <<guide_getting_started.adoc#_creating_a_submission,here>>). You will need the token and submission ID to upload files.
+
+== How to upload a file
+
+Use the command line interface of https://github.com/cenkalti/tus.py[tus.py] to send your file upload request, using the submission ID and AAP token:
+
+[source,bash,subs={markup-in-source}]
+----
+tus-upload --chunk-size 1024000 --metadata filename <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
+----
+
+What the parameters mean:
+
+- chunk-size: this number defines how much data is uploaded in a single take in bytes.
+
+NOTE: If the user have a reliable internet connection, then bigger values would mean a faster upload.
+On the other side, if the internet connection is not reliable, then using smaller values would mean a safer upload.
+
+- metadata
+  * filename: the name of the file at its destination
+  * submissionID: the ID of the submission you would like the file to be associated with
+  * jwtToken: your generated JWT token from the previous step
+- source_test_filename: the name of the file you would like to upload
+
+
+NOTE: You could use any other tus-client, but the important thing is that
+you need to provide the following parameters as metadata: *filename*, *submissionID*, *jwtToken*.
+They are mandatory parameters.
+
+== How to get a list of files by a given submission
+
+Once you have uploaded at least a file, you can find it through two routes.
+
+From your submission page you could follow the contents link and then the files link.
+
+Alternatively, you can follow the link <<ref_root_endpoint.adoc#,API root>>, you can follow the link userSubmissions link to get a list of all submissions that you can access.
+From that page you would have to follow your submission link and repeat the above described route to get to the contents page.
+
+From the contents page you can get the list of files by the given submission to execute the below request:
+
+include::{snippets}/get-files-by-submissionID/curl-request.adoc[]
+
+This will return the list of the uploaded file by the given submission.
+
+include::{snippets}/get-files-by-submissionID/http-response.adoc[]
+
+== How to query an uploaded file
+
+Once you got to the list of files page you can follow a file link in the _embedded section of a file under `_links.self.href` link.
+
+include::{snippets}/get-file/curl-request.adoc[]
+
+This will return the resource of the selected file.
+
+include::{snippets}/get-file/http-response.adoc[]
+
+== Update an already uploaded file
+
+You can not update a file that has been uploaded. If you would like to replace the uploaded file,
+then first you have to <<guide_file_upload.adoc#_how_to_delete_an_uploaded_file,delete>> it
+and then you have to <<guide_file_upload.adoc#_how_to_upload_a_file,upload>> it again.
+
+== How to delete an uploaded file
+
+If you would like to delete an already uploaded file from our submission service,
+then you have to go to the <<guide_file_upload.adoc#_how_to_get_a_list_of_files_by_a_given_submission,list of files>> page,
+select the file you would like to delete and send a DELETE HTTP request with the URL of the selected file.
+
+include::{snippets}/delete-file/curl-request.adoc[]
+
+The successful response will have and empty body and the status code should be 204, No content.
+
+include::{snippets}/delete-file/http-response.adoc[]
+
+== Checksum generation and comparision
+
+At the end of the file upload process our pipeline calculates the MD5 checksum of every uploaded file.
+Depending on the file size it could take from a couple of seconds till couple of minutes
+(in case of really-really huge files) to calculate this value.
+If you have already generated your own checksum you could compare it with our checksum.
+
+To get the generated checksum you have to go to the
+<<guide_file_upload.adoc#_how_to_query_an_uploaded_file,file's page>>.
+If the file status is `READY_FOR_ARCHIVE` then you should see a `checksum` field with the generated value.

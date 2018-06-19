@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.component.Term;
+import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -19,8 +20,14 @@ import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +38,13 @@ import java.util.UUID;
 
 public class Helpers {
 
+    public final static String TEAM_NAME = "subs.dev-team-1";
+    public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
+
+    public static final String FILE_UPLOAD_PATH = "/file/upload/path";
+    public static final String FILE_TARGET_PATH = "/file/target/path";
+    public static final String FILE_CREATED_BY = "test_user";
+    public static final String FILE_CHECKSUM = "12345678901234567890abcdef0123ab";
 
     public static Submission generateSubmission() {
         Submission s = new Submission();
@@ -242,9 +256,6 @@ public class Helpers {
         return d;
     }
 
-    public final static String TEAM_NAME = "subs.dev-team-1";
-    public final static String ADMIN_TEAM_NAME = "self.embl-ebi-subs-admin";
-
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
         Team d = generateTestTeam();
@@ -264,5 +275,37 @@ public class Helpers {
     public static String getRandomAlias() {
         Random random = new Random();
         return String.format("%04d", random.nextInt(10000));
+    }
+
+    public static uk.ac.ebi.subs.repository.model.fileupload.File generateFileWithFileName(
+            String filename, String submissionID) {
+        uk.ac.ebi.subs.repository.model.fileupload.File file = new uk.ac.ebi.subs.repository.model.fileupload.File();
+        file.setId(UUID.randomUUID().toString());
+        file.setFilename(filename);
+        file.setSubmissionId(submissionID);
+        file.setGeneratedTusId(UUID.randomUUID().toString().replace("-", ""));
+        file.setUploadPath(FILE_UPLOAD_PATH);
+        file.setTargetPath(FILE_TARGET_PATH);
+        file.setCreatedBy(FILE_CREATED_BY);
+        file.setUploadStartDate(LocalDateTime.now().minusSeconds(90));
+        file.setUploadFinishDate(LocalDateTime.now());
+        file.setStatus(FileStatus.READY_FOR_ARCHIVE);
+        file.setChecksum(FILE_CHECKSUM);
+
+        return file;
+
+    }
+
+    public static ValidationResult generateTestValidationResult(String submissionID) {
+        SingleValidationResult singleValidationResult = new SingleValidationResult();
+        singleValidationResult.setValidationStatus(SingleValidationResultStatus.Pass);
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.setSubmissionId(submissionID);
+        validationResult.setUuid("test");
+        validationResult.getExpectedResults().put(ValidationAuthor.Core, Collections.singletonList(singleValidationResult));
+        validationResult.setValidationStatus(GlobalValidationStatus.Complete);
+
+        return validationResult;
     }
 }
