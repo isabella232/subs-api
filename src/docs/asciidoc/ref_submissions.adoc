@@ -54,19 +54,19 @@ include::{snippets}/create-submission/links.adoc[]
 
 == Submission status
 
-=== Patch a submission status
+=== Change a submission status
 
 ==== Request
 
-include::{snippets}/patch-submission-status/curl-request.adoc[]
+include::{snippets}/change-submission-status/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/patch-submission-status/http-response.adoc[]
+include::{snippets}/change-submission-status/http-response.adoc[]
 
 ==== Links
 
-include::{snippets}/patch-submission-status/links.adoc[]
+include::{snippets}/change-submission-status/links.adoc[]
 
 == Status descriptions
 

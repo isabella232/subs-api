@@ -47,32 +47,17 @@ public class SubmissionStatusValidator implements Validator {
 
         String targetStatusName = submissionStatus.getStatus();
 
-        if (!submissionStatusDescriptionMap.containsKey(targetStatusName)) {
-            SubsApiErrors.invalid.addError(errors,"status");
+        if (!submissionStatusService.isSubmissionStatusChangeable(submissionStatus)){
+            SubsApiErrors.resource_locked.addError(errors,"status");
             return;
         }
 
         Submission submission = submissionRepository.findBySubmissionStatusId(submissionStatus.getId());
         if (!submissionStatusService.getAvailableStatusNames(submission, submissionStatusDescriptionMap)
-                .contains(SubmissionStatusEnum.Submitted.name())) {
+                .contains(targetStatusName)) {
             SubsApiErrors.invalid.addError(errors,"status");
             return;
         }
 
-        SubmissionStatus currentSubmissionStatus = submissionStatusRepository.findOne(submissionStatus.getId());
-        StatusDescription currentStatusDescription = submissionStatusDescriptionMap.get(currentSubmissionStatus.getStatus());
-
-        submissionStatus.setCreatedDate(currentSubmissionStatus.getCreatedDate());
-        submissionStatus.setCreatedBy(currentSubmissionStatus.getCreatedBy());
-
-        if (!currentStatusDescription.isUserTransitionPermitted(targetStatusName)) {
-            SubsApiErrors.invalid.addError(errors,"status");
-            return;
-        }
-
-        if (!validationResultService.isValidationFinishedAndPassed(submissionStatus.getId())) {
-            SubsApiErrors.invalid.addError(errors,"status");
-            return;
-        }
     }
 }
