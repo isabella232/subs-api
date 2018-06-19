@@ -24,7 +24,11 @@ tus-upload --chunk-size 1024000 --metadata filename <destination_file_name.cram>
 
 What the parameters mean:
 
-- chunk-size: this number defines how much data is uploaded in a single take
+- chunk-size: this number defines how much data is uploaded in a single take in bytes.
+
+NOTE: If the user have a reliable internet connection, then bigger values would mean a faster upload.
+On the other side, if the internet connection is not reliable, then using smaller values would mean a safer upload.
+
 - metadata
   * filename: the name of the file at its destination
   * submissionID: the ID of the submission you would like the file to be associated with
@@ -36,33 +40,32 @@ NOTE: You could use any other tus-client, but the important thing is that
 you need to provide the following parameters as metadata: *filename*, *submissionID*, *jwtToken*.
 They are mandatory parameters.
 
-== How to query an uploaded file
-
-=== Request
-
-include::{snippets}/get-file/curl-request.adoc[]
-
-=== Response
-
-include::{snippets}/get-file/http-response.adoc[]
-
-=== Links
-
-include::{snippets}/get-file/links.adoc[]
-
 == How to get a list of files by a given submission
 
-=== Request
+Once you have uploaded at least a file, you can find it through two routes.
+
+From your submission page you could follow the contents link and then the files link.
+
+Alternatively, you can follow the link <<ref_root_endpoint.adoc#,API root>>, you can follow the link userSubmissions link to get a list of all submissions that you can access.
+From that page you would have to follow your submission link and repeat the above described route to get to the contents page.
+
+From the contents page you can get the list of files by the given submission to execute the below request:
 
 include::{snippets}/get-files-by-submissionID/curl-request.adoc[]
 
-=== Response
+This will return the list of the uploaded file by the given submission.
 
 include::{snippets}/get-files-by-submissionID/http-response.adoc[]
 
-=== Response fields
+== How to query an uploaded file
 
-include::{snippets}/get-files-by-submissionID/response-fields.adoc[]
+Once you got to the list of files page you can follow a file link in the _embedded section of a file under `_links.self.href` link.
+
+include::{snippets}/get-file/curl-request.adoc[]
+
+This will return the resource of the selected file.
+
+include::{snippets}/get-file/http-response.adoc[]
 
 == Update an already uploaded file
 
@@ -72,30 +75,23 @@ and then you have to <<guide_file_upload.adoc#_how_to_upload_a_file,upload>> it 
 
 == How to delete an uploaded file
 
-=== Request
+If you would like to delete an already uploaded file from our submission service,
+then you have to go to the <<guide_file_upload.adoc#_how_to_get_a_list_of_files_by_a_given_submission,list of files>> page,
+select the file you would like to delete and send a DELETE HTTP request with the URL of the selected file.
 
 include::{snippets}/delete-file/curl-request.adoc[]
 
-=== Response
+The successful response will have and empty body and the status code should be 204, No content.
 
 include::{snippets}/delete-file/http-response.adoc[]
 
-== Other actions
+== Checksum generation and comparision
 
-== How to list all the uploaded files
+At the end of the file upload process our pipeline calculates the MD5 checksum of every uploaded file.
+Depending on the file size it could take from a couple of seconds till couple of minutes
+(in case of really-really huge files) to calculate this value.
+If you have already generated your own checksum you could compare it with our checksum.
 
-=== Request
-
-include::{snippets}/get-all-files/curl-request.adoc[]
-
-=== Response
-
-include::{snippets}/get-all-files/http-response.adoc[]
-
-=== Links
-
-include::{snippets}/get-all-files/links.adoc[]
-
-=== Response fields
-
-include::{snippets}/get-all-files/response-fields.adoc[]
+To get the generated checksum you have to go to the
+<<guide_file_upload.adoc#_how_to_query_an_uploaded_file,file's page>>.
+If the file status is `READY_FOR_ARCHIVE` then you should see a `checksum` field with the generated value.
