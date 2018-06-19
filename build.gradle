@@ -106,7 +106,7 @@ ext.asciiDoctorFileUploadIncludes = [
     'file_upload_server_url': 'https://submission-dev.ebi.ac.uk/files/'
 ]
 
-if (gradle_env == "test" || gradle_env.startsWith("prod") ) {
+if (gradle_env.startsWith("prod")) {
     ext.asciiDoctorIncludes = [sample:'1']
 }
 
