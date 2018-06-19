@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
+import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
@@ -145,6 +147,8 @@ public class ApiDocumentation {
     private DomainService domainService;
     @MockBean
     private ProfileRepositoryRest profileRepositoryRest;
+    @MockBean
+    private SubmissionStatusService submissionStatusService;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
@@ -159,6 +163,12 @@ public class ApiDocumentation {
         this.objectMapper = DocumentationHelper.mapper();
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+
+        Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(Submission.class)))
+                .thenReturn(Boolean.TRUE);
+        Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(SubmissionStatus.class)))
+                .thenReturn(Boolean.TRUE);
+
     }
 
     @Test
@@ -272,6 +282,8 @@ public class ApiDocumentation {
 
         String jsonRepresentation = objectMapper.writeValueAsString(submission);
 
+        Mockito.when(submissionStatusService.getAvailableStatusNames(Mockito.any(Submission.class),Mockito.anyMap()))
+                .thenReturn(Arrays.asList("Submitted"));
 
         this.mockMvc.perform(
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
@@ -303,6 +315,8 @@ public class ApiDocumentation {
                                         linkWithRel("team").description("The team this submission belongs to"),
                                         linkWithRel("contents").description("The contents of this submission"),
                                         linkWithRel("submissionStatus").description("The status of this submission"),
+                                        linkWithRel("submissionStatus:update").description("The submission status can be changed"),
+                                        linkWithRel("availableStatuses").description("List of values that you can set the submission status to"),
                                         linkWithRel("processingStatuses").description("All processing statuses for the contents of this submission"),
                                         linkWithRel("validationResults").description("All validation results for the contents of this submission"),
                                         linkWithRel("processingStatusSummary").description("Summary of processing statuses for this submission"),
