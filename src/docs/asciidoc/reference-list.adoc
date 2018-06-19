@@ -19,6 +19,7 @@ endif::assay[]
 ifdef::assayData[]
 * <<ref_assay_data.adoc#,Assay data>>
 endif::assayData[]
+* <<ref_file_upload.adoc#, File upload>>
 * <<ref_validation_results.adoc#,Validation results>>
 * <<ref_ui_support.adoc#,UI Support>>
 * <<ref_spreadsheets_and_templates.adoc#,Spreadsheets and templates>>

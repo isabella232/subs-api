@@ -245,13 +245,13 @@ This will return a response to show that the status can now be updated to 'Submi
 
 include::{snippets}/available-status-report/http-response.adoc[]
 
-You can change the submission status to 'Submitted', using either a `PUT` or `PATCH` request:
+You can change the submission status to 'Submitted', using a `PUT` request:
 
-include::{snippets}/patch-submission-status/curl-request.adoc[]
+include::{snippets}/change-submission-status/curl-request.adoc[]
 
 This will return a response to show that the status has been changed:
 
-include::{snippets}/patch-submission-status/http-response.adoc[]
+include::{snippets}/change-submission-status/http-response.adoc[]
 
 This will also lock the submission, so you cannot make further changes while we broker the data into the archives.
 
