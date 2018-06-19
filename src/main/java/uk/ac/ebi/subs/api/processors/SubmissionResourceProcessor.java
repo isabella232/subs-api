@@ -1,15 +1,20 @@
 package uk.ac.ebi.subs.api.processors;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.core.ControllerEntityLinks;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsLinksController;
+import uk.ac.ebi.subs.api.controllers.SubmissionStatusController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -22,27 +27,28 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 
 @Component
+@RequiredArgsConstructor
 public class SubmissionResourceProcessor implements ResourceProcessor<Resource<Submission>> {
 
-
-    public SubmissionResourceProcessor(
-            RepositoryEntityLinks repositoryEntityLinks,
-            List<Class<? extends StoredSubmittable>> submittablesClassList,
-            OperationControlService operationControlService,
-            LinkHelper linkHelper
-    ) {
-        this.repositoryEntityLinks = repositoryEntityLinks;
-        this.submittablesClassList = submittablesClassList;
-        this.operationControlService = operationControlService;
-        this.linkHelper = linkHelper;
-    }
-
+    @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
-    private List<Class<? extends StoredSubmittable>> submittablesClassList;
+
+    @NonNull
     private OperationControlService operationControlService;
+
+    @NonNull
     private LinkHelper linkHelper;
+
+    @NonNull
+    private SubmissionStatusService submissionStatusService;
+
+    @NonNull
+    private ControllerEntityLinks controllerEntityLinks;
 
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
@@ -53,12 +59,35 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         ifUpdateableAddLinks(resource);
 
+        addStatusLinks(resource);
+
         addStatusSummaryReport(resource);
         addTypeStatusSummaryReport(resource);
 
         addReceiptLink(resource);
 
         return resource;
+    }
+
+    private void addStatusLinks(Resource<Submission> resource) {
+        Submission submission = resource.getContent();
+
+        if (submissionStatusService.isSubmissionStatusChangeable(submission)) {
+            Link updateLink = linkTo(
+                    methodOn(SubmissionStatusController.class)
+                            .updateStatus(submission.getId(),null)
+                    ).withRel("submissionStatus"+LinkHelper.UPDATE_REL_SUFFIX);
+
+            resource.add(updateLink);
+        }
+
+        Link availableStatusLinks = linkTo(
+                methodOn(SubmissionStatusController.class)
+                        .availableSubmissionStatuses(submission.getId())
+        ).withRel(SubmissionStatusResourceProcessor.AVAILABLE_STATUSES_REL);
+
+        resource.add(availableStatusLinks);
+
     }
 
     private void addReceiptLink(Resource<Submission> resource) {
