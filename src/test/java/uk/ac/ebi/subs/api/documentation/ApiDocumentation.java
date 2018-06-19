@@ -387,13 +387,13 @@ public class ApiDocumentation {
                 ));
 
         this.mockMvc.perform(
-                patch("/api/submissionStatuses/{id}", status.getId()).content("{\"status\": \"Submitted\"}")
+                put("/api/submissions/{id}/submissionStatus", sub.getId()).content("{\"status\": \"Submitted\"}")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())
                 .andDo(
-                        document("patch-submission-status",
+                        document("change-submission-status",
                                 preprocessRequest(prettyPrint(),addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
