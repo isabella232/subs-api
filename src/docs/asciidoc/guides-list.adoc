@@ -3,4 +3,5 @@
 * <<guide_overview.adoc#,Overview>>
 * <<guide_accounts_and_logging_in.adoc#,Setting up a user account and logging in>>
 * <<guide_getting_started.adoc#,Getting started>>
+* <<guide_file_upload.adoc#,How to upload a file>>
 * <<about.adoc#,About>>
