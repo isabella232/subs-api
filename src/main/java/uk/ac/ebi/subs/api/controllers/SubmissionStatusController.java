@@ -95,6 +95,24 @@ public class SubmissionStatusController {
         return resource;
     }
 
+    @RequestMapping(value = "/submissionStatus",method = {RequestMethod.GET})
+    @PreAuthorizeSubmissionIdTeamName
+    public Resource<SubmissionStatus> updateStatus(
+            @PathVariable @P("submissionId") String submissionId) {
+
+        Submission submission = submissionRepository.findOne(submissionId);
+
+        if (submission == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        SubmissionStatus status = submission.getSubmissionStatus();
+
+        Resource<SubmissionStatus> resource = buildSubmissionStatusResource(status);
+
+        return resource;
+    }
+
     private Resource<SubmissionStatus> buildSubmissionStatusResource(SubmissionStatus status) {
         Resource<SubmissionStatus> resource = new Resource<>(status);
 
