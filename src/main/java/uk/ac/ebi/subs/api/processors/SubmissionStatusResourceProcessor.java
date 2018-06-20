@@ -66,7 +66,9 @@ public class SubmissionStatusResourceProcessor implements ResourceProcessor<Reso
             Assert.notNull(submissionStatusResourceLink);
 
             Link updateLink = submissionStatusResourceLink.withRel("self" + LinkHelper.UPDATE_REL_SUFFIX);
-            submissionStatusResource.add(updateLink);
+            if (submissionStatusResource.getLink(updateLink.getRel()) == null) {
+                submissionStatusResource.add(updateLink);
+            }
         }
     }
 
