@@ -38,21 +38,24 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
     private void addSubmittableLink(Resource<ValidationResult> resource) {
         String submittableType = resource.getContent().getEntityType();
 
-        Class<?> submittableClass = null;
-        try {
-            submittableClass = Class.forName(submittableType);
-        } catch (ClassNotFoundException e) {
-            logger.error("Can't determine submittable class.", e);
-        }
+        if (submittableType != null) {
 
-        if (submittableClass != null) {
-            Link linkToSingleResource = repositoryEntityLinks.linkToSingleResource(
-                    submittableClass,
-                    resource.getContent().getEntityUuid()
-            );
+            Class<?> submittableClass = null;
+            try {
+                submittableClass = Class.forName(submittableType);
+            } catch (ClassNotFoundException e) {
+                logger.error("Can't determine submittable class.", e);
+            }
 
-            Link submittableLink = linkToSingleResource.withRel("submittable");
-            resource.add(submittableLink);
+            if (submittableClass != null) {
+                Link linkToSingleResource = repositoryEntityLinks.linkToSingleResource(
+                        submittableClass,
+                        resource.getContent().getEntityUuid()
+                );
+
+                Link submittableLink = linkToSingleResource.withRel("submittable");
+                resource.add(submittableLink);
+            }
         }
     }
 
