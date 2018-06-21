@@ -35,7 +35,6 @@ import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
-import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.repository.model.Assay;
@@ -1025,14 +1024,13 @@ public class ApiDocumentation {
                                         fieldWithPath("_links").description("Links"),
 
                                         fieldWithPath("validationStatus").description("Is validation pending or complete?"),
-                                        fieldWithPath("entityUuid").description("Identifer for the resource being validated"),
-                                        fieldWithPath("version").description("Version of this resource"),
-                                        fieldWithPath("submissionId").description("Identifier for the submission this result relates to")
+                                        fieldWithPath("version").description("Version of this resource.")
                                 ),
                                 links(
                                         halLinks(),
                                         linkWithRel("self").description("This resource"),
-                                        linkWithRel("validationResult").description("This resource")
+                                        linkWithRel("validationResult").description("This resource"),
+                                        linkWithRel("submittable").description("The submittable this validation result refers to.")
 
                                 )
                         )
