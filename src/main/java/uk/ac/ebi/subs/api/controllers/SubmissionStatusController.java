@@ -58,8 +58,6 @@ public class SubmissionStatusController {
     @NonNull
     private SubmissionRepository submissionRepository;
     @NonNull
-    private ValidationResultService validationResultService;
-    @NonNull
     private SubmissionStatusService submissionStatusService;
     @NonNull
     private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
@@ -71,9 +69,6 @@ public class SubmissionStatusController {
 
     @NonNull
     private SubmissionStatusRepository submissionStatusRepository;
-
-    @NonNull
-    private SubmissionStatusResourceProcessor submissionStatusResourceProcessor;
 
 
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.PUT,RequestMethod.PATCH})
@@ -123,7 +118,6 @@ public class SubmissionStatusController {
                 repositoryEntityLinks.linkToSingleResource(status).withSelfRel()
         );
 
-        resource = submissionStatusResourceProcessor.process(resource);
         return resource;
     }
 
