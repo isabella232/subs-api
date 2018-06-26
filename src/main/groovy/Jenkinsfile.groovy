@@ -19,11 +19,6 @@ node {
         } else if (git_branch == 'remotes/origin/master') {
             sh "./gradlew --gradle-user-home=/homes/sub_adm/secrets -PsshKeyFile=/var/lib/jenkins/.ssh/id_rsa -Penv=test deployJar"
         }
-    }
-    post {
-        always {
-            echo 'One way or another, I have finished'
-            cleanWs() /* clean up our workspace */
-        }
+        cleanWs()
     }
 }
