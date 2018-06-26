@@ -19,7 +19,7 @@ Use the command line interface of https://github.com/cenkalti/tus.py[tus.py] to 
 
 [source,bash,subs={markup-in-source}]
 ----
-tus-upload --chunk-size 1024000 --metadata filename <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
+tus-upload --chunk-size 1024000 --metadata name <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
 ----
 
 What the parameters mean:
@@ -30,14 +30,14 @@ NOTE: If the user have a reliable internet connection, then bigger values would 
 On the other side, if the internet connection is not reliable, then using smaller values would mean a safer upload.
 
 - metadata
-  * filename: the name of the file at its destination
+  * name: the name of the file at its destination
   * submissionID: the ID of the submission you would like the file to be associated with
   * jwtToken: your generated JWT token from the previous step
 - source_test_filename: the name of the file you would like to upload
 
 
 NOTE: You could use any other tus-client, but the important thing is that
-you need to provide the following parameters as metadata: *filename*, *submissionID*, *jwtToken*.
+you need to provide the following parameters as metadata: *name*, *submissionID*, *jwtToken*.
 They are mandatory parameters.
 
 == How to get a list of files by a given submission
