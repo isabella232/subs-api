@@ -49,7 +49,8 @@ public class StudyDataTypeConfig {
         }
 
         if (metabolomicsEnabled) {
-            enabledDataTypes.put(StudyDataType.Metabolomics, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_MS, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_NMR, Collections.emptySet());
         }
 
         if (functionalGenomicsEnabled) {
