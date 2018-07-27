@@ -49,7 +49,10 @@ public class StudyDataTypeConfig {
         }
 
         if (metabolomicsEnabled) {
-            enabledDataTypes.put(StudyDataType.Metabolomics_MS, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_GCMS, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_LCMS, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_ImagingMS, Collections.emptySet());
+            enabledDataTypes.put(StudyDataType.Metabolomics_ImagingNMR, Collections.emptySet());
             enabledDataTypes.put(StudyDataType.Metabolomics_NMR, Collections.emptySet());
         }
 
