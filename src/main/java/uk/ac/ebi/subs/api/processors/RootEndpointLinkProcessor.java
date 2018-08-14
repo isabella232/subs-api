@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.UiSupportItem;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 
@@ -55,6 +56,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addTusUploadLink(links);
         addUiSupportLinks(links);
         addTemplatesLinks(links);
+        addSubmissionPlanLinks(links);
     }
 
     private void addTusUploadLink(List<Link> links) {
@@ -79,6 +81,14 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
         links.add(
                 repositoryEntityLinks.linkToCollectionResource(Template.class).expand(new HashMap<>())
+        );
+    }
+
+    private void addSubmissionPlanLinks(List<Link> links) {
+        linkHelper.addSearchLink(links, SubmissionPlan.class);
+
+        links.add(
+                repositoryEntityLinks.linkToCollectionResource(SubmissionPlan.class).expand(new HashMap<>())
         );
     }
 

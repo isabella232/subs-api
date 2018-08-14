@@ -554,7 +554,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -609,7 +611,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -665,7 +669,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -716,7 +722,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -762,7 +770,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -810,7 +820,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -904,7 +916,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -958,7 +972,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -1003,7 +1019,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This resource can be updated"),
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -1170,7 +1188,9 @@ public class ApiDocumentation {
                                         linkWithRel("self:update").description("This sample can be updated"),
                                         linkWithRel("self:delete").description("This sample can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias")
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
                                 ),
                                 responseFields( //TODO fill out the descriptions
                                         DocumentationHelper.linksResponseField(),
@@ -1246,6 +1266,7 @@ public class ApiDocumentation {
                                         linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
                                         linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
                                         linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
+                                        linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
                                         linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
