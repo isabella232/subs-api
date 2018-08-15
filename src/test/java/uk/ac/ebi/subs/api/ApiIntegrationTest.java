@@ -31,6 +31,7 @@ import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -76,6 +77,8 @@ public abstract class ApiIntegrationTest {
 
     @Autowired
     protected SubmissionRepository submissionRepository;
+    @Autowired
+    protected SubmissionPlanRepository submissionPlanRepository;
     @Autowired
     protected SubmissionStatusRepository submissionStatusRepository;
     @Autowired
@@ -366,6 +369,8 @@ public abstract class ApiIntegrationTest {
             submissionStatusRepository.insert(submissionStatus);
 
             submissionRepository.insert(submission);
+
+            submissionPlanRepository.insert(submission.getSubmissionPlan());
 
             HttpResponse<JsonNode> submissionResponse = Unirest.get(rootUri + "/submissions/" + submission.getId())
                     .headers(testHelper.getGetHeaders()).asJson();

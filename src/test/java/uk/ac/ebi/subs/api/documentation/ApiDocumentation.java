@@ -46,6 +46,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -122,6 +123,8 @@ public class ApiDocumentation {
     private SubmissionRepository submissionRepository;
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
+    @Autowired
+    private SubmissionPlanRepository submissionPlanRepository;
     @Autowired
     private SampleRepository sampleRepository;
     @Autowired
@@ -1556,6 +1559,7 @@ public class ApiDocumentation {
 
         this.submissionStatusRepository.insert(sub.getSubmissionStatus());
         this.submissionRepository.save(sub);
+        this.submissionPlanRepository.insert(sub.getSubmissionPlan());
         return sub;
     }
 

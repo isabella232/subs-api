@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.processors.SubmissionStatusResourceProcessor;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -70,6 +71,9 @@ public class ApiIntegrationTestRabbitDependent {
     SubmissionStatusRepository submissionStatusRepository;
 
     @Autowired
+    private SubmissionPlanRepository submissionPlanRepository;
+
+    @Autowired
     private SampleRepository sampleRepository;
 
     @MockBean
@@ -104,8 +108,9 @@ public class ApiIntegrationTestRabbitDependent {
     //Requires dispatcher to delete the contents
     public void postThenDeleteSubmission() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
+        Submission submission = Helpers.generateSubmission();
 
-        String submissionLocation = testHelper.submissionWithSamples(rootRels);
+        String submissionLocation = testHelper.submissionWithSamples(submission, rootRels);
         HttpResponse<JsonNode> deleteResponse = Unirest.delete(submissionLocation)
                 .headers(testHelper.getPostHeaders())
                 .asJson();
@@ -126,8 +131,11 @@ public class ApiIntegrationTestRabbitDependent {
     @Category(RabbitMQDependentTest.class)
     public void simpleSubmissionWorkflow() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
+        Submission submission = Helpers.generateSubmission();
 
-        String submissionLocation = testHelper.submissionWithSamples(rootRels);
+        submissionPlanRepository.insert(submission.getSubmissionPlan());
+
+        String submissionLocation = testHelper.submissionWithSamples(submission, rootRels);
 
         HttpResponse<JsonNode> submissionGetResponse = Unirest
                 .get(submissionLocation)

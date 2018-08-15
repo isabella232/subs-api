@@ -91,8 +91,7 @@ public class ApiIntegrationTestHelper {
         return submissionResponse;
     }
 
-    public String submissionWithSamples(Map<String, String> rootRels) throws UnirestException, IOException {
-        Submission submission = Helpers.generateSubmission();
+    public String submissionWithSamples(Submission submission, Map<String, String> rootRels) throws UnirestException, IOException {
         Map<String,String> teamRels = teamRels(Helpers.TEAM_NAME);
         HttpResponse<JsonNode> submissionResponse = postSubmission(teamRels, submission);
 
