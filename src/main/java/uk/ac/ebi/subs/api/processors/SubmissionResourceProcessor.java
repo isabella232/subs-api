@@ -81,6 +81,10 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private void addDataType(SubmissionResource resource) {
         Submission submission = resource.getContent();
 
+        if (submission.getSubmissionPlan() == null){
+            return;
+        }
+
         List<DataType> dataTypes = submission.getSubmissionPlan().getDataTypeIds()
                 .stream()
                 .map(id -> dataTypeRepository.findOne(id))
