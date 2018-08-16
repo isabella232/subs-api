@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -50,6 +51,7 @@ public class Helpers {
         Submission s = new Submission();
 
         s.setSubmitter(generateTestSubmitter());
+        s.setSubmissionPlan(generateSubmissionPlan());
 
         return s;
     }
@@ -265,6 +267,7 @@ public class Helpers {
 
         sub.setSubmissionStatus(new SubmissionStatus(SubmissionStatusEnum.Draft));
         sub.getSubmissionStatus().setTeam(d);
+        sub.setSubmissionPlan(generateSubmissionPlan());
         return sub;
     }
 
@@ -307,5 +310,15 @@ public class Helpers {
         validationResult.setValidationStatus(GlobalValidationStatus.Complete);
 
         return validationResult;
+    }
+
+    public static SubmissionPlan generateSubmissionPlan() {
+        SubmissionPlan submissionPlan = new SubmissionPlan();
+        submissionPlan.setId(UUID.randomUUID().toString());
+        submissionPlan.setDescription("Test submission Plan description");
+        submissionPlan.setDisplayName("Test display name for submission plan");
+        submissionPlan.setDataTypeIds(Arrays.asList("sample", "assay"));
+
+        return submissionPlan;
     }
 }

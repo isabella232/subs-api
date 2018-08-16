@@ -34,6 +34,7 @@ public class SubmissionStatusResourceProcessor implements ResourceProcessor<Reso
     private SubmissionStatusService submissionStatusService;
 
     public static final String AVAILABLE_STATUSES_REL = "availableStatuses";
+    public static final String STATUS_REL = "submissionStatus";
 
 
     @Override
