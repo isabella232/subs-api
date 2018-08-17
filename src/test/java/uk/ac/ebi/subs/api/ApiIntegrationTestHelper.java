@@ -20,6 +20,8 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
@@ -268,6 +270,24 @@ public class ApiIntegrationTestHelper {
 
         Mockito.when(profileRepositoryRest.getDomainProfile(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(profile);
+    }
+
+    public static void initialiseDataTypes(DataTypeRepository dataTypeRepository){
+        List<DataType> dataTypes = Arrays.asList(
+                buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class),
+                buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class),
+                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class),
+                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class),
+                buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class)
+        );
+        dataTypeRepository.insert(dataTypes);
+    }
+
+    private static DataType buildDataType(String id, Class clazz){
+        DataType dt = new DataType();
+        dt.setId(id);
+        dt.setSubmittableClassName(clazz.getName());
+        return dt;
     }
 
 }

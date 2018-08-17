@@ -46,6 +46,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -139,6 +140,8 @@ public class ApiDocumentation {
     private AssayDataRepository assayDataRepository;
     @Autowired
     private StudyRepository studyRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -165,6 +168,7 @@ public class ApiDocumentation {
         this.objectMapper = DocumentationHelper.mapper();
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
 
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(Submission.class)))
                 .thenReturn(Boolean.TRUE);
@@ -518,7 +522,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(study);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/studies").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -573,7 +577,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(assay);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/assays").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -630,7 +634,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(assayData);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/assayData").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingRuns").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -880,7 +884,7 @@ public class ApiDocumentation {
         String jsonRepresentation = objectMapper.writeValueAsString(sample);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/samples").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -1428,6 +1432,7 @@ public class ApiDocumentation {
         this.assayRepository.deleteAll();
         this.assayDataRepository.deleteAll();
         this.studyRepository.deleteAll();
+        this.dataTypeRepository.deleteAll();
     }
 
     /* Test Helper Methods */
