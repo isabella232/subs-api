@@ -10,14 +10,22 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.controllers.SheetsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Project;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -34,6 +42,9 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     private ProjectRepository projectRepository;
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
+
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
 
     public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
 
@@ -90,7 +101,31 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     }
 
     private void addUpdateLinks(Resource<SubmissionContents> resource) {
-        linkHelper.addSubmittablesCreateLinks(resource.getContent().getSubmission(), resource.getLinks());
+        SubmissionPlan submissionPlan = resource.getContent().getSubmission().getSubmissionPlan();
+
+
+        List<DataType> dataTypesForSubmission;
+        List<DataType> allDataTypes = dataTypeRepository.findAll();
+
+        if (submissionPlan == null) {
+            dataTypesForSubmission = allDataTypes;
+        }
+        else {
+            Set<String> dataTypeIds = new HashSet<>(submissionPlan.getDataTypeIds());
+
+            dataTypesForSubmission = allDataTypes.stream()
+                    .filter(dt -> dataTypeIds.contains(dt.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        for (DataType dataType : dataTypesForSubmission){
+            linkHelper.addSubmittableCreateLink(
+                    resource.getLinks(),
+                    dataType,
+                    resource.getContent().getSubmission());
+        }
+
+
 
     }
 
