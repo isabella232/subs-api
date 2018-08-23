@@ -1232,6 +1232,7 @@ public class ApiDocumentation {
                                         linkWithRel("by-team").description("Search for samples within a team"),
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
                                         linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
+                                        linkWithRel("by-submission-and-dataType").description("Search for a sample by data type within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 
