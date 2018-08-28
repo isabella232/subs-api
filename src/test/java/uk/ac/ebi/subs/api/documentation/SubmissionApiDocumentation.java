@@ -1,8 +1,9 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Headers;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.operation.preprocess.ContentModifier;
-import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,6 +29,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -65,9 +65,8 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.text.SimpleDateFormat;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -80,7 +79,6 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -155,25 +153,49 @@ public class SubmissionApiDocumentation {
     @MockBean
     private SubmissionStatusService submissionStatusService;
 
+    @MockBean
+    private Http http;
+
+    private HttpResponse<String> mockResponse = Mockito.mock(HttpResponse.class);
+
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
 
+    private String urlBase;
+
     @Before
-    public void setUp() {
+    public void setUp() throws UnirestException, URISyntaxException {
         storeSubmission();
         clearDatabases();
+
+        URI uri = new URI(
+                this.scheme,
+                null, this.host, this.port,
+                "/api", null, null
+
+        );
+
+        this.urlBase = uri.toString();
+
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
 
-        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
         ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
 
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(Submission.class)))
                 .thenReturn(Boolean.TRUE);
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(SubmissionStatus.class)))
                 .thenReturn(Boolean.TRUE);
+
+
+        Mockito.when(http.post(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResponse);
+        Mockito.when(mockResponse.getStatus()).thenReturn(201);
+        Mockito.when(mockResponse.getHeaders()).thenReturn(new Headers());
+        Mockito.when(mockResponse.getBody()).thenReturn("");
+
 
     }
 
@@ -184,14 +206,14 @@ public class SubmissionApiDocumentation {
 
         String jsonRepresentation = objectMapper.writeValueAsString(submission);
 
-        Mockito.when(submissionStatusService.getAvailableStatusNames(Mockito.any(Submission.class),Mockito.anyMap()))
+        Mockito.when(submissionStatusService.getAvailableStatusNames(Mockito.any(Submission.class), Mockito.anyMap()))
                 .thenReturn(Arrays.asList("Submitted"));
 
         this.mockMvc.perform(
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
-                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME,DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
+                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME, DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isCreated())
                 .andDo(
@@ -236,34 +258,24 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("analyses").description("Collection of analyses within this submission"),
-                                linkWithRel("analyses:create").description("Create a new analysis resource"),
-                                linkWithRel("assayData").description("Collection of assay data within this submission"),
-                                linkWithRel("assayData:create").description("Create a new assay data resource"),
-                                linkWithRel("assays").description("Collection of assays within this submission"),
-                                linkWithRel("assays:create").description("Create a new assay resource"),
-                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
-                                linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
-                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
-                                linkWithRel("egaDacs:create").description("Create a new DAC resource"),
-                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
+                                linkWithRel("sequencingStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("sequencingRuns").description("collection of sequencing runs within this submission"),
+                                linkWithRel("sequencingAssays").description("collection of sequencing assays within this submission"),
+                                linkWithRel("sequencingAssays:create").description("Create a new sequencing assay resource"),
+                                linkWithRel("sequencingRuns:create").description("Create a new sequencing run resource"),
+                                linkWithRel("sequencingStudies:create").description("Create a new sequencing study resource"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
-                                linkWithRel("protocols").description("Collection of protocols within this submission"),
-                                linkWithRel("protocols:create").description("Create a new protocol resource"),
-                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
-                                linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
-                                linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource"),
-                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+                                linkWithRel("samplesSheets").description("Upreadsheets uploaded to this submission")
+
 
                         ),
                         responseFields(
@@ -278,7 +290,7 @@ public class SubmissionApiDocumentation {
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
-        vr.getExpectedResults().put(ValidationAuthor.Core,Arrays.asList(svr));
+        vr.getExpectedResults().put(ValidationAuthor.Core, Arrays.asList(svr));
         vr.setValidationStatus(GlobalValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
@@ -289,7 +301,7 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-report",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links"),
@@ -310,7 +322,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("change-submission-status",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -344,7 +356,7 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "page-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks(),
                                 linkWithRel("self").description("This resource list"),
@@ -366,7 +378,7 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "summary-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -380,7 +392,7 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "type-summary-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -396,7 +408,7 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links")
@@ -425,7 +437,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-study",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -480,7 +492,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-assay",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -537,7 +549,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-assay-data",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -585,65 +597,77 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Project project = Helpers.generateClientProject();
 
-        String jsonRepresentation = objectMapper.writeValueAsString(project);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/projects/").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/projects/").content(objectMapper.writeValueAsString(project))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("alias").description("Unique name for the project within the team"),
-                                        fieldWithPath("title").description("Title for the project"),
-                                        fieldWithPath("description").description("Description for the project"),
-                                        fieldWithPath("contacts").description("Contacts for this project"),
-                                        fieldWithPath("publications").description("Publications related to thisproject"),
-                                        //fieldWithPath("attributes").description("A list of attributes for the project"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
-                                        fieldWithPath("team").description("Team this project belongs to"),
-                                        fieldWithPath("releaseDate").description("Date at which this project can be released"),
-                                        fieldWithPath("createdDate").description("Date this resource was created"),
-                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
-                                        fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
-                                ),
-                                links(
-                                        halLinks(),
-                                        validationresultLink(),
-                                        submissionLink(),
-                                        processingStatusLink(),
-                                        linkWithRel("self").description("This resource"),
-                                        linkWithRel("project").description("This resource"),
-                                        linkWithRel("self:update").description("This resource can be updated"),
-                                        linkWithRel("self:delete").description("This resource can be deleted"),
-                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
-
-                                )
+                        document("create-project-by-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
                         )
                 );
 
+        project.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+
+        this.mockMvc.perform(post("/api/projects").content(objectMapper.writeValueAsString(project))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isCreated())
+                .andDo(document("create-project-real",
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links"),
+                                fieldWithPath("alias").description("Unique name for the project within the team"),
+                                fieldWithPath("title").description("Title for the project"),
+                                fieldWithPath("description").description("Description for the project"),
+                                fieldWithPath("contacts").description("Contacts for this project"),
+                                fieldWithPath("publications").description("Publications related to thisproject"),
+                                //fieldWithPath("attributes").description("A list of attributes for the project"),
+                                fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                fieldWithPath("team").description("Team this project belongs to"),
+                                fieldWithPath("releaseDate").description("Date at which this project can be released"),
+                                fieldWithPath("createdDate").description("Date this resource was created"),
+                                fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                fieldWithPath("createdBy").description("User who created this resource"),
+                                fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                        ),
+                        links(
+                                halLinks(),
+                                validationresultLink(),
+                                submissionLink(),
+                                processingStatusLink(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("project").description("This resource"),
+                                linkWithRel("self:update").description("This resource can be updated"),
+                                linkWithRel("self:delete").description("This resource can be deleted"),
+                                linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+
+                        )
+                ));
+
+
         String projectId = projectRepository.findAll().get(0).getId();
+        project.setSubmission(null);
+
 
         this.mockMvc.perform(
-                put("/api/projects/" + projectId).content(jsonRepresentation)
+                put("/api/projects/" + projectId).content(objectMapper.writeValueAsString(project))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())
                 .andDo(
                         document("update-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -693,7 +717,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -737,33 +761,17 @@ public class SubmissionApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents-post-project-creation",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("analyses").description("Collection of analyses within this submission"),
-                                linkWithRel("analyses:create").description("Create a new analysis resource"),
-                                linkWithRel("assayData").description("Collection of assay data within this submission"),
-                                linkWithRel("assayData:create").description("Create a new assay data resource"),
-                                linkWithRel("assays").description("Collection of assays within this submission"),
-                                linkWithRel("assays:create").description("Create a new assay resource"),
-                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
-                                linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
-                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
-                                linkWithRel("egaDacs:create").description("Create a new DAC resource"),
-                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                linkWithRel("sequencingAssays").description("Collection of assays within this submission"),
+                                linkWithRel("sequencingAssays:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
-                                linkWithRel("protocols").description("Collection of protocols within this submission"),
-                                linkWithRel("protocols:create").description("Create a new protocol resource"),
-                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
-                                linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
-                                linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
                         ),
                         responseFields(
@@ -787,7 +795,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isCreated())
                 .andDo(
                         document("create-sample",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -890,7 +898,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-sample",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -939,7 +947,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-validation-result",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -959,9 +967,6 @@ public class SubmissionApiDocumentation {
     }
 
 
-
-
-
     @Test
     public void sampleList() throws Exception {
         Submission sub = storeSubmission();
@@ -973,7 +978,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/by-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -996,7 +1001,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/fetch-one",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1040,7 +1045,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples-search-resource",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1049,6 +1054,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("by-team").description("Search for samples within a team"),
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
                                         linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
+                                        linkWithRel("by-submission-and-dataType").description("Search for a sample by data type within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 
@@ -1059,7 +1065,6 @@ public class SubmissionApiDocumentation {
                         )
                 );
     }
-
 
 
     @Test
@@ -1073,7 +1078,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("submissions/by-team",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1101,7 +1106,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userProjects",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1128,7 +1133,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissionStatusSummary",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1151,7 +1156,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("studyDataTypes",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1178,7 +1183,7 @@ public class SubmissionApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissions",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),

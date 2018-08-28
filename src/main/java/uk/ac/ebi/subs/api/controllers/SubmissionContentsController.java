@@ -1,7 +1,6 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -47,6 +47,9 @@ public class SubmissionContentsController {
     @NonNull
     private List<Class<? extends StoredSubmittable>> submittableClassList;
 
+    @NonNull
+    private Http http;
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.POST)
@@ -67,7 +70,7 @@ public class SubmissionContentsController {
                 .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
                 .findAny();
 
-        if (!submittableClass.isPresent()){
+        if (!submittableClass.isPresent()) {
             String message = String.format(
                     "Configuration error - data type %s specifies submittable class %s, but this is not availble in the submittable class list: %s ",
                     dataType.getId(),
@@ -109,10 +112,11 @@ public class SubmissionContentsController {
                 }
             }
 
-            HttpResponse<String> response = Unirest.post(submittableCollectionLink.getHref())
-                    .headers(headers)
-                    .body(jsonPayload.toString())
-                    .asString();
+            HttpResponse<String> response = http.post(
+                    submittableCollectionLink.getHref(),
+                    headers,
+                    jsonPayload.toString()
+            );
 
             HttpHeaders responseHeaders = new HttpHeaders();
 
@@ -133,7 +137,7 @@ public class SubmissionContentsController {
         } catch (JSONException e) {
             throw new HttpMessageNotReadableException(String.format("Could not read an object of type %s from the request!", submittableClass));
         } catch (UnirestException e) {
-            logger.error("UniRestException when proxing request to spring data rest controller",e);
+            logger.error("UniRestException when proxing request to spring data rest controller", e);
             throw new RuntimeException(e);
         }
     }
