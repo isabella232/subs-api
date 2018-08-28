@@ -97,7 +97,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
  * Use this class to create document snippets. Ascii docotor will weave them into html documents,
  * using the files in src/resources/docs/ascidocs
  *
- * @see <a href="https://github.com/EBISPOT/OLS/blob/master/ols-web/src/test/java/uk/ac/ebi/spot/ols/api/ApiDocumentation.java">OLS ApiDocumentation.java</a>
+ * @see <a href="https://github.com/EBISPOT/OLS/blob/master/ols-web/src/test/java/uk/ac/ebi/spot/ols/api/ApiDocumentation.java">OLS SubmissionApiDocumentation.java</a>
  * <p>
  * gives this
  * @see <a href="http://www.ebi.ac.uk/ols/docs/api">OLS API Docs<</a>
@@ -108,7 +108,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
-public class ApiDocumentation {
+public class SubmissionApiDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = DocumentationHelper.jUnitRestDocumentation();
@@ -177,110 +177,6 @@ public class ApiDocumentation {
 
     }
 
-    @Test
-    public void invalidJson() throws Exception {
-        this.mockMvc.perform(
-                post("/api/submissions").content("Tyger Tyger, burning bright, In the forests of the night")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("invalid-json",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
-
-    }
-
-    @Test
-    public void jsonArrayInsteadOfObject() throws Exception {
-        uk.ac.ebi.subs.data.Submission submission = goodClientSubmission();
-
-        String jsonRepresentation = objectMapper.writeValueAsString(Arrays.asList(submission, submission));
-
-        this.mockMvc.perform(
-                post("/api/submissions").content(jsonRepresentation)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("json-array-instead-of-object",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
-
-    }
-
-    @Test
-    public void sampleNotFound() throws Exception {
-        this.mockMvc.perform(get("/api/samples/123456789"))
-                .andExpect(status().isNotFound())
-                .andDo(
-                        document("sample-not-found",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void methodNotAllowed() throws Exception {
-        this.mockMvc.perform(get("/api/submissions"))
-                .andExpect(status().isMethodNotAllowed())
-                .andDo(
-                        document("method-not-allowed",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void invalidSubmission() throws Exception {
-        uk.ac.ebi.subs.data.Submission submission = badClientSubmission();
-
-        String jsonRepresentation = objectMapper.writeValueAsString(submission);
-
-
-        this.mockMvc.perform(
-                post("/api/submissions").content(jsonRepresentation)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("invalid-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
-
-    }
 
     @Test
     public void validSubmission() throws Exception {
@@ -1062,92 +958,9 @@ public class ApiDocumentation {
                 );
     }
 
-    @Test
-    public void pageExample() throws Exception {
 
-        String teamName = null;
-        for (int i = 0; i < 50; i++) {
-            Submission s = Helpers.generateTestSubmission();
-            submissionStatusRepository.insert(s.getSubmissionStatus());
-            submissionRepository.insert(s);
-            teamName = s.getTeam().getName();
-        }
 
-        this.mockMvc.perform(get("/api/submissions/search/by-team?teamName={teamName}&page=1&size=10", teamName))
-                .andExpect(status().isOk())
-                .andDo(document(
-                        "page-example",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                        preprocessResponse(maskEmbedded(), prettyPrint()),
 
-                        links(halLinks(),
-                                linkWithRel("self").description("This resource list"),
-                                linkWithRel("first").description("The first page in the resource list"),
-                                linkWithRel("next").description("The next page in the resource list"),
-                                linkWithRel("prev").description("The previous page in the resource list"),
-                                linkWithRel("last").description("The last page in the resource list")
-                        ),
-                        responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded").description("The list of resources"),
-                                fieldWithPath("page.size").description("The number of resources in this page"),
-                                fieldWithPath("page.totalElements").description("The total number of resources"),
-                                fieldWithPath("page.totalPages").description("The total number of pages"),
-                                fieldWithPath("page.number").description("The page number")
-                        )
-                ));
-    }
-
-    @Test
-    public void conditionalRequests() throws Exception {
-        Submission sub = storeSubmission();
-        List<Sample> samples = storeSamples(sub, 1);
-        Sample s = samples.get(0);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM YYYY H:m:s zzz");
-
-        String etagValueString = String.format("ETag: \"%d\"", s.getVersion());
-        String lastModifiedString = dateFormat.format(s.getLastModifiedDate());
-
-        this.mockMvc.perform(
-                get("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-None-Match", etagValueString)
-        ).andExpect(status().isNotModified())
-                .andDo(
-                        document("conditional-fetch-etag-get-if-none-match",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-
-        this.mockMvc.perform(
-                delete("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-Match", "ETag: \"10\"")
-        ).andExpect(status().isPreconditionFailed())
-                .andDo(
-                        document("conditional-delete-if-etag-match",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-
-        this.mockMvc.perform(
-                get("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-Modified-Since", lastModifiedString)
-        ).andExpect(status().isNotModified())
-                .andDo(
-                        document("conditional-fetch-if-modified-since",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-    }
 
     @Test
     public void sampleList() throws Exception {
@@ -1247,49 +1060,7 @@ public class ApiDocumentation {
                 );
     }
 
-    @Test
-    public void rootEndpoint() throws Exception {
 
-        this.mockMvc.perform(
-                get("/api/")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("root-endpoint",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-
-                                        halLinks(),
-                                        //team
-                                        linkWithRel("userTeams").description("Collection resource for teams"),
-                                        linkWithRel("team").description("Templated link for finding one team"),
-                                        //ref data
-                                        linkWithRel("studyDataTypes").description("Collection resource for study data types"),
-                                        linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
-                                        linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
-                                        linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
-                                        linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
-                                        linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
-                                        linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
-                                        linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
-                                        linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
-                                        //user projects
-                                        linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
-                                        linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
-                                        linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
-                                        //profile
-                                        linkWithRel("profile").description("Application level details"),
-                                        //related services
-                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
-                                        linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField()
-                                )
-                        )
-                );
-    }
 
     @Test
     public void submissionsByTeam() throws Exception {
@@ -1437,7 +1208,7 @@ public class ApiDocumentation {
 
     /* Test Helper Methods */
 
-    private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
+    protected static uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setSubmitter(null);
         submission.setTeam(null);
@@ -1515,18 +1286,6 @@ public class ApiDocumentation {
         processingStatusRepository.insert(status);
     }
 
-    private uk.ac.ebi.subs.data.Submission badClientSubmission() {
-        return new uk.ac.ebi.subs.data.Submission();
-    }
-
-    public ContentModifyingOperationPreprocessor maskEmbedded() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
-    }
-
-    public ContentModifyingOperationPreprocessor maskLinks() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
-    }
-
     private List<Sample> storeSamples(Submission sub, int numberRequired) {
         List<Sample> samples = Helpers.generateTestSamples(numberRequired);
 
@@ -1580,33 +1339,5 @@ public class ApiDocumentation {
         return linkWithRel("validationResult").description("Result of the validation of this record");
     }
 
-    protected class MaskElement implements ContentModifier {
 
-        private String keyToRemove;
-
-        public MaskElement(String keyToRemove) {
-            this.keyToRemove = keyToRemove;
-        }
-
-        @Override
-        public byte[] modifyContent(byte[] originalContent, MediaType contentType) {
-            TypeReference<HashMap<String, Object>> typeRef
-                    = new TypeReference<HashMap<String, Object>>() {
-            };
-
-            Map<String, Object> o = null;
-            try {
-                o = objectMapper.readValue(originalContent, typeRef);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-            o.put("_embedded", "...");
-            try {
-                return objectMapper.writeValueAsBytes(o);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }
