@@ -20,6 +20,7 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
+import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
@@ -274,19 +275,29 @@ public class ApiIntegrationTestHelper {
 
     public static void initialiseDataTypes(DataTypeRepository dataTypeRepository){
         List<DataType> dataTypes = Arrays.asList(
-                buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class),
-                buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class),
-                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class),
-                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class),
-                buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class)
+                buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class, "sample", "samples", Archive.BioSamples),
+                buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class, "project", "projects", Archive.BioStudies),
+                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
+                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing assay", "sequencing assays", Archive.Ena),
+                buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class, "sequencing runs", "sequencing run", Archive.Ena)
         );
         dataTypeRepository.insert(dataTypes);
     }
 
-    private static DataType buildDataType(String id, Class clazz){
+    private static DataType buildDataType(String id, Class clazz, String singularName, String pluralName, Archive archive){
         DataType dt = new DataType();
         dt.setId(id);
         dt.setSubmittableClassName(clazz.getName());
+        dt.setArchive(archive);
+        dt.setDescription("<<data type description>>");
+        dt.setDisplayNamePlural(pluralName);
+        dt.setDisplayNameSingular(singularName);
+
+        Map<String,String> schemaMap = new HashMap<>();
+        schemaMap.put("$schema","http://json-schema.org/draft-07/schema#");
+        schemaMap.put("description","<<JSON schema used to validate this data type>>");
+        ObjectMapper om = new ObjectMapper();
+        dt.setValidationSchema(om.valueToTree(schemaMap));
         return dt;
     }
 

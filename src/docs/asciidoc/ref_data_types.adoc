@@ -1,0 +1,23 @@
+= Data types
+:docinfo: shared
+:toc: auto
+
+== List all data types
+
+=== Request
+
+include::{snippets}/list-data-types/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/list-data-types/http-response.adoc[]
+
+== Get one data type
+
+=== Request
+
+include::{snippets}/get-one-data-type/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-one-data-type/http-response.adoc[]

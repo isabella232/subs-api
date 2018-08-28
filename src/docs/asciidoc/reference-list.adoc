@@ -23,4 +23,6 @@ endif::assayData[]
 * <<ref_validation_results.adoc#,Validation results>>
 * <<ref_ui_support.adoc#,UI Support>>
 * <<ref_spreadsheets_and_templates.adoc#,Spreadsheets and templates>>
+* <<ref_submission_plan.adoc#,Submission plans>>
+* <<ref_data_types.adoc#,Data types>>
 * <<about.adoc#,About>>
