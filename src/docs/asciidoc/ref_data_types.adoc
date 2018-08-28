@@ -16,8 +16,8 @@ include::{snippets}/list-data-types/http-response.adoc[]
 
 === Request
 
-include::{snippets}/get-one-data-type/curl-request.adoc[]
+include::{snippets}/get-data-type/curl-request.adoc[]
 
 === Response
 
-include::{snippets}/get-one-data-type/http-response.adoc[]
+include::{snippets}/get-data-type/http-response.adoc[]

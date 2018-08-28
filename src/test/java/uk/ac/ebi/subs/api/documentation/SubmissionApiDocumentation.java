@@ -427,16 +427,28 @@ public class SubmissionApiDocumentation {
 
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(study);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies/").content(objectMapper.writeValueAsString(study))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-study",
+                        document("create-study-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        study.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+        this.mockMvc.perform(
+                post("/api/studies").content(objectMapper.writeValueAsString(study))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-study-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -482,16 +494,28 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(assay);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assay))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay",
+                        document("create-assay-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        assay.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+        this.mockMvc.perform(
+                post("/api/assays").content(objectMapper.writeValueAsString(assay))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-assay-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -539,16 +563,28 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(assayData);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingRuns").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay-data",
+                        document("create-assay-data-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        assayData.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+        this.mockMvc.perform(
+                post("/api/assayData").content(objectMapper.writeValueAsString(assayData))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-assay-data-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -604,7 +640,7 @@ public class SubmissionApiDocumentation {
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-project-by-proxy",
+                        document("create-project-proxy",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader())
                         )
                 );
@@ -785,16 +821,29 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(sample);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/samples").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(objectMapper.writeValueAsString(sample))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-sample",
+                        document("create-sample-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        sample.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+        this.mockMvc.perform(
+                post("/api/samples").content(objectMapper.writeValueAsString(sample))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-sample-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -841,10 +890,9 @@ public class SubmissionApiDocumentation {
 
         sample.getSampleRelationships().add(sampleRelationship);
 
-        jsonRepresentation = objectMapper.writeValueAsString(sample);
 
         this.mockMvc.perform(
-                put("/api/samples/{id}", sampleId).content(jsonRepresentation)
+                put("/api/samples/{id}", sampleId).content(objectMapper.writeValueAsString(sample))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 

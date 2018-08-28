@@ -16,8 +16,8 @@ include::{snippets}/list-submission-plans/http-response.adoc[]
 
 === Request
 
-include::{snippets}/get-one-submission-plans/curl-request.adoc[]
+include::{snippets}/get-submission-plan/curl-request.adoc[]
 
 === Response
 
-include::{snippets}/get-one-submission-plans/http-response.adoc[]
+include::{snippets}/get-submission-plan/http-response.adoc[]
