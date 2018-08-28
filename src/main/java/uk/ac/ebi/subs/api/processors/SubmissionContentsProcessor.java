@@ -19,10 +19,8 @@ import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +57,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
         List<DataType> dataTypesInSubmission = dataTypesInSubmission(resource.getContent().getSubmission());
 
-        addSubmittablesInSubmission(dataTypesInSubmission,resource);
+        addSubmittablesInSubmission(dataTypesInSubmission, resource);
         addFilesLink(resource, subId);
         addProjectLink(resource, subId);
         addSpreadsheetLinks(resource, subId);
@@ -74,7 +72,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         return resource;
     }
 
-    private List<DataType> dataTypesInSubmission(Submission submission){
+    private List<DataType> dataTypesInSubmission(Submission submission) {
         SubmissionPlan submissionPlan = submission.getSubmissionPlan();
 
 
@@ -83,8 +81,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
         if (submissionPlan == null) {
             dataTypesInSubmission = allDataTypes;
-        }
-        else {
+        } else {
             Set<String> dataTypeIds = new HashSet<>(submissionPlan.getDataTypeIds());
 
             dataTypesInSubmission = allDataTypes.stream()
@@ -123,11 +120,11 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     }
 
     private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
-        for (DataType dataType : dataTypesInSubmission){
+        for (DataType dataType : dataTypesInSubmission) {
 
-            Map<String,String> params = new HashMap<>();
-            params.put("submissionId",resource.getContent().getSubmission().getId());
-            params.put("dataTypeId",dataType.getId());
+            Map<String, String> params = new HashMap<>();
+            params.put("submissionId", resource.getContent().getSubmission().getId());
+            params.put("dataTypeId", dataType.getId());
 
             Optional<Class<? extends StoredSubmittable>> optionalClass = submittablesClassList.stream()
                     .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
@@ -143,13 +140,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     private void addUpdateLinks(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
 
 
-        for (DataType dataType : dataTypesInSubmission){
+        for (DataType dataType : dataTypesInSubmission) {
             linkHelper.addSubmittableCreateLink(
                     resource.getLinks(),
                     dataType,
                     resource.getContent().getSubmission());
         }
-
 
 
     }
