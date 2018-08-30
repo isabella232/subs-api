@@ -29,6 +29,7 @@ import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.NoOpCapture;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -71,7 +72,7 @@ public class SheetLoaderTest {
     private SampleRepository sampleRepository;
 
     @MockBean
-    private RelProvider relProvider;
+    private DataTypeRepository dataTypeRepository;
 
     private Submission submission;
 
@@ -81,16 +82,18 @@ public class SheetLoaderTest {
                 submittableRepositoryMap = new HashMap<>();
         submittableRepositoryMap.put(Sample.class, sampleRepository);
 
+        Map<String, Class<? extends StoredSubmittable>> submittablesByCollectionName = new HashMap<>();
+        submittablesByCollectionName.put("samples",Sample.class);
 
-        Mockito.doReturn("samples").when(relProvider).getCollectionResourceRelFor(any());
 
         sheetLoaderService = new SheetLoaderService(
                 submittableRepositoryMap,
-                sheetRepository,
-                relProvider,
+                submittablesByCollectionName,
                 objectMapper,
+                sheetRepository,
                 submittableValidationDispatcher,
-                sheetBulkOps
+                sheetBulkOps,
+                dataTypeRepository
         );
 
         submission = new Submission();

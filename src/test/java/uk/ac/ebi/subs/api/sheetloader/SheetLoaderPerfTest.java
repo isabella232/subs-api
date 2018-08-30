@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.RabbitMQDependentTest;
+import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -23,6 +24,7 @@ import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
@@ -55,6 +57,8 @@ public class SheetLoaderPerfTest {
     private SubmissionRepository submissionRepository;
     @Autowired
     private SubmissionStatusRepository submissionStatusRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     private StopWatch stopWatch = new StopWatch();
 
@@ -67,6 +71,8 @@ public class SheetLoaderPerfTest {
     @Before
     public void init() {
         clearDbs();
+
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
 
         submission = Helpers.generateSubmission();
 
@@ -142,7 +148,7 @@ public class SheetLoaderPerfTest {
 
     @After
     public void clearDbs() {
-        Stream.of(sheetRepository, sampleRepository, templateRepository, submissionRepository, submissionStatusRepository)
+        Stream.of(sheetRepository, sampleRepository, templateRepository, submissionRepository, submissionStatusRepository, dataTypeRepository)
                 .forEach(CrudRepository::deleteAll);
     }
 

@@ -1,6 +1,8 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,6 @@ import org.springframework.hateoas.RelProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StopWatch;
-import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -18,6 +19,7 @@ import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
 import uk.ac.ebi.subs.repository.model.templates.Capture;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
@@ -35,31 +37,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SheetLoaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetLoaderService.class);
 
-    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
-    private Map<String, Class<? extends StoredSubmittable>> submittableClassMap;
+    @NonNull private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
+    @NonNull private Map<String, Class<? extends StoredSubmittable>> submittablesByCollectionName;
 
+    @NonNull
     private ObjectMapper objectMapper;
-    private SheetRepository sheetRepository;
-    private SubmittableValidationDispatcher submittableValidationDispatcher;
-    private SheetBulkOps sheetBulkOps;
+    @NonNull private SheetRepository sheetRepository;
+    @NonNull private SubmittableValidationDispatcher submittableValidationDispatcher;
+    @NonNull private SheetBulkOps sheetBulkOps;
+    @NonNull private DataTypeRepository dataTypeRepository;
 
-    public SheetLoaderService(
-            Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap,
-            SheetRepository sheetRepository,
-            RelProvider relProvider,
-            ObjectMapper objectMapper,
-            SubmittableValidationDispatcher submittableValidationDispatcher,
-            SheetBulkOps sheetBulkOps) {
-        initSubmittableMaps(submittableRepositoryMap, relProvider);
-        this.sheetRepository = sheetRepository;
-        this.objectMapper = objectMapper;
-        this.submittableValidationDispatcher = submittableValidationDispatcher;
-        this.sheetBulkOps = sheetBulkOps;
-    }
 
     public void loadSheet(Sheet sheet) {
         logger.info("processing sheet {}",sheet.getId());
@@ -75,7 +67,7 @@ public class SheetLoaderService {
 
         Template template = sheet.getTemplate();
         String targetType = template.getTargetType().toLowerCase();
-        Class<? extends StoredSubmittable> targetTypeClass = this.submittableClassMap.get(targetType);
+        Class<? extends StoredSubmittable> targetTypeClass = this.submittablesByCollectionName.get(targetType);
         SubmittableRepository repository = this.submittableRepositoryMap.get(targetTypeClass);
         String submissionId = sheet.getSubmission().getId();
 
@@ -273,6 +265,7 @@ public class SheetLoaderService {
             try {
                 submittable = objectMapper.readValue(json.toString(), targetTypeClass);
                 submittable.setSubmission(submission);
+                submittable.setDataType(dataTypeRepository.findOne("samples")); //TODO this is a horrific hack, must be fixed during the spreadsheet/datatype refactor
                 submittable.setTeam(submission.getTeam());
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);
@@ -296,6 +289,6 @@ public class SheetLoaderService {
         }
 
         this.submittableRepositoryMap = submittableRepositoryMap;
-        this.submittableClassMap = classesByCollectionName;
+        this.submittablesByCollectionName = classesByCollectionName;
     }
 }
