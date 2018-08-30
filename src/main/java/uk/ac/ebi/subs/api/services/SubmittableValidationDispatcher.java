@@ -49,7 +49,8 @@ public class SubmittableValidationDispatcher {
 
         ValidationEnvelopeToCoordinator<BaseSubmittable> validationEnvelope = new ValidationEnvelopeToCoordinator(
                 storedSubmittable.getSubmission().getId(),
-                (BaseSubmittable) storedSubmittable
+                (BaseSubmittable) storedSubmittable,
+                storedSubmittable.getDataType().getId()
         );
 
         String routingKey = routingKeyPrefix + submittableQueueSuffix(storedSubmittable);
