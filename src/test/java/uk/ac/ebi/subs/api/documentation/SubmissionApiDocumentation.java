@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.api.documentation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
@@ -37,6 +39,7 @@ import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -65,6 +68,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -439,10 +443,10 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        study.setSubmission(urlBase + "/submissions/" + sub.getId());
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"sequencingStudies");
 
         this.mockMvc.perform(
-                post("/api/studies").content(objectMapper.writeValueAsString(study))
+                post("/api/studies").content(contentForRealSubmission)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -489,6 +493,20 @@ public class SubmissionApiDocumentation {
                 );
     }
 
+    private Map<String,Object> objectToJsonNode(Object o) throws IOException {
+        return objectMapper.readValue(
+                objectMapper.writeValueAsString(o),
+                HashMap.class
+        );
+    }
+
+    private String addSubmissionAndDataTypeToSubmittable(Submittable submittable, String submissionId, String dataTypeId) throws IOException {
+        Map<String,Object> map = objectToJsonNode(submittable);
+        map.put("submission",urlBase + "/submissions/" + submissionId);
+        map.put("dataType",urlBase + "/dataTypes/" + dataTypeId);
+        return objectMapper.writeValueAsString(map);
+    }
+
     @Test
     public void createAssay() throws Exception {
         Submission sub = storeSubmission();
@@ -506,10 +524,12 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        assay.setSubmission(urlBase + "/submissions/" + sub.getId());
+
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingAssays");
+
 
         this.mockMvc.perform(
-                post("/api/assays").content(objectMapper.writeValueAsString(assay))
+                post("/api/assays").content(contentForRealSubmission)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -575,10 +595,10 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        assayData.setSubmission(urlBase + "/submissions/" + sub.getId());
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assayData,sub.getId(),"sequencingRuns");
 
         this.mockMvc.perform(
-                post("/api/assayData").content(objectMapper.writeValueAsString(assayData))
+                post("/api/assayData").content(contentForRealSubmission)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -645,10 +665,10 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        project.setSubmission(urlBase + "/submissions/" + sub.getId());
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(project,sub.getId(),"projects");
 
 
-        this.mockMvc.perform(post("/api/projects").content(objectMapper.writeValueAsString(project))
+        this.mockMvc.perform(post("/api/projects").content(contentForRealSubmission)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isCreated())
@@ -834,10 +854,10 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        sample.setSubmission(urlBase + "/submissions/" + sub.getId());
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(sample,sub.getId(),"samples");
 
         this.mockMvc.perform(
-                post("/api/samples").content(objectMapper.writeValueAsString(sample))
+                post("/api/samples").content(contentForRealSubmission)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 

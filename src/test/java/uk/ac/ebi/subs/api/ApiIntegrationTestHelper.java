@@ -273,7 +273,7 @@ public class ApiIntegrationTestHelper {
                 .thenReturn(profile);
     }
 
-    public static void initialiseDataTypes(DataTypeRepository dataTypeRepository){
+    public static List<DataType>  initialiseDataTypes(DataTypeRepository dataTypeRepository){
         List<DataType> dataTypes = Arrays.asList(
                 buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class, "sample", "samples", Archive.BioSamples),
                 buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class, "project", "projects", Archive.BioStudies),
@@ -282,6 +282,7 @@ public class ApiIntegrationTestHelper {
                 buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class, "sequencing runs", "sequencing run", Archive.Ena)
         );
         dataTypeRepository.insert(dataTypes);
+        return dataTypes;
     }
 
     private static DataType buildDataType(String id, Class clazz, String singularName, String pluralName, Archive archive){
