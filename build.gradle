@@ -57,7 +57,6 @@ dependencies {
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
     testCompile 'org.springframework.security:spring-security-test:4.2.3.RELEASE'
 
-    testCompile("com.mashape.unirest:unirest-java:1.4.9")
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.4.6'
