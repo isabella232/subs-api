@@ -47,10 +47,14 @@ public class SubmittableValidationDispatcher {
     protected void sendEvent(StoredSubmittable storedSubmittable, String routingKeyPrefix) {
         ensureBaseSubmittable(storedSubmittable);
 
+        String dataTypeId = (storedSubmittable.getDataType() == null) ? null : storedSubmittable.getDataType().getId();
+        String checklistId = (storedSubmittable.getChecklist() == null) ? null : storedSubmittable.getChecklist().getId();
+
         ValidationEnvelopeToCoordinator<BaseSubmittable> validationEnvelope = new ValidationEnvelopeToCoordinator(
                 storedSubmittable.getSubmission().getId(),
                 (BaseSubmittable) storedSubmittable,
-                storedSubmittable.getDataType().getId()
+                dataTypeId,
+                checklistId
         );
 
         String routingKey = routingKeyPrefix + submittableQueueSuffix(storedSubmittable);
