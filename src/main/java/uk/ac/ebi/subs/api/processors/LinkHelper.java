@@ -41,19 +41,6 @@ public class LinkHelper {
 
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
-    @NonNull
-    private ProjectRepository projectRepository;
-
-    public List<Class<? extends StoredSubmittable>> getSubmittablesClassList() {
-        return submittablesClassList;
-    }
-
-    public void addSubmittablesSearchLinks(Collection<Link> links) {
-        for (Class type : submittablesClassList) {
-            this.addSearchLink(links, type);
-        }
-    }
-
 
     public void addSubmittableCreateLink(Collection<Link> links, DataType type, Submission submission) {
 
@@ -72,13 +59,6 @@ public class LinkHelper {
                 .expand();
 
         links.add(submittablesCreateLink);
-    }
-
-    public void addSubmittablesInSubmissionLinks(Collection<Link> links, String submissionId) {
-        Map<String, String> params = new HashMap<>();
-        params.put("submissionId", submissionId);
-
-        this.addSubmittablesLinksWithNamedSearchRel(links, "by-submission", params);
     }
 
     public void addSubmittablesInTeamLinks(Collection<Link> links, String teamName) {
@@ -115,15 +95,6 @@ public class LinkHelper {
         links.add(deleteLink);
     }
 
-
-    public void addCreateLink(Collection<Link> links, Class type) {
-
-        Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
-
-        String relBase = collectionLink.getRel();
-
-        links.add(collectionLink.withRel(relBase + CREATE_REL_SUFFIX));
-    }
 
     public void addSearchLink(Collection<Link> links, Class type) {
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
