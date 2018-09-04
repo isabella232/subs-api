@@ -72,13 +72,13 @@ public class SubmissionContentsController {
 
         if (!submittableClass.isPresent()) {
             String message = String.format(
-                    "Configuration error - data type %s specifies submittable class %s, but this is not availble in the submittable class list: %s ",
+                    "Configuration error - data type %s specifies submittable class %s, but this is not available in the submittable class list: %s ",
                     dataType.getId(),
                     dataType.getSubmittableClassName(),
                     submittableClassList
             );
             logger.error(message);
-            throw new RuntimeException("A software configuration error prevents this request from suceeding");
+            throw new RuntimeException("A software configuration error prevents this request from succeeding");
         }
 
 
@@ -135,7 +135,12 @@ public class SubmissionContentsController {
             );
 
         } catch (JSONException e) {
-            throw new HttpMessageNotReadableException(String.format("Could not read an object of type %s from the request!", submittableClass));
+            throw new HttpMessageNotReadableException(
+                    String.format("Could not read an object of type %s from the request!",
+                            (submittableClass.isPresent()) ? submittableClass.get().getName() : "<unknown>"
+                    )
+
+            );
         } catch (UnirestException e) {
             logger.error("UniRestException when proxing request to spring data rest controller", e);
             throw new RuntimeException(e);
