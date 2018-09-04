@@ -24,8 +24,6 @@ import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
@@ -68,7 +66,7 @@ public class SubmissionPlanDocumentation {
 
     @Before
     public void setUp() {
-        clearDatabases();
+        clearDatabase();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
 
@@ -92,7 +90,7 @@ public class SubmissionPlanDocumentation {
     }
 
     @After
-    public void clearDatabases() {
+    public void clearDatabase() {
         submissionPlanRepository.deleteAll();
         dataTypeRepository.deleteAll();
     }

@@ -59,7 +59,7 @@ public class DataTypeDocumentation {
 
     @Before
     public void setUp() {
-        clearDatabases();
+        clearDatabase();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
 
@@ -67,7 +67,7 @@ public class DataTypeDocumentation {
     }
 
     @After
-    public void clearDatabases() {
+    public void clearDatabase() {
         dataTypeRepository.deleteAll();
     }
 
