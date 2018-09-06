@@ -2,11 +2,14 @@ package uk.ac.ebi.subs.api.processors;
 
 import lombok.Data;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.api.aap.UsiTokenService;
 import uk.ac.ebi.subs.api.controllers.SheetsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
@@ -50,6 +53,8 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     @NonNull
     private List<Class<? extends StoredSubmittable>> submittablesClassList;
+
+    private static final Logger logger = LoggerFactory.getLogger(SubmissionContentsProcessor.class);
 
     public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
 
@@ -130,10 +135,14 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                     .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
                     .findAny();
 
-
-            Link searchLink = repositoryEntityLinks.linkToSearchResource(optionalClass.get(), "by-submission-and-dataType");
-            Link expandedLinks = searchLink.expand(params).withRel(dataType.getId());
-            resource.getLinks().add(expandedLinks);
+            if (optionalClass.isPresent()){
+                Link searchLink = repositoryEntityLinks.linkToSearchResource(optionalClass.get(), "by-submission-and-dataType");
+                Link expandedLinks = searchLink.expand(params).withRel(dataType.getId());
+                resource.getLinks().add(expandedLinks);
+            }
+            else {
+                logger.error("Could not find class for data type {} in configured class list {}",dataType, submittablesClassList);
+            }
         }
     }
 
