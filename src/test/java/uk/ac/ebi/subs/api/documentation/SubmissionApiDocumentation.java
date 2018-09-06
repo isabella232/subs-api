@@ -1,8 +1,11 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Headers;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
-import org.springframework.restdocs.operation.preprocess.ContentModifier;
-import org.springframework.restdocs.operation.preprocess.ContentModifyingOperationPreprocessor;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,6 +31,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -37,6 +39,7 @@ import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
@@ -46,6 +49,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -65,8 +69,8 @@ import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.text.SimpleDateFormat;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -79,7 +83,6 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.ha
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -96,7 +99,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
  * Use this class to create document snippets. Ascii docotor will weave them into html documents,
  * using the files in src/resources/docs/ascidocs
  *
- * @see <a href="https://github.com/EBISPOT/OLS/blob/master/ols-web/src/test/java/uk/ac/ebi/spot/ols/api/ApiDocumentation.java">OLS ApiDocumentation.java</a>
+ * @see <a href="https://github.com/EBISPOT/OLS/blob/master/ols-web/src/test/java/uk/ac/ebi/spot/ols/api/ApiDocumentation.java">OLS SubmissionApiDocumentation.java</a>
  * <p>
  * gives this
  * @see <a href="http://www.ebi.ac.uk/ols/docs/api">OLS API Docs<</a>
@@ -107,7 +110,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
-public class ApiDocumentation {
+public class SubmissionApiDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = DocumentationHelper.jUnitRestDocumentation();
@@ -139,6 +142,8 @@ public class ApiDocumentation {
     private AssayDataRepository assayDataRepository;
     @Autowired
     private StudyRepository studyRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -152,131 +157,52 @@ public class ApiDocumentation {
     @MockBean
     private SubmissionStatusService submissionStatusService;
 
+    @MockBean
+    private Http http;
+
+    private HttpResponse<String> mockResponse = Mockito.mock(HttpResponse.class);
+
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
 
+    private String urlBase;
+
     @Before
-    public void setUp() {
+    public void setUp() throws UnirestException, URISyntaxException {
         storeSubmission();
         clearDatabases();
+
+        URI uri = new URI(
+                this.scheme,
+                null, this.host, this.port,
+                "/api", null, null
+
+        );
+
+        this.urlBase = uri.toString();
+
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
 
-        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
 
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(Submission.class)))
                 .thenReturn(Boolean.TRUE);
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(SubmissionStatus.class)))
                 .thenReturn(Boolean.TRUE);
 
-    }
 
-    @Test
-    public void invalidJson() throws Exception {
-        this.mockMvc.perform(
-                post("/api/submissions").content("Tyger Tyger, burning bright, In the forests of the night")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
+        Mockito.when(http.post(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResponse);
+        Mockito.when(mockResponse.getStatus()).thenReturn(201);
+        Mockito.when(mockResponse.getHeaders()).thenReturn(new Headers());
+        Mockito.when(mockResponse.getBody()).thenReturn("");
 
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("invalid-json",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
 
     }
 
-    @Test
-    public void jsonArrayInsteadOfObject() throws Exception {
-        uk.ac.ebi.subs.data.Submission submission = goodClientSubmission();
-
-        String jsonRepresentation = objectMapper.writeValueAsString(Arrays.asList(submission, submission));
-
-        this.mockMvc.perform(
-                post("/api/submissions").content(jsonRepresentation)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("json-array-instead-of-object",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
-
-    }
-
-    @Test
-    public void sampleNotFound() throws Exception {
-        this.mockMvc.perform(get("/api/samples/123456789"))
-                .andExpect(status().isNotFound())
-                .andDo(
-                        document("sample-not-found",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void methodNotAllowed() throws Exception {
-        this.mockMvc.perform(get("/api/submissions"))
-                .andExpect(status().isMethodNotAllowed())
-                .andDo(
-                        document("method-not-allowed",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
-    @Test
-    public void invalidSubmission() throws Exception {
-        uk.ac.ebi.subs.data.Submission submission = badClientSubmission();
-
-        String jsonRepresentation = objectMapper.writeValueAsString(submission);
-
-
-        this.mockMvc.perform(
-                post("/api/submissions").content(jsonRepresentation)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isBadRequest())
-                .andDo(
-                        document("invalid-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("type").description("An URL to a document describing the error condition."),
-                                        fieldWithPath("title").description("A brief title for the error condition."),
-                                        fieldWithPath("status").description("The HTTP status code for the current request."),
-                                        fieldWithPath("instance").description("URI identifying the specific instance of this problem."),
-                                        fieldWithPath("errors").description("List of errors for this request.")
-                                )
-                        )
-                );
-
-    }
 
     @Test
     public void validSubmission() throws Exception {
@@ -284,14 +210,14 @@ public class ApiDocumentation {
 
         String jsonRepresentation = objectMapper.writeValueAsString(submission);
 
-        Mockito.when(submissionStatusService.getAvailableStatusNames(Mockito.any(Submission.class),Mockito.anyMap()))
+        Mockito.when(submissionStatusService.getAvailableStatusNames(Mockito.any(Submission.class), Mockito.anyMap()))
                 .thenReturn(Arrays.asList("Submitted"));
 
         this.mockMvc.perform(
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
-                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME,DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
+                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME, DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isCreated())
                 .andDo(
@@ -336,34 +262,24 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("analyses").description("Collection of analyses within this submission"),
-                                linkWithRel("analyses:create").description("Create a new analysis resource"),
-                                linkWithRel("assayData").description("Collection of assay data within this submission"),
-                                linkWithRel("assayData:create").description("Create a new assay data resource"),
-                                linkWithRel("assays").description("Collection of assays within this submission"),
-                                linkWithRel("assays:create").description("Create a new assay resource"),
-                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
-                                linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
-                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
-                                linkWithRel("egaDacs:create").description("Create a new DAC resource"),
-                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
+                                linkWithRel("sequencingStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("sequencingRuns").description("collection of sequencing runs within this submission"),
+                                linkWithRel("sequencingAssays").description("collection of sequencing assays within this submission"),
+                                linkWithRel("sequencingAssays:create").description("Create a new sequencing assay resource"),
+                                linkWithRel("sequencingRuns:create").description("Create a new sequencing run resource"),
+                                linkWithRel("sequencingStudies:create").description("Create a new sequencing study resource"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
-                                linkWithRel("protocols").description("Collection of protocols within this submission"),
-                                linkWithRel("protocols:create").description("Create a new protocol resource"),
-                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
-                                linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
-                                linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource"),
-                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+                                linkWithRel("samplesSheets").description("Upreadsheets uploaded to this submission")
+
 
                         ),
                         responseFields(
@@ -378,7 +294,7 @@ public class ApiDocumentation {
         ValidationResult vr = new ValidationResult();
         vr.setSubmissionId(sub.getId());
         vr.setUuid("test");
-        vr.getExpectedResults().put(ValidationAuthor.Core,Arrays.asList(svr));
+        vr.getExpectedResults().put(ValidationAuthor.Core, Arrays.asList(svr));
         vr.setValidationStatus(GlobalValidationStatus.Complete);
         validationResultRepository.insert(vr);
 
@@ -389,7 +305,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-report",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links"),
@@ -410,7 +326,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("change-submission-status",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -444,7 +360,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "page-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks(),
                                 linkWithRel("self").description("This resource list"),
@@ -466,7 +382,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "summary-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -480,7 +396,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "type-summary-progress-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(halLinks()
                         ),
@@ -496,7 +412,7 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "available-status-reports",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("_links").description("Links")
@@ -515,17 +431,29 @@ public class ApiDocumentation {
 
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(study);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/studies").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies/").content(objectMapper.writeValueAsString(study))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-study",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        document("create-study-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"sequencingStudies");
+
+        this.mockMvc.perform(
+                post("/api/studies").content(contentForRealSubmission)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-study-real",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -565,22 +493,50 @@ public class ApiDocumentation {
                 );
     }
 
+    private Map<String,Object> objectToJsonNode(Object o) throws IOException {
+        return objectMapper.readValue(
+                objectMapper.writeValueAsString(o),
+                HashMap.class
+        );
+    }
+
+    private String addSubmissionAndDataTypeToSubmittable(Submittable submittable, String submissionId, String dataTypeId) throws IOException {
+        Map<String,Object> map = objectToJsonNode(submittable);
+        map.put("submission",urlBase + "/submissions/" + submissionId);
+        map.put("dataType",urlBase + "/dataTypes/" + dataTypeId);
+        return objectMapper.writeValueAsString(map);
+    }
+
     @Test
     public void createAssay() throws Exception {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(assay);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/assays").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assay))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        document("create-assay-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingAssays");
+
+
+        this.mockMvc.perform(
+                post("/api/assays").content(contentForRealSubmission)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-assay-real",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -627,17 +583,29 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(assayData);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/assayData").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay-data",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        document("create-assay-data-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assayData,sub.getId(),"sequencingRuns");
+
+        this.mockMvc.perform(
+                post("/api/assayData").content(contentForRealSubmission)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-assay-data-real",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -685,65 +653,77 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Project project = Helpers.generateClientProject();
 
-        String jsonRepresentation = objectMapper.writeValueAsString(project);
-
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/projects/").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/projects/").content(objectMapper.writeValueAsString(project))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                responseFields(
-                                        fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("alias").description("Unique name for the project within the team"),
-                                        fieldWithPath("title").description("Title for the project"),
-                                        fieldWithPath("description").description("Description for the project"),
-                                        fieldWithPath("contacts").description("Contacts for this project"),
-                                        fieldWithPath("publications").description("Publications related to thisproject"),
-                                        //fieldWithPath("attributes").description("A list of attributes for the project"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
-                                        fieldWithPath("team").description("Team this project belongs to"),
-                                        fieldWithPath("releaseDate").description("Date at which this project can be released"),
-                                        fieldWithPath("createdDate").description("Date this resource was created"),
-                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
-                                        fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
-                                ),
-                                links(
-                                        halLinks(),
-                                        validationresultLink(),
-                                        submissionLink(),
-                                        processingStatusLink(),
-                                        linkWithRel("self").description("This resource"),
-                                        linkWithRel("project").description("This resource"),
-                                        linkWithRel("self:update").description("This resource can be updated"),
-                                        linkWithRel("self:delete").description("This resource can be deleted"),
-                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
-                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
-
-                                )
+                        document("create-project-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
                         )
                 );
 
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(project,sub.getId(),"projects");
+
+
+        this.mockMvc.perform(post("/api/projects").content(contentForRealSubmission)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isCreated())
+                .andDo(document("create-project-real",
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("_links").description("Links"),
+                                fieldWithPath("alias").description("Unique name for the project within the team"),
+                                fieldWithPath("title").description("Title for the project"),
+                                fieldWithPath("description").description("Description for the project"),
+                                fieldWithPath("contacts").description("Contacts for this project"),
+                                fieldWithPath("publications").description("Publications related to thisproject"),
+                                //fieldWithPath("attributes").description("A list of attributes for the project"),
+                                fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                fieldWithPath("team").description("Team this project belongs to"),
+                                fieldWithPath("releaseDate").description("Date at which this project can be released"),
+                                fieldWithPath("createdDate").description("Date this resource was created"),
+                                fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                fieldWithPath("createdBy").description("User who created this resource"),
+                                fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                        ),
+                        links(
+                                halLinks(),
+                                validationresultLink(),
+                                submissionLink(),
+                                processingStatusLink(),
+                                linkWithRel("self").description("This resource"),
+                                linkWithRel("project").description("This resource"),
+                                linkWithRel("self:update").description("This resource can be updated"),
+                                linkWithRel("self:delete").description("This resource can be deleted"),
+                                linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+
+                        )
+                ));
+
+
         String projectId = projectRepository.findAll().get(0).getId();
+        project.setSubmission(null);
+
 
         this.mockMvc.perform(
-                put("/api/projects/" + projectId).content(jsonRepresentation)
+                put("/api/projects/" + projectId).content(objectMapper.writeValueAsString(project))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isOk())
                 .andDo(
                         document("update-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -793,7 +773,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-project",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -837,33 +817,17 @@ public class ApiDocumentation {
                 .andExpect(status().isOk())
                 .andDo(document(
                         "submission-contents-post-project-creation",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("analyses").description("Collection of analyses within this submission"),
-                                linkWithRel("analyses:create").description("Create a new analysis resource"),
-                                linkWithRel("assayData").description("Collection of assay data within this submission"),
-                                linkWithRel("assayData:create").description("Create a new assay data resource"),
-                                linkWithRel("assays").description("Collection of assays within this submission"),
-                                linkWithRel("assays:create").description("Create a new assay resource"),
-                                linkWithRel("egaDacPolicies").description("Collection of DAC policies within this submission"),
-                                linkWithRel("egaDacPolicies:create").description("Create a new DAC policy resource"),
-                                linkWithRel("egaDacs").description("Collection of DACs within this submission"),
-                                linkWithRel("egaDacs:create").description("Create a new DAC resource"),
-                                linkWithRel("egaDatasets").description("Collection of EGA Datasets within this submission"),
-                                linkWithRel("egaDatasets:create").description("Create a new EGA dataset resource"),
+                                linkWithRel("sequencingAssays").description("Collection of assays within this submission"),
+                                linkWithRel("sequencingAssays:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
-                                linkWithRel("protocols").description("Collection of protocols within this submission"),
-                                linkWithRel("protocols:create").description("Create a new protocol resource"),
-                                linkWithRel("sampleGroups").description("Collection of sample groups within this submission"),
-                                linkWithRel("sampleGroups:create").description("Create a new sample group resource"),
+                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
-                                linkWithRel("studies").description("Collection of studies within this submission"),
-                                linkWithRel("studies:create").description("Create a new study resource"),
                                 linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
                         ),
                         responseFields(
@@ -877,17 +841,30 @@ public class ApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
 
-        String jsonRepresentation = objectMapper.writeValueAsString(sample);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(jsonRepresentation)
+                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(objectMapper.writeValueAsString(sample))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-sample",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                        document("create-sample-proxy",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
+                        )
+                );
+
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(sample,sub.getId(),"samples");
+
+        this.mockMvc.perform(
+                post("/api/samples").content(contentForRealSubmission)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-sample-real",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -933,10 +910,9 @@ public class ApiDocumentation {
 
         sample.getSampleRelationships().add(sampleRelationship);
 
-        jsonRepresentation = objectMapper.writeValueAsString(sample);
 
         this.mockMvc.perform(
-                put("/api/samples/{id}", sampleId).content(jsonRepresentation)
+                put("/api/samples/{id}", sampleId).content(objectMapper.writeValueAsString(sample))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -990,7 +966,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("patch-sample",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -1039,7 +1015,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-validation-result",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
@@ -1058,92 +1034,6 @@ public class ApiDocumentation {
                 );
     }
 
-    @Test
-    public void pageExample() throws Exception {
-
-        String teamName = null;
-        for (int i = 0; i < 50; i++) {
-            Submission s = Helpers.generateTestSubmission();
-            submissionStatusRepository.insert(s.getSubmissionStatus());
-            submissionRepository.insert(s);
-            teamName = s.getTeam().getName();
-        }
-
-        this.mockMvc.perform(get("/api/submissions/search/by-team?teamName={teamName}&page=1&size=10", teamName))
-                .andExpect(status().isOk())
-                .andDo(document(
-                        "page-example",
-                        preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                        preprocessResponse(maskEmbedded(), prettyPrint()),
-
-                        links(halLinks(),
-                                linkWithRel("self").description("This resource list"),
-                                linkWithRel("first").description("The first page in the resource list"),
-                                linkWithRel("next").description("The next page in the resource list"),
-                                linkWithRel("prev").description("The previous page in the resource list"),
-                                linkWithRel("last").description("The last page in the resource list")
-                        ),
-                        responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded").description("The list of resources"),
-                                fieldWithPath("page.size").description("The number of resources in this page"),
-                                fieldWithPath("page.totalElements").description("The total number of resources"),
-                                fieldWithPath("page.totalPages").description("The total number of pages"),
-                                fieldWithPath("page.number").description("The page number")
-                        )
-                ));
-    }
-
-    @Test
-    public void conditionalRequests() throws Exception {
-        Submission sub = storeSubmission();
-        List<Sample> samples = storeSamples(sub, 1);
-        Sample s = samples.get(0);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM YYYY H:m:s zzz");
-
-        String etagValueString = String.format("ETag: \"%d\"", s.getVersion());
-        String lastModifiedString = dateFormat.format(s.getLastModifiedDate());
-
-        this.mockMvc.perform(
-                get("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-None-Match", etagValueString)
-        ).andExpect(status().isNotModified())
-                .andDo(
-                        document("conditional-fetch-etag-get-if-none-match",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-
-        this.mockMvc.perform(
-                delete("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-Match", "ETag: \"10\"")
-        ).andExpect(status().isPreconditionFailed())
-                .andDo(
-                        document("conditional-delete-if-etag-match",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-
-        this.mockMvc.perform(
-                get("/api/samples/{sampleId}", s.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-Modified-Since", lastModifiedString)
-        ).andExpect(status().isNotModified())
-                .andDo(
-                        document("conditional-fetch-if-modified-since",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()
-                                )
-                        )
-                );
-    }
 
     @Test
     public void sampleList() throws Exception {
@@ -1156,7 +1046,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/by-submission",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1179,7 +1069,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples/fetch-one",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1223,7 +1113,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("samples-search-resource",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1244,49 +1134,6 @@ public class ApiDocumentation {
                 );
     }
 
-    @Test
-    public void rootEndpoint() throws Exception {
-
-        this.mockMvc.perform(
-                get("/api/")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("root-endpoint",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-
-                                        halLinks(),
-                                        //team
-                                        linkWithRel("userTeams").description("Collection resource for teams"),
-                                        linkWithRel("team").description("Templated link for finding one team"),
-                                        //ref data
-                                        linkWithRel("studyDataTypes").description("Collection resource for study data types"),
-                                        linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
-                                        linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
-                                        linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
-                                        linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
-                                        linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
-                                        linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
-                                        linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
-                                        linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
-                                        //user projects
-                                        linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
-                                        linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
-                                        linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
-                                        //profile
-                                        linkWithRel("profile").description("Application level details"),
-                                        //related services
-                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
-                                        linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField()
-                                )
-                        )
-                );
-    }
 
     @Test
     public void submissionsByTeam() throws Exception {
@@ -1299,7 +1146,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("submissions/by-team",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1327,7 +1174,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userProjects",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1354,7 +1201,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissionStatusSummary",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1377,7 +1224,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("studyDataTypes",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1404,7 +1251,7 @@ public class ApiDocumentation {
         ).andExpect(status().isOk())
                 .andDo(
                         document("userSubmissions",
-                                preprocessRequest(prettyPrint(),addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
@@ -1429,11 +1276,12 @@ public class ApiDocumentation {
         this.assayRepository.deleteAll();
         this.assayDataRepository.deleteAll();
         this.studyRepository.deleteAll();
+        this.dataTypeRepository.deleteAll();
     }
 
     /* Test Helper Methods */
 
-    private uk.ac.ebi.subs.data.Submission goodClientSubmission() {
+    protected static uk.ac.ebi.subs.data.Submission goodClientSubmission() {
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setSubmitter(null);
         submission.setTeam(null);
@@ -1511,18 +1359,6 @@ public class ApiDocumentation {
         processingStatusRepository.insert(status);
     }
 
-    private uk.ac.ebi.subs.data.Submission badClientSubmission() {
-        return new uk.ac.ebi.subs.data.Submission();
-    }
-
-    public ContentModifyingOperationPreprocessor maskEmbedded() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_embedded"));
-    }
-
-    public ContentModifyingOperationPreprocessor maskLinks() {
-        return new ContentModifyingOperationPreprocessor(new MaskElement("_links"));
-    }
-
     private List<Sample> storeSamples(Submission sub, int numberRequired) {
         List<Sample> samples = Helpers.generateTestSamples(numberRequired);
 
@@ -1576,33 +1412,5 @@ public class ApiDocumentation {
         return linkWithRel("validationResult").description("Result of the validation of this record");
     }
 
-    protected class MaskElement implements ContentModifier {
 
-        private String keyToRemove;
-
-        public MaskElement(String keyToRemove) {
-            this.keyToRemove = keyToRemove;
-        }
-
-        @Override
-        public byte[] modifyContent(byte[] originalContent, MediaType contentType) {
-            TypeReference<HashMap<String, Object>> typeRef
-                    = new TypeReference<HashMap<String, Object>>() {
-            };
-
-            Map<String, Object> o = null;
-            try {
-                o = objectMapper.readValue(originalContent, typeRef);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-            o.put("_embedded", "...");
-            try {
-                return objectMapper.writeValueAsBytes(o);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }

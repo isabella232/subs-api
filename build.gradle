@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.11.0-SNAPSHOT'
+version '2.12.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -37,9 +37,9 @@ repositories {
 dependencies {
     compileOnly("org.projectlombok:lombok:1.16.18")
     compile("uk.ac.ebi.subs:subs-processing-model:2.4.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.9.4-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.9.8-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.4.0-SNAPSHOT")
-
+    compile("com.mashape.unirest:unirest-java:1.4.9")
     compile("org.springframework.boot:spring-boot-starter-data-rest")
     compile 'org.springframework.data:spring-data-rest-hal-browser'
     compile("org.springframework.boot:spring-boot-starter-web")
@@ -57,7 +57,6 @@ dependencies {
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
     testCompile 'org.springframework.security:spring-security-test:4.2.3.RELEASE'
 
-    testCompile("com.mashape.unirest:unirest-java:1.4.9")
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.4.6'

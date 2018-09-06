@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.processors.SubmissionStatusResourceProcessor;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
@@ -76,6 +77,9 @@ public class ApiIntegrationTestRabbitDependent {
     @Autowired
     private SampleRepository sampleRepository;
 
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
     @MockBean
     private DomainService domainService;
     @MockBean
@@ -84,6 +88,8 @@ public class ApiIntegrationTestRabbitDependent {
 
     @Before
     public void buildUp() throws URISyntaxException {
+        this.tearDown();
+
         rootUri = "http://localhost:" + port + "/api";
         final Map<String, String> standardGetContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
         standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER, TestWebSecurityConfig.USI_PASSWORD));
@@ -93,14 +99,15 @@ public class ApiIntegrationTestRabbitDependent {
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), standardGetContentHeader, standardPostContentHeader);
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
-
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() {
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
         submissionStatusRepository.deleteAll();
+        dataTypeRepository.deleteAll();
     }
 
     @Test

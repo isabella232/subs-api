@@ -44,6 +44,7 @@ public class CoreSubmittableValidationHelper {
         StoredSubmittable storedVersion = null;
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "dataType", "required", "dataType is required");
 
         if (errors.hasErrors()) {
             return;
@@ -107,6 +108,13 @@ public class CoreSubmittableValidationHelper {
                 (submittable.getSubmission() == null) ? null : submittable.getSubmission().getId(),
                 (storedVersion.getSubmission() == null) ? null : storedVersion.getSubmission().getId(),
                 "submission",
+                errors
+        );
+
+        ValidationHelper.thingCannotChange(
+                (submittable.getDataType() == null) ? null : submittable.getDataType().getId(),
+                (storedVersion.getDataType() == null) ? null : storedVersion.getDataType().getId(),
+                "dataType",
                 errors
         );
 
