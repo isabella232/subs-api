@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -49,6 +50,8 @@ public class CoreValidatorTest {
     ProcessingStatusRepository processingStatusRepository;
     @Autowired
     ValidationResultRepository validationResultRepository;
+    @Autowired
+    DataTypeRepository dataTypeRepository;
     @Autowired
     CoreSubmittableValidationHelper coreSubmittableValidationHelper;
     @Autowired
@@ -81,6 +84,8 @@ public class CoreValidatorTest {
         sampleUnderValidation.setSubmission(submission);
 
         errors = new BeanPropertyBindingResult(sampleUnderValidation, "sample");
+
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
     }
 
     @Test
@@ -134,6 +139,7 @@ public class CoreValidatorTest {
         String alias = "alias-" + UUID.randomUUID();
 
         Sample originalSample = createSampleWithAlias(alias);
+        originalSample.setDataType(dataTypeRepository.findOne("samples"));
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(originalSample);
         submittableHelperService.processingStatusAndValidationResultSetUp(originalSample);
         sampleRepository.save(originalSample);
@@ -160,6 +166,7 @@ public class CoreValidatorTest {
      sampleRepository.deleteAll();
      processingStatusRepository.deleteAll();
      validationResultRepository.deleteAll();
+     dataTypeRepository.deleteAll();
     }
 
 }

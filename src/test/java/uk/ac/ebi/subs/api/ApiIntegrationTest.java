@@ -117,7 +117,6 @@ public abstract class ApiIntegrationTest {
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
         ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
-
     }
 
     public void clearDbs() {
@@ -384,6 +383,7 @@ public abstract class ApiIntegrationTest {
 
             for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
                 sample.setSubmission(submission);
+                sample.setDataType(dataTypeRepository.findOne("samples"));
                 submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
                 submittableHelperService.processingStatusAndValidationResultSetUp(sample);
                 sampleRepository.save(sample);
