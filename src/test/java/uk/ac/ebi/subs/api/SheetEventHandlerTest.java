@@ -10,8 +10,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.api.handlers.SheetHandler;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -36,7 +36,7 @@ public class SheetEventHandlerTest {
 
     @Test
     public void testBeforeCreate() {
-        Sheet sheet = exampleSheet();
+        Spreadsheet sheet = exampleSheet();
 
         sheetHandler.handleBeforeCreate(sheet);
 
@@ -46,7 +46,7 @@ public class SheetEventHandlerTest {
 
     @Test
     public void testAfterCreate() {
-        Sheet sheet = exampleSheet();
+        Spreadsheet sheet = exampleSheet();
         sheet.setStatus(SheetStatusEnum.Submitted);
 
         sheetHandler.handleAfterCreate(sheet);
@@ -55,8 +55,8 @@ public class SheetEventHandlerTest {
     }
 
 
-    private Sheet exampleSheet() {
-        Sheet sheet = new Sheet();
+    private Spreadsheet exampleSheet() {
+        Spreadsheet sheet = new Spreadsheet();
 
         sheet.setId("1");
         sheet.setSourceFileName("my-samples.csv");

@@ -22,11 +22,12 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -46,8 +47,8 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "template_docs_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
-public class TemplateDocumentation {
+@WithMockUser(username = "checklist_docs_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
+public class ChecklistDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -65,12 +66,13 @@ public class TemplateDocumentation {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
     private Template template;
+    private Checklist checklist;
 
     @Before
     public void setUp() {
@@ -79,8 +81,10 @@ public class TemplateDocumentation {
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
 
+        this.checklist = new Checklist();
+        this.checklist.setId("test-template");
+        this.checklist.setDataTypeId("samples");
 
-        this.template = Template.builder().name("test-template").targetType("samples").build();
         template
                 .add(
                         "alias",
@@ -93,19 +97,19 @@ public class TemplateDocumentation {
                 .add(
                         "taxon",
                         FieldCapture.builder().fieldName("taxon").build()
-                )
-                .addTag("tag1")
-                .addTag("tag2");
+                );
 
         template.setDefaultCapture(
                 AttributeCapture.builder().build()
         );
 
-        templateRepository.insert(template);
+        this.checklist.setSpreadsheetTemplate(template);
+
+        checklistRepository.insert(checklist);
     }
 
     private void clearDatabases() {
-        this.templateRepository.deleteAll();
+        this.checklistRepository.deleteAll();
     }
 
     @After
@@ -139,6 +143,7 @@ public class TemplateDocumentation {
                         )
                 );
     }
+
     @Test
     public void templateSearchResources() throws Exception {
         this.mockMvc.perform(
@@ -217,37 +222,6 @@ public class TemplateDocumentation {
                                         fieldWithPath("_embedded.templates").description("Templates matching the query parameter"),
                                         paginationBlock()
                                 )
-                        )
-                );
-    }
-
-    @Test
-    public void templateByTags() throws Exception {
-
-        String[] templateTags = this.template.getTags().toArray(new String[]{});
-
-        this.mockMvc.perform(
-                get("/api/templates/search/findByTargetTypeAndTagsAllMatch?targetType={type}&tags={tagOne}&tags={tagTwo}",
-                        this.template.getTargetType(),
-                        templateTags[0],
-                        templateTags[1]
-                )
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("templates-by-tags-and-type",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        selfRelLink()
-                                ),
-                                responseFields(
-                                        linksResponseField(),
-                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameters")
-                                )
-
-
                         )
                 );
     }

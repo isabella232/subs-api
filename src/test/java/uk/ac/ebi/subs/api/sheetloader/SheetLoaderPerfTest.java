@@ -16,18 +16,19 @@ import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
-import uk.ac.ebi.subs.repository.repos.SheetRepository;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 
@@ -48,11 +49,11 @@ public class SheetLoaderPerfTest {
     @Autowired
     private SheetLoaderService sheetLoaderService;
     @Autowired
-    private SheetRepository sheetRepository;
+    private SpreadsheetRepository spreadsheetRepository;
     @Autowired
     private SampleRepository sampleRepository;
     @Autowired
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
     @Autowired
     private SubmissionRepository submissionRepository;
     @Autowired
@@ -64,7 +65,8 @@ public class SheetLoaderPerfTest {
 
     private Submission submission;
     private Template template;
-    private Sheet sheet;
+    private Spreadsheet sheet;
+    private Checklist checklist;
 
     private static final int SPREADSHEET_SIZE_IN_ROWS = 3000;
 
@@ -86,12 +88,15 @@ public class SheetLoaderPerfTest {
         submission.setSubmissionStatus(submissionStatus);
         submissionRepository.save(submission);
 
+        checklist = new Checklist();
+        checklist.setId("foo");
 
         template = template();
-        templateRepository.insert(template);
+        checklist.setSpreadsheetTemplate(template);
+        checklistRepository.insert(checklist);
 
         sheet = sheet();
-        sheetRepository.insert(sheet);
+        spreadsheetRepository.insert(sheet);
     }
 
     @Test
@@ -105,11 +110,11 @@ public class SheetLoaderPerfTest {
     }
 
 
-    private Sheet sheet() {
-        Sheet sheet = new Sheet();
-        sheet.setTemplate(template);
+    private Spreadsheet sheet() {
+        Spreadsheet sheet = new Spreadsheet();
+        sheet.setChecklistId(checklist.getId());
         sheet.setTeam(submission.getTeam());
-        sheet.setSubmission(submission);
+        sheet.setSubmissionId(submission.getId());
         List<String> headers = template.getColumnCaptures().keySet().stream().collect(Collectors.toList());
         sheet.setHeaderRow(new Row(headers));
         sheet.setRows(createRows());
@@ -148,15 +153,12 @@ public class SheetLoaderPerfTest {
 
     @After
     public void clearDbs() {
-        Stream.of(sheetRepository, sampleRepository, templateRepository, submissionRepository, submissionStatusRepository, dataTypeRepository)
+        Stream.of(spreadsheetRepository, sampleRepository, checklistRepository, submissionRepository, submissionStatusRepository, dataTypeRepository)
                 .forEach(CrudRepository::deleteAll);
     }
 
     private Template template() {
-        Template template = Template.builder()
-                .name("samples-template")
-                .targetType("samples")
-                .build();
+        Template template = new Template();
 
         template
                 .add(
@@ -181,7 +183,6 @@ public class SheetLoaderPerfTest {
                 AttributeCapture.builder().build()
         );
 
-        template.setId(UUID.randomUUID().toString());
 
         return template;
     }

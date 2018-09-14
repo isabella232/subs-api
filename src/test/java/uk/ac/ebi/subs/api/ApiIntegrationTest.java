@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
@@ -26,22 +25,21 @@ import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
-import uk.ac.ebi.tsc.aap.client.model.Domain;
-import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
@@ -85,7 +83,7 @@ public abstract class ApiIntegrationTest {
     @Autowired
     protected SampleRepository sampleRepository;
     @Autowired
-    protected TemplateRepository templateRepository;
+    protected ChecklistRepository checklistRepository;
     @Autowired
     protected ValidationResultRepository validationResultRepository;
     @Autowired
@@ -115,7 +113,7 @@ public abstract class ApiIntegrationTest {
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
 
-        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+        ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
         ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
 
     }
@@ -125,7 +123,7 @@ public abstract class ApiIntegrationTest {
                 submissionRepository,
                 submissionStatusRepository,
                 sampleRepository,
-                templateRepository,
+                checklistRepository,
                 validationResultRepository,
                 processingStatusRepository,
                 dataTypeRepository
@@ -148,9 +146,11 @@ public abstract class ApiIntegrationTest {
     @Test
     public void downloadTemplate() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
-        assertThat(rootRels.keySet(), hasItems("templates"));
+        assertThat(rootRels.keySet(), hasItems("checklists"));
 
-        Template template = Template.builder().name("test-template").targetType("samples").build();
+        Checklist checklist = new Checklist();
+        checklist.setId("bar");
+        Template template = new Template();
         template
                 .add(
                         "alias",
@@ -169,9 +169,11 @@ public abstract class ApiIntegrationTest {
                 AttributeCapture.builder().build()
         );
 
-        templateRepository.insert(template);
+        checklist.setSpreadsheetTemplate(template);
 
-        HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("templates")).headers(testHelper.getGetHeaders()).asJson();
+        checklistRepository.insert(checklist);
+
+        HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("checklists")).headers(testHelper.getGetHeaders()).asJson();
 
         JSONArray templates = templatesResponse.getBody().getObject().getJSONObject("_embedded").getJSONArray("templates");
         JSONObject exampleTemplateJson = templates.getJSONObject(0);
