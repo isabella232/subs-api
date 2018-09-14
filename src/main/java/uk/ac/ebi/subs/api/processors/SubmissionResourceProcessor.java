@@ -13,22 +13,25 @@ import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsLinksController;
 import uk.ac.ebi.subs.api.controllers.SubmissionStatusController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
+import uk.ac.ebi.subs.api.model.SubmissionResource;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 
 @Component
@@ -50,9 +53,11 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     @NonNull
     private ControllerEntityLinks controllerEntityLinks;
 
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
+
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
-
         addTeamRel(resource);
         addContentsRels(resource);
         addValidationResultLinks(resource);
@@ -66,7 +71,27 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         addReceiptLink(resource);
 
-        return resource;
+        SubmissionResource submissionResource = new SubmissionResource(resource);
+
+        addDataType(submissionResource);
+
+        return submissionResource;
+    }
+
+    private void addDataType(SubmissionResource resource) {
+        Submission submission = resource.getContent();
+
+        if (submission.getSubmissionPlan() == null){
+            return;
+        }
+
+        List<DataType> dataTypes = submission.getSubmissionPlan().getDataTypeIds()
+                .stream()
+                .map(id -> dataTypeRepository.findOne(id))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        resource.setDataTypes(dataTypes);
     }
 
     private void addStatusLinks(Resource<Submission> resource) {
@@ -79,6 +104,15 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
                     ).withRel("submissionStatus"+LinkHelper.UPDATE_REL_SUFFIX);
 
             resource.add(updateLink);
+        }
+
+        if (resource.getLink(SubmissionStatusResourceProcessor.STATUS_REL) == null) {
+            Link statusLink = linkTo(
+                    methodOn(SubmissionStatusController.class)
+                            .getStatus(submission.getId())
+            ).withRel(SubmissionStatusResourceProcessor.STATUS_REL);
+
+            resource.add(statusLink);
         }
 
         Link availableStatusLinks = linkTo(

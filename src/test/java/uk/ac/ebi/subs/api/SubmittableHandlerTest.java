@@ -16,6 +16,8 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Study;
+import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -54,6 +56,8 @@ public class SubmittableHandlerTest {
     private SubmissionStatusRepository submissionStatusRepository;
     @Autowired
     private ValidationResultRepository validationResultRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     @Autowired
     private SubmittableValidationDispatcher submittableValidationDispatcher;
@@ -77,11 +81,13 @@ public class SubmittableHandlerTest {
         submittableValidationDispatcher.setRabbitMessagingTemplate(rabbitMessagingTemplate);
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
     }
 
     @Test
     public void testValidationMessageSamplesOnSubmit() throws Exception {
-        testHelper.submissionWithSamples(testHelper.rootRels());
+        Submission submission = Helpers.generateSubmission();
+        testHelper.submissionWithSamples(submission, testHelper.rootRels());
         verify(submittableValidationDispatcher, atLeast(1)).validateCreate(any(Sample.class));
     }
 
@@ -103,5 +109,6 @@ public class SubmittableHandlerTest {
         studyRepository.deleteAll();
         submissionStatusRepository.deleteAll();
         validationResultRepository.deleteAll();
+        dataTypeRepository.deleteAll();
     }
 }

@@ -1,0 +1,23 @@
+= Submission plans
+:docinfo: shared
+:toc: auto
+
+== List all submission plans
+
+=== Request
+
+include::{snippets}/list-submission-plans/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/list-submission-plans/http-response.adoc[]
+
+== Get one submission plan
+
+=== Request
+
+include::{snippets}/get-submission-plan/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-submission-plan/http-response.adoc[]

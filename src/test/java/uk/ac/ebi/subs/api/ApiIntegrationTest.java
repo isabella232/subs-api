@@ -31,6 +31,8 @@ import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -77,6 +79,8 @@ public abstract class ApiIntegrationTest {
     @Autowired
     protected SubmissionRepository submissionRepository;
     @Autowired
+    protected SubmissionPlanRepository submissionPlanRepository;
+    @Autowired
     protected SubmissionStatusRepository submissionStatusRepository;
     @Autowired
     protected SampleRepository sampleRepository;
@@ -100,6 +104,9 @@ public abstract class ApiIntegrationTest {
     @Autowired
     private SubmittableHelperService submittableHelperService;
 
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
     @Before
     public void buildUp() throws UnirestException {
         clearDbs();
@@ -109,7 +116,7 @@ public abstract class ApiIntegrationTest {
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService,profileRepositoryRest);
-
+        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
     }
 
     public void clearDbs() {
@@ -119,7 +126,8 @@ public abstract class ApiIntegrationTest {
                 sampleRepository,
                 templateRepository,
                 validationResultRepository,
-                processingStatusRepository
+                processingStatusRepository,
+                dataTypeRepository
         ).forEach(CrudRepository::deleteAll);
     }
 
@@ -367,12 +375,15 @@ public abstract class ApiIntegrationTest {
 
             submissionRepository.insert(submission);
 
+            submissionPlanRepository.insert(submission.getSubmissionPlan());
+
             HttpResponse<JsonNode> submissionResponse = Unirest.get(rootUri + "/submissions/" + submission.getId())
                     .headers(testHelper.getGetHeaders()).asJson();
             assertEquals(HttpStatus.OK.value(), submissionResponse.getStatus());
 
             for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
                 sample.setSubmission(submission);
+                sample.setDataType(dataTypeRepository.findOne("samples"));
                 submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
                 submittableHelperService.processingStatusAndValidationResultSetUp(sample);
                 sampleRepository.save(sample);

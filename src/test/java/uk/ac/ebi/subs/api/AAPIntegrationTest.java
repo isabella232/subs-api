@@ -86,6 +86,7 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
         Map<String, String> rootRels = testHelper.rootRels();
 
         Submission submission = new Submission();
+        submission.setSubmissionPlan(Helpers.generateSubmissionPlan());
         HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
 
         JSONObject submissionResponseObject = submissionResponse.getBody().getObject();

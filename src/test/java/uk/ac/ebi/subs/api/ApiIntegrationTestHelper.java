@@ -20,6 +20,9 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
+import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
@@ -91,8 +94,7 @@ public class ApiIntegrationTestHelper {
         return submissionResponse;
     }
 
-    public String submissionWithSamples(Map<String, String> rootRels) throws UnirestException, IOException {
-        Submission submission = Helpers.generateSubmission();
+    public String submissionWithSamples(Submission submission, Map<String, String> rootRels) throws UnirestException, IOException {
         Map<String,String> teamRels = teamRels(Helpers.TEAM_NAME);
         HttpResponse<JsonNode> submissionResponse = postSubmission(teamRels, submission);
 
@@ -147,13 +149,13 @@ public class ApiIntegrationTestHelper {
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
         Map<String,String> submissionContentsRels = relsFromUri(submissionRels.get("contents"));
-        assertThat(submissionContentsRels.get("studies"), notNullValue());
+        assertThat(submissionContentsRels.get("sequencingStudies:create"), notNullValue());
 
         List<Study> testStudies = Helpers.generateTestClientStudies(2);
         //add samples to the submission
         for (Study study : testStudies) {
 
-            HttpResponse<JsonNode> studyResponse = Unirest.post(submissionContentsRels.get("studies:create"))
+            HttpResponse<JsonNode> studyResponse = Unirest.post(submissionContentsRels.get("sequencingStudies:create"))
                     .headers(postHeaders)
                     .body(study)
                     .asJson();
@@ -269,6 +271,35 @@ public class ApiIntegrationTestHelper {
 
         Mockito.when(profileRepositoryRest.getDomainProfile(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(profile);
+    }
+
+    public static List<DataType>  initialiseDataTypes(DataTypeRepository dataTypeRepository){
+        List<DataType> dataTypes = Arrays.asList(
+                buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class, "sample", "samples", Archive.BioSamples),
+                buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class, "project", "projects", Archive.BioStudies),
+                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
+                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing assay", "sequencing assays", Archive.Ena),
+                buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class, "sequencing runs", "sequencing run", Archive.Ena)
+        );
+        dataTypeRepository.insert(dataTypes);
+        return dataTypes;
+    }
+
+    private static DataType buildDataType(String id, Class clazz, String singularName, String pluralName, Archive archive){
+        DataType dt = new DataType();
+        dt.setId(id);
+        dt.setSubmittableClassName(clazz.getName());
+        dt.setArchive(archive);
+        dt.setDescription("<<data type description>>");
+        dt.setDisplayNamePlural(pluralName);
+        dt.setDisplayNameSingular(singularName);
+
+        Map<String,String> schemaMap = new HashMap<>();
+        schemaMap.put("$schema","http://json-schema.org/draft-07/schema#");
+        schemaMap.put("description","<<JSON schema used to validate this data type>>");
+        ObjectMapper om = new ObjectMapper();
+        dt.setValidationSchema(om.valueToTree(schemaMap));
+        return dt;
     }
 
 }
