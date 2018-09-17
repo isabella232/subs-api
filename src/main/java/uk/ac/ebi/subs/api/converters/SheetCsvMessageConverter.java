@@ -12,7 +12,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet> {
+public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Spreadsheet> {
 
     public static final MediaType CSV_UTF8_MEDIA_TYPE = new MediaType("text", "csv", Charset.forName("utf-8"));
     public static final MediaType CSV_MEDIA_TYPE = new MediaType("text", "csv");
@@ -38,12 +38,12 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return Sheet.class.equals(clazz);
+        return Spreadsheet.class.equals(clazz);
     }
 
 
     @Override
-    protected void writeInternal(Sheet sheet, HttpOutputMessage output) throws IOException, HttpMessageNotWritableException {
+    protected void writeInternal(Spreadsheet sheet, HttpOutputMessage output) throws IOException, HttpMessageNotWritableException {
         output.getHeaders().setContentType(CSV_UTF8_MEDIA_TYPE);
         output.getHeaders().set("Content-Disposition", "attachment; filename=\"" + sheet.getSheetName() + ".csv\"");
 
@@ -64,13 +64,13 @@ public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Sheet
     }
 
     @Override
-    protected Sheet readInternal(Class<? extends Sheet> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected Spreadsheet readInternal(Class<? extends Spreadsheet> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
         return readStream(inputMessage.getBody());
 
     }
 
-    public Sheet readStream(InputStream inputStream) throws IOException {
-        Sheet sheet = new Sheet();
+    public Spreadsheet readStream(InputStream inputStream) throws IOException {
+        Spreadsheet sheet = new Spreadsheet();
 
         Reader in = new InputStreamReader(inputStream);
         CSVParser csvParser = CSVFormat.EXCEL.parse(in);

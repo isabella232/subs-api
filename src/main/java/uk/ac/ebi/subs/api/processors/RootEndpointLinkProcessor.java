@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.UiSupportItem;
 import uk.ac.ebi.subs.repository.model.templates.Template;
@@ -77,10 +78,10 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     }
 
     private void addTemplatesLinks(List<Link> links) {
-        linkHelper.addSearchLink(links, Template.class);
+        linkHelper.addSearchLink(links, Checklist.class);
 
         links.add(
-                repositoryEntityLinks.linkToCollectionResource(Template.class).expand(new HashMap<>())
+                repositoryEntityLinks.linkToCollectionResource(Checklist.class).expand(new HashMap<>())
         );
     }
 

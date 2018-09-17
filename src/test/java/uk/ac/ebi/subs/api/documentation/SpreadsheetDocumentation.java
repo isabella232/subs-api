@@ -22,17 +22,18 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
-import uk.ac.ebi.subs.repository.repos.SheetRepository;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.List;
@@ -75,10 +76,10 @@ public class SpreadsheetDocumentation {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
 
     @Autowired
-    private SheetRepository sheetRepository;
+    private SpreadsheetRepository spreadsheetRepository;
 
     @Autowired
     private SubmissionRepository submissionRepository;
@@ -89,6 +90,7 @@ public class SpreadsheetDocumentation {
     private MockMvc mockMvc;
     private Template template;
     private Submission submission;
+    private Checklist checklist;
 
     @Before
     public void setUp() {
@@ -97,7 +99,14 @@ public class SpreadsheetDocumentation {
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.submission = storeSubmission();
 
-        template = Template.builder().name("default-sample-template").targetType("samples").build();
+        template = new Template();
+
+        checklist = new Checklist();
+        checklist.setId("simple-sample-template");
+        checklist.setSpreadsheetTemplate(template);
+        checklist.setDataTypeId("samples");
+
+        //.builder().name("default-sample-template").targetType("samples").build();
         template
                 .add(
                         "alias",
@@ -116,13 +125,13 @@ public class SpreadsheetDocumentation {
                 AttributeCapture.builder().build()
         );
 
-        templateRepository.insert(template);
+        checklistRepository.insert(checklist);
     }
 
 
     private void clearDatabases() {
-        this.sheetRepository.deleteAll();
-        this.templateRepository.deleteAll();
+        this.spreadsheetRepository.deleteAll();
+        this.checklistRepository.deleteAll();
         this.submissionRepository.deleteAll();
         this.submissionStatusRepository.deleteAll();
     }
@@ -142,7 +151,7 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void uploadSheet() throws Exception {
-        Sheet sheet = uploadCsvAsSheet("sheet-csv-upload");
+        Spreadsheet sheet = uploadCsvAsSheet("sheet-csv-upload");
         Assert.assertEquals(SheetStatusEnum.Submitted, sheet.getStatus());
     }
 
@@ -154,19 +163,20 @@ public class SpreadsheetDocumentation {
 
     @Test
     public void fetchSheet() throws Exception {
-        Sheet sheet = new Sheet();
+        Spreadsheet sheet = new Spreadsheet();
         sheet.setStatus(SheetStatusEnum.Submitted);
-        sheet.setTemplate(template);
-        sheet.setSubmission(submission);
+        sheet.setChecklistId(checklist.getId());
+        sheet.setDataTypeId(checklist.getDataTypeId());
+        sheet.setSubmissionId(submission.getId());
         sheet.setTeam(submission.getTeam());
         sheet.setHeaderRow(new Row(headerCells));
         sheet.addRow(row1Cells);
         sheet.addRow(row2Cells);
 
-        sheetRepository.insert(sheet);
+        spreadsheetRepository.insert(sheet);
 
         this.mockMvc.perform(
-                get("/api/sheets/{id}",
+                get("/api/spreadsheets/{id}",
                         sheet.getId())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
@@ -177,13 +187,13 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("spreadsheet").description("Link to the uploaded spreadsheet"),
                                         linkWithRel("submission").description("Link to the submission this upload is associated with"),
-                                        linkWithRel("template").description("Link to the template used to process this data")
+                                        linkWithRel("checklist").description("Link to the checklist used to process this data"),
+                                        linkWithRel("dataType").description("Link to the data type definition for this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.submission").description("The submission this sheet belongs to"),
                                         fieldWithPath("status").description("Current status of the batch of documents"),
                                         fieldWithPath("team").description("The team that owns this upload"),
                                         fieldWithPath("headerRow").description("The header row of this spreadsheet"),
@@ -204,9 +214,9 @@ public class SpreadsheetDocumentation {
     @Test
     public void uploadEmptyCsvExpectValidationError() throws Exception {
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/spreadsheet?templateName={templateName}",
+                post("/api/submissions/{submissionId}/spreadsheet?checklistId={checklistId}",
                         submission.getId(),
-                        template.getName())
+                        checklist.getId())
                         .contentType("text/csv")
                         .accept(RestMediaTypes.HAL_JSON)
                         .content("")
@@ -233,7 +243,7 @@ public class SpreadsheetDocumentation {
     private final String[] row1Cells = new String[]{"s1", "9606", "Homo sapiens", "1.7", "meters"};
     private final String[] row2Cells = new String[]{"s2", "9606", "Homo sapiens", "1.7", "meters"};
 
-    private Sheet uploadCsvAsSheet(String snippetName) throws Exception {
+    private Spreadsheet uploadCsvAsSheet(String snippetName) throws Exception {
         final String comma = ",";
 
         String csv = String.join("\n",
@@ -244,9 +254,9 @@ public class SpreadsheetDocumentation {
 
 
         this.mockMvc.perform(
-                post("/api/submissions/{submissionId}/spreadsheet?templateName={templateName}",
+                post("/api/submissions/{submissionId}/spreadsheet?checklistId={checklistId}",
                         submission.getId(),
-                        template.getName())
+                        checklist.getId())
                         .contentType("text/csv")
                         .accept(RestMediaTypes.HAL_JSON)
                         .content(csv)
@@ -258,9 +268,10 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("spreadsheet").description("Link to the uploaded spreadsheet"),
                                         linkWithRel("submission").description("Link to the submission this upload is associated with"),
-                                        linkWithRel("template").description("Link to the template used to process this data")
+                                        linkWithRel("checklist").description("Link to the checklist used to process this data"),
+                                        linkWithRel("dataType").description("Link to the data type definition for this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),
@@ -278,7 +289,7 @@ public class SpreadsheetDocumentation {
                         )
                 );
 
-        List<Sheet> batches = sheetRepository.findAll();
+        List<Spreadsheet> batches = spreadsheetRepository.findAll();
         return batches.get(0);
     }
 

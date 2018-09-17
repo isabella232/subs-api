@@ -9,8 +9,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.aap.UsiTokenService;
-import uk.ac.ebi.subs.api.controllers.SheetsController;
+import uk.ac.ebi.subs.api.controllers.SpreadsheetController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -19,7 +18,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
@@ -97,11 +96,10 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     }
 
     private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String submissionId) {
-
         Map<String, String> templateExpansionParameters = paramWithSubmissionID(submissionId);
-        templateExpansionParameters.put("templateTargetType", "samples");
+        templateExpansionParameters.put("dataTypeId", "samples");
 
-        resource.add(createResourceLink(Sheet.class, "by-submission-and-target-type",
+        resource.add(createResourceLink(Spreadsheet.class, "by-submission-and-data-type",
                 templateExpansionParameters, "samplesSheets"));
     }
 
@@ -110,7 +108,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         try {
             Link link =
                     linkTo(
-                            methodOn(SheetsController.class)
+                            methodOn(SpreadsheetController.class)
                                     .uploadCsv(
                                             subId,
                                             null,//template name is required, must select one and use as param
@@ -135,13 +133,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                     .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
                     .findAny();
 
-            if (optionalClass.isPresent()){
+            if (optionalClass.isPresent()) {
                 Link searchLink = repositoryEntityLinks.linkToSearchResource(optionalClass.get(), "by-submission-and-dataType");
                 Link expandedLinks = searchLink.expand(params).withRel(dataType.getId());
                 resource.getLinks().add(expandedLinks);
-            }
-            else {
-                logger.error("Could not find class for data type {} in configured class list {}",dataType, submittablesClassList);
+            } else {
+                logger.error("Could not find class for data type {} in configured class list {}", dataType, submittablesClassList);
             }
         }
     }

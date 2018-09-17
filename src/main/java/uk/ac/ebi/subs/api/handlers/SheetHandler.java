@@ -9,14 +9,14 @@ import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.messaging.Exchanges;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@RepositoryEventHandler(Sheet.class)
+@RepositoryEventHandler(Spreadsheet.class)
 public class SheetHandler {
 
     @NonNull
@@ -26,29 +26,28 @@ public class SheetHandler {
 
 
     @HandleBeforeCreate
-    public void handleBeforeCreate(Sheet sheet) {
+    public void handleBeforeCreate(Spreadsheet sheet) {
         this.fillInId(sheet);
         //we only support immediate submission at the moment
         sheet.setStatus(SheetStatusEnum.Submitted);
     }
 
-    private void fillInId(Sheet sheet) {
+    private void fillInId(Spreadsheet sheet) {
         sheet.setId(UUID.randomUUID().toString());
     }
 
 
-
     @HandleAfterCreate
-    public void handleAfterCreate(Sheet sheet) {
+    public void handleAfterCreate(Spreadsheet sheet) {
         sendSheetEvent(sheet);
     }
 
     @HandleAfterSave
-    public void handleAfterSave(Sheet sheet) {
+    public void handleAfterSave(Spreadsheet sheet) {
         sendSheetEvent(sheet);
     }
 
-    private void sendSheetEvent(Sheet sheet) {
+    private void sendSheetEvent(Spreadsheet sheet) {
         String routingKey = routingKeyPrefix + sheet.getStatus().name().toLowerCase();
 
         rabbitMessagingTemplate.convertAndSend(

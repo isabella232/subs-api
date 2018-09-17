@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -25,7 +26,7 @@ public class SheetCleanupTask {
     private static final long FOUR_HOUR_IN_MILLIS = 1000l * 60 * 60 * 4;
 
     @NonNull
-    private SheetCleanupRepository sheetCleanupRepository;
+    private SpreadsheetRepository spreadsheetRepository;
 
 
     @Scheduled(fixedDelay = FOUR_HOUR_IN_MILLIS, initialDelay = FOUR_HOUR_IN_MILLIS)
@@ -35,7 +36,7 @@ public class SheetCleanupTask {
         cal.add(Calendar.DAY_OF_MONTH, -7);
         Date sevenDaysAgo = cal.getTime();
 
-        sheetCleanupRepository.removeByLastModifiedDateBeforeAndStatus(
+        spreadsheetRepository.removeByLastModifiedDateBeforeAndStatus(
                 sevenDaysAgo,
                 "Completed"
         );

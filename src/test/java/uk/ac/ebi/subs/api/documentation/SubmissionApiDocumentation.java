@@ -1018,7 +1018,6 @@ public class SubmissionApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("dataTypeId").description("The ID of the data type the validation result belongs to"),
                                         fieldWithPath("validationStatus").description("Is validation pending or complete?"),
                                         fieldWithPath("version").description("Version of this resource.")
                                 ),

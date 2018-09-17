@@ -11,8 +11,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.converters.SheetCsvMessageConverter;
+import uk.ac.ebi.subs.api.processors.SpreadsheetResourceProcessor;
 import uk.ac.ebi.subs.api.services.SheetService;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
-import uk.ac.ebi.subs.repository.model.templates.Template;
-import uk.ac.ebi.subs.repository.repos.SheetRepository;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 import java.io.IOException;
@@ -38,14 +37,14 @@ import java.io.InputStream;
 @Data
 @RestController
 @CrossOrigin
-public class SheetsController {
+public class SpreadsheetController {
 
 
     @NonNull
     private ApplicationEventPublisher publisher;
 
     @NonNull
-    private SheetRepository sheetRepository;
+    private SpreadsheetRepository spreadsheetRepository;
 
     @NonNull
     private SheetService sheetService;
@@ -54,7 +53,7 @@ public class SheetsController {
     private SubmissionRepository submissionRepository;
 
     @NonNull
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
 
     @NonNull
     private SheetCsvMessageConverter sheetCsvMessageConverter;
@@ -62,11 +61,14 @@ public class SheetsController {
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
 
+    @NonNull
+    private SpreadsheetResourceProcessor spreadsheetResourceProcessor;
+
     @PreAuthorizeSubmissionIdTeamName
     @RequestMapping(path = "/submissions/{submissionId}/spreadsheet", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
-    public ResponseEntity<Resource<Sheet>> uploadCsv(
+    public ResponseEntity<Resource<Spreadsheet>> uploadCsv(
             @PathVariable @P("submissionId") String submissionId,
-            @RequestParam @P("templateName") String templateName,
+            @RequestParam @P("checklistId") String checklistId,
             InputStream inputStream) throws IOException {
 
 
@@ -76,36 +78,37 @@ public class SheetsController {
             throw new ResourceNotFoundException();
         }
 
-        Template template = templateRepository.findOneByName(templateName);
+        Checklist checklist = checklistRepository.findOne(checklistId);
 
-        if (template == null) {
+        if (checklist == null) {
             throw new ResourceNotFoundException();
         }
 
         //it should be possible to use Sheet directly, but the converter doesn't seem to be picked up by Spring
-        Sheet sheet = sheetCsvMessageConverter.readStream(inputStream);
+        Spreadsheet sheet = sheetCsvMessageConverter.readStream(inputStream);
 
-        sheet.setSubmission(submission);
+        sheet.setSubmissionId(submission.getId());
         sheet.setTeam(submission.getTeam());
-        sheet.setTemplate(template);
+        sheet.setChecklistId(checklistId);
+        sheet.setDataTypeId(checklist.getDataTypeId());
 
         sheetService.preProcessSheet(sheet);
 
         publisher.publishEvent(new BeforeCreateEvent(sheet));
-        sheet = sheetRepository.insert(sheet);
+        sheet = spreadsheetRepository.insert(sheet);
         publisher.publishEvent(new AfterCreateEvent(sheet));
 
-        Resource<Sheet> resource = new Resource<>(sheet);
+        Resource<Spreadsheet> resource = new Resource<>(sheet);
 
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(Sheet.class, sheet.getId()).withSelfRel(),
-                repositoryEntityLinks.linkToSingleResource(Sheet.class, sheet.getId()),
-                repositoryEntityLinks.linkToSingleResource(Submission.class, submission.getId()),
-                repositoryEntityLinks.linkToSingleResource(Template.class, template.getId())
+                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId()).withSelfRel(),
+                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId())
         );
 
+        resource = spreadsheetResourceProcessor.process(resource);
 
-        ResponseEntity<Resource<Sheet>> resourceSupportResponseEntity = new ResponseEntity<>(
+
+        ResponseEntity<Resource<Spreadsheet>> resourceSupportResponseEntity = new ResponseEntity<>(
                 resource,
                 HttpStatus.CREATED
         );

@@ -1,8 +1,11 @@
 package uk.ac.ebi.subs.api.services;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 
 import java.util.ListIterator;
 import java.util.Optional;
@@ -10,8 +13,8 @@ import java.util.Optional;
 @Component
 public class SheetService {
 
-    public void preProcessSheet(Sheet sheet) {
-        if (sheet.getTemplate() == null) return;
+    public void preProcessSheet(Spreadsheet sheet) {
+        if (sheet.getChecklistId() == null) return;
         if (sheet.getRows() == null) return;
 
 
@@ -21,7 +24,7 @@ public class SheetService {
         this.guessHeader(sheet);
     }
 
-    private void dropCommentLines(Sheet sheet) {
+    private void dropCommentLines(Spreadsheet sheet) {
         ListIterator<Row> rowIterator = sheet.getRows().listIterator();
 
         while (rowIterator.hasNext()) {
@@ -59,7 +62,7 @@ public class SheetService {
      *
      * @param sheet
      */
-    private void guessHeader(Sheet sheet) {
+    private void guessHeader(Spreadsheet sheet) {
 
         ListIterator<Row> rowIterator = sheet.getRows().listIterator();
 
