@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -29,6 +30,7 @@ import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -167,10 +169,13 @@ public class CoreValidatorTest {
 
     @After
     public void tearDown() {
-     submissionRepository.deleteAll();
-     sampleRepository.deleteAll();
-     processingStatusRepository.deleteAll();
-     validationResultRepository.deleteAll();
+        Stream.of(
+                submissionRepository,
+                sampleRepository,
+                processingStatusRepository,
+                validationResultRepository,
+                dataTypeRepository
+        ).forEach(MongoRepository::deleteAll);
     }
 
 }
