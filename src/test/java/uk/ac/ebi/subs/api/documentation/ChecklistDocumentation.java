@@ -1,13 +1,13 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.relaxng.datatype.Datatype;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +31,8 @@ import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
 import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+
+import java.io.IOException;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -82,7 +84,7 @@ public class ChecklistDocumentation {
     private DataType dataType;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         clearDatabases();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
@@ -93,9 +95,17 @@ public class ChecklistDocumentation {
 
         dataTypeRepository.insert(dataType);
 
+        String jsonSchema = "{\n" +
+                "  \"$schema\": \"http://json-schema.org/draft-07/schema#\"\n}";
+
+
         this.checklist = new Checklist();
         this.checklist.setId("test-template");
         this.checklist.setDataTypeId(dataType.getId());
+        this.checklist.setValidationSchema(objectMapper.readValue(jsonSchema,ObjectNode.class));
+        this.checklist.setDisplayName("Simple samples");
+        this.checklist.setDescription("Minimal set of requirements for a sample, including taxonomic information");
+
 
         this.template = new Template();
         template
@@ -174,6 +184,36 @@ public class ChecklistDocumentation {
                                         linkWithRel("by-data-type-id").description("Search for templates with a specific target type")
                                 ),
                                 responseFields(
+                                        linksResponseField()
+                                )
+
+
+                        )
+                );
+    }
+
+    @Test
+    public void get_one_checklist_by_id() throws Exception {
+        this.mockMvc.perform(
+                get("/api/checklists/{id}", checklist.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("get-one-checklist",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        selfRelLink(),
+                                        linkWithRel("spreadsheet-csv-download").description("Download the checklist as a spreadsheet"),
+                                        linkWithRel("checklist").ignored()
+                                ),
+                                responseFields(
+                                        fieldWithPath("spreadsheetTemplate").description("description of spreadsheet columns and how to convert them to a JSON document"),
+                                        fieldWithPath("dataTypeId").description("Data type that this checklist can be used with"),
+                                        fieldWithPath("displayName").description("Human friendly name for the checklist"),
+                                        fieldWithPath("description").description("Description of the checklist"),
+                                        fieldWithPath("validationSchema").description("A JSON schema that will be applied to any documents using this checklist"),
                                         linksResponseField()
                                 )
 

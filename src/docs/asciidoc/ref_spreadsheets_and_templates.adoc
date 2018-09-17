@@ -2,7 +2,7 @@
 :docinfo: shared
 :toc: auto
 
-== Templates
+== Checklists
 
 Templates help users provide bulk data (e.g. sampeles, assays), using familiar tools.
 Users can download spreadsheets by using the `spreadsheet-csv-download` link in their browser.
@@ -11,50 +11,39 @@ Users can download spreadsheets by using the `spreadsheet-csv-download` link in 
 
 ==== Request
 
-include::{snippets}/templates-search/curl-request.adoc[]
+include::{snippets}/checklists-search/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/templates-search/http-response.adoc[]
+include::{snippets}/checklists-search/http-response.adoc[]
 
 === Find all templates
 ==== Request
 
-include::{snippets}/templates-list/curl-request.adoc[]
+include::{snippets}/checklists-list/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/templates-list/http-response.adoc[]
+include::{snippets}/checklists-list/http-response.adoc[]
 
 === Find one template by name
 ==== Request
 
-include::{snippets}/test-template-one/curl-request.adoc[]
+include::{snippets}/get-one-checklist/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/test-template-one/http-response.adoc[]
+include::{snippets}/get-one-checklist/http-response.adoc[]
 
 === Find templates by type
 
 ==== Request
 
-include::{snippets}/test-template-by-type/curl-request.adoc[]
+include::{snippets}/checklists-by-dataType/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/test-template-by-type/http-response.adoc[]
-
-=== Find templates by type and tags
-
-==== Request
-
-include::{snippets}/templates-by-tags-and-type/curl-request.adoc[]
-
-==== Response
-
-include::{snippets}/templates-by-tags-and-type/http-response.adoc[]
-
+include::{snippets}/checklists-by-dataType/http-response.adoc[]
 
 == Spreadsheet upload
 
