@@ -37,7 +37,7 @@ import java.io.InputStream;
 @Data
 @RestController
 @CrossOrigin
-public class SheetsController {
+public class SpreadsheetController {
 
 
     @NonNull

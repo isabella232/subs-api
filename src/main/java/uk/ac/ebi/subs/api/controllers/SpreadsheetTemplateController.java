@@ -16,7 +16,7 @@ import java.io.IOException;
 
 @Data
 @RestController
-public class TemplateController {
+public class SpreadsheetTemplateController {
 
     @NonNull
     private ChecklistRepository checklistRepository;

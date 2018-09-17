@@ -9,7 +9,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.controllers.SheetsController;
+import uk.ac.ebi.subs.api.controllers.SpreadsheetController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -20,7 +20,6 @@ import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
-import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.io.IOException;
@@ -109,7 +108,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         try {
             Link link =
                     linkTo(
-                            methodOn(SheetsController.class)
+                            methodOn(SpreadsheetController.class)
                                     .uploadCsv(
                                             subId,
                                             null,//template name is required, must select one and use as param

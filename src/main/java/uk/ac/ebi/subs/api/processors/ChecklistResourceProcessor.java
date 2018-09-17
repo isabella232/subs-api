@@ -4,9 +4,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.controllers.TemplateController;
+import uk.ac.ebi.subs.api.controllers.SpreadsheetTemplateController;
 import uk.ac.ebi.subs.repository.model.Checklist;
-import uk.ac.ebi.subs.repository.model.templates.Template;
 
 import java.io.IOException;
 
@@ -24,7 +23,7 @@ public class ChecklistResourceProcessor implements ResourceProcessor<Resource<Ch
         String baseDownloadHref = "";
 
         try {
-            Link baseDownloadLink = linkTo(methodOn(TemplateController.class).templateAsSheet(checklistId))
+            Link baseDownloadLink = linkTo(methodOn(SpreadsheetTemplateController.class).templateAsSheet(checklistId))
                     .withRel("placeholder");
             baseDownloadHref = baseDownloadLink.getHref();
         } catch (IOException e) {
