@@ -26,6 +26,9 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,6 +46,8 @@ public class SubmissionContentsController {
 
     @NonNull
     private DataTypeRepository dataTypeRepository;
+    @NonNull
+    private ValidationResultRepository validationResultRepository;
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
     @NonNull
@@ -144,6 +150,72 @@ public class SubmissionContentsController {
         } catch (UnirestException e) {
             logger.error("UniRestException when proxing request to spring data rest controller", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}/summary", method = RequestMethod.GET)
+    public DataTypeSummary createSubmissionContents(
+            @PathVariable @P("submissionId") String submissionId,
+            @PathVariable @P("dataTypeId") String dataTypeId
+    ) {
+        Stream<ValidationResult> streamOfValidationResults =
+                validationResultRepository.findBySubmissionIdAndDataTypeId(submissionId, dataTypeId);
+        DataTypeSummary dataTypeSummary = new DataTypeSummary();
+
+        streamOfValidationResults.forEach(validationResult -> {
+            dataTypeSummary.increaseTotalNumberByOne();
+            if (validationResult.getOverallValidationOutcomeByAuthor()
+                    .containsValue(SingleValidationResultStatus.Error.name())) {
+                dataTypeSummary.increaseErrorCountByOne();
+            }
+            if (validationResult.getOverallValidationOutcomeByAuthor()
+                    .containsValue(SingleValidationResultStatus.Warning.name())) {
+                dataTypeSummary.increaseWarningCountByOne();
+            }
+        });
+
+        return dataTypeSummary;
+    }
+
+    public class DataTypeSummary {
+        private long totalNumber;
+        private long hasError;
+        private long hasWarning;
+
+        public long getTotalNumber() {
+            return this.totalNumber;
+        }
+
+        public void setTotalNumber(long totalNumber) {
+            this.totalNumber = totalNumber;
+        }
+
+        void increaseTotalNumberByOne() {
+            this.totalNumber++;
+        }
+
+        public long getHasError() {
+            return hasError;
+        }
+
+        public void setHasError(long hasError) {
+            this.hasError = hasError;
+        }
+
+        void increaseErrorCountByOne() {
+            this.hasError++;
+        }
+
+        public long getHasWarning() {
+            return hasWarning;
+        }
+
+        public void setHasWarning(long hasWarning) {
+            this.hasWarning = hasWarning;
+        }
+
+        void increaseWarningCountByOne() {
+            this.hasWarning++;
         }
     }
 }
