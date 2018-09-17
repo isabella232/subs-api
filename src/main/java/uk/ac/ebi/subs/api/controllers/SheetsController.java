@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.converters.SheetCsvMessageConverter;
+import uk.ac.ebi.subs.api.processors.SpreadsheetResourceProcessor;
 import uk.ac.ebi.subs.api.services.SheetService;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.Submission;
@@ -60,6 +61,9 @@ public class SheetsController {
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
 
+    @NonNull
+    private SpreadsheetResourceProcessor spreadsheetResourceProcessor;
+
     @PreAuthorizeSubmissionIdTeamName
     @RequestMapping(path = "/submissions/{submissionId}/spreadsheet", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
     public ResponseEntity<Resource<Spreadsheet>> uploadCsv(
@@ -86,6 +90,7 @@ public class SheetsController {
         sheet.setSubmissionId(submission.getId());
         sheet.setTeam(submission.getTeam());
         sheet.setChecklistId(checklistId);
+        sheet.setDataTypeId(checklist.getDataTypeId());
 
         sheetService.preProcessSheet(sheet);
 
@@ -97,10 +102,10 @@ public class SheetsController {
 
         resource.add(
                 repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId()).withSelfRel(),
-                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId()),
-                repositoryEntityLinks.linkToSingleResource(Submission.class, submission.getId()),
-                repositoryEntityLinks.linkToSingleResource(Checklist.class, checklist.getId())
+                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId())
         );
+
+        resource = spreadsheetResourceProcessor.process(resource);
 
 
         ResponseEntity<Resource<Spreadsheet>> resourceSupportResponseEntity = new ResponseEntity<>(

@@ -104,6 +104,7 @@ public class SpreadsheetDocumentation {
         checklist = new Checklist();
         checklist.setId("simple-sample-template");
         checklist.setSpreadsheetTemplate(template);
+        checklist.setDataTypeId("samples");
 
         //.builder().name("default-sample-template").targetType("samples").build();
         template
@@ -165,6 +166,7 @@ public class SpreadsheetDocumentation {
         Spreadsheet sheet = new Spreadsheet();
         sheet.setStatus(SheetStatusEnum.Submitted);
         sheet.setChecklistId(checklist.getId());
+        sheet.setDataTypeId(checklist.getDataTypeId());
         sheet.setSubmissionId(submission.getId());
         sheet.setTeam(submission.getTeam());
         sheet.setHeaderRow(new Row(headerCells));
@@ -174,7 +176,7 @@ public class SpreadsheetDocumentation {
         spreadsheetRepository.insert(sheet);
 
         this.mockMvc.perform(
-                get("/api/sheets/{id}",
+                get("/api/spreadsheets/{id}",
                         sheet.getId())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
@@ -185,13 +187,13 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("spreadsheet").description("Link to the uploaded spreadsheet"),
                                         linkWithRel("submission").description("Link to the submission this upload is associated with"),
-                                        linkWithRel("template").description("Link to the template used to process this data")
+                                        linkWithRel("checklist").description("Link to the checklist used to process this data"),
+                                        linkWithRel("dataType").description("Link to the data type definition for this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.submission").description("The submission this sheet belongs to"),
                                         fieldWithPath("status").description("Current status of the batch of documents"),
                                         fieldWithPath("team").description("The team that owns this upload"),
                                         fieldWithPath("headerRow").description("The header row of this spreadsheet"),
@@ -266,9 +268,10 @@ public class SpreadsheetDocumentation {
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("sheet").description("Link to the uploaded spreadsheet"),
+                                        linkWithRel("spreadsheet").description("Link to the uploaded spreadsheet"),
                                         linkWithRel("submission").description("Link to the submission this upload is associated with"),
-                                        linkWithRel("template").description("Link to the template used to process this data")
+                                        linkWithRel("checklist").description("Link to the checklist used to process this data"),
+                                        linkWithRel("dataType").description("Link to the data type definition for this data")
                                 ),
                                 responseFields(
                                         linksResponseField(),

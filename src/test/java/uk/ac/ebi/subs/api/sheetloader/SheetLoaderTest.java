@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -127,6 +128,9 @@ public class SheetLoaderTest {
         );
 
 
+        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
+        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
+        Mockito.when(submissionRepository.findOne(submission.getId())).thenReturn(submission);
     }
 
     private Spreadsheet sheet;
@@ -309,6 +313,7 @@ public class SheetLoaderTest {
 
         sheet.setSubmissionId(submission.getId());
         sheet.setChecklistId(checklist.getId());
+        sheet.setDataTypeId(checklist.getDataTypeId());
 
         sheet.setVersion(0L);
 

@@ -26,6 +26,7 @@ import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
@@ -105,6 +106,8 @@ public abstract class ApiIntegrationTest {
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
+    private DataType sampleDataType;
+
     @Before
     public void buildUp() throws UnirestException {
         clearDbs();
@@ -114,7 +117,9 @@ public abstract class ApiIntegrationTest {
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
-        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+        List<DataType> dataTypes = ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+
+        sampleDataType = dataTypes.stream().filter(dt -> dt.getId().equals("samples")).findAny().get();
 
     }
 
@@ -175,7 +180,7 @@ public abstract class ApiIntegrationTest {
 
         HttpResponse<JsonNode> templatesResponse = Unirest.get(rootRels.get("checklists")).headers(testHelper.getGetHeaders()).asJson();
 
-        JSONArray templates = templatesResponse.getBody().getObject().getJSONObject("_embedded").getJSONArray("templates");
+        JSONArray templates = templatesResponse.getBody().getObject().getJSONObject("_embedded").getJSONArray("checklists");
         JSONObject exampleTemplateJson = templates.getJSONObject(0);
         String spreadsheetLink = exampleTemplateJson
                 .getJSONObject("_links")
@@ -188,7 +193,7 @@ public abstract class ApiIntegrationTest {
         HttpResponse<String> templateResponse = Unirest.get(spreadsheetLink).headers(requestHeaders).asString();
         Headers responseHeaders = templateResponse.getHeaders();
 
-        assertThat(responseHeaders.getFirst("Content-Disposition"), equalTo("attachment; filename=\"test-template_template.csv\""));
+        assertThat(responseHeaders.getFirst("Content-Disposition"), equalTo("attachment; filename=\"bar_template.csv\""));
     }
 
     @Test
@@ -386,6 +391,7 @@ public abstract class ApiIntegrationTest {
 
             for (uk.ac.ebi.subs.repository.model.Sample sample : generateTestSamples(numberOfSamples, false)) {
                 sample.setSubmission(submission);
+                sample.setDataType(sampleDataType);
                 submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
                 submittableHelperService.processingStatusAndValidationResultSetUp(sample);
                 sampleRepository.save(sample);

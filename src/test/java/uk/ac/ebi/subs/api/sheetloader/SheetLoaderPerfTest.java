@@ -17,6 +17,8 @@ import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
@@ -67,6 +69,7 @@ public class SheetLoaderPerfTest {
     private Template template;
     private Spreadsheet sheet;
     private Checklist checklist;
+    private DataType dataType;
 
     private static final int SPREADSHEET_SIZE_IN_ROWS = 3000;
 
@@ -88,8 +91,16 @@ public class SheetLoaderPerfTest {
         submission.setSubmissionStatus(submissionStatus);
         submissionRepository.save(submission);
 
+
+        dataType = new DataType();
+        dataType.setId("dt");
+        dataType.setSubmittableClassName(Sample.class.getName());
+        dataTypeRepository.insert(dataType);
+
         checklist = new Checklist();
         checklist.setId("foo");
+        checklist.setDataTypeId(dataType.getId());
+
 
         template = template();
         checklist.setSpreadsheetTemplate(template);
@@ -113,6 +124,7 @@ public class SheetLoaderPerfTest {
     private Spreadsheet sheet() {
         Spreadsheet sheet = new Spreadsheet();
         sheet.setChecklistId(checklist.getId());
+        sheet.setDataTypeId(dataType.getId());
         sheet.setTeam(submission.getTeam());
         sheet.setSubmissionId(submission.getId());
         List<String> headers = template.getColumnCaptures().keySet().stream().collect(Collectors.toList());
@@ -153,7 +165,13 @@ public class SheetLoaderPerfTest {
 
     @After
     public void clearDbs() {
-        Stream.of(spreadsheetRepository, sampleRepository, checklistRepository, submissionRepository, submissionStatusRepository, dataTypeRepository)
+        Stream.of(
+                spreadsheetRepository,
+                sampleRepository,
+                checklistRepository,
+                submissionRepository,
+                submissionStatusRepository,
+                dataTypeRepository)
                 .forEach(CrudRepository::deleteAll);
     }
 

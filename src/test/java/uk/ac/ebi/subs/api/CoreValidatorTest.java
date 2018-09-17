@@ -17,14 +17,17 @@ import uk.ac.ebi.subs.api.validators.CoreSubmittableValidationHelper;
 import uk.ac.ebi.subs.api.validators.SubsApiErrors;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -53,6 +56,9 @@ public class CoreValidatorTest {
     CoreSubmittableValidationHelper coreSubmittableValidationHelper;
     @Autowired
     SubmittableHelperService submittableHelperService;
+    @Autowired
+    DataTypeRepository dataTypeRepository;
+    DataType sampleDataType;
 
     Errors errors;
     Sample sampleUnderValidation;
@@ -81,6 +87,10 @@ public class CoreValidatorTest {
         sampleUnderValidation.setSubmission(submission);
 
         errors = new BeanPropertyBindingResult(sampleUnderValidation, "sample");
+
+        List<DataType> dataTypes = ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+
+        sampleDataType = dataTypes.stream().filter(dt -> dt.getId().equals("samples")).findAny().get();
     }
 
     @Test
@@ -134,6 +144,7 @@ public class CoreValidatorTest {
         String alias = "alias-" + UUID.randomUUID();
 
         Sample originalSample = createSampleWithAlias(alias);
+        originalSample.setDataType(sampleDataType);
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(originalSample);
         submittableHelperService.processingStatusAndValidationResultSetUp(originalSample);
         sampleRepository.save(originalSample);

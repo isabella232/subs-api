@@ -20,6 +20,7 @@ import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.io.IOException;
@@ -96,11 +97,10 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     }
 
     private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String submissionId) {
-
         Map<String, String> templateExpansionParameters = paramWithSubmissionID(submissionId);
-        templateExpansionParameters.put("templateTargetType", "samples");
-//TODO update links here
-        resource.add(createResourceLink(Spreadsheet.class, "by-submission-and-target-type",
+        templateExpansionParameters.put("dataTypeId", "samples");
+
+        resource.add(createResourceLink(Spreadsheet.class, "by-submission-and-data-type",
                 templateExpansionParameters, "samplesSheets"));
     }
 
