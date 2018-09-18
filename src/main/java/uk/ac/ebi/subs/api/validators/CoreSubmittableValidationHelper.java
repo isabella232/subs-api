@@ -10,6 +10,8 @@ import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -43,8 +45,10 @@ public class CoreSubmittableValidationHelper {
         logger.debug("validating {}", target);
         StoredSubmittable storedVersion = null;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "submission", "required", "submission is required");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "dataType", "required", "dataType is required");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submission");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"dataType");
+
+        ensureChecklistIsForSameDataTypeAsSubmittable(target, errors);
 
         if (errors.hasErrors()) {
             return;
@@ -61,10 +65,19 @@ public class CoreSubmittableValidationHelper {
         this.validateIfDuplicateWithinTeamAsDraft(target, repository, errors);
     }
 
+    private void ensureChecklistIsForSameDataTypeAsSubmittable(StoredSubmittable target, Errors errors) {
+        DataType dataType = target.getDataType();
+        Checklist checklist = target.getChecklist();
+
+        if (dataType != null && checklist != null
+                && !dataType.getId().equals( checklist.getDataTypeId())){
+            SubsApiErrors.invalid.addError(errors,"checklist");
+        }
+    }
+
     public void validateAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors,"alias","required", "alias is required");
-
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"alias");
         validateOnlyUseOfAliasInSubmission(target, repository, errors);
     }
 
