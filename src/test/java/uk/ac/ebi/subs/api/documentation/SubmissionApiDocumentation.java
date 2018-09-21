@@ -267,7 +267,6 @@ public class SubmissionApiDocumentation {
                         links(
                                 halLinks(),
                                 linkWithRel("files").description("Collection of files within this submission"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("sequencingStudies").description("collection of sequencing studies within this submission"),
                                 linkWithRel("sequencingRuns").description("collection of sequencing runs within this submission"),
                                 linkWithRel("sequencingAssays").description("collection of sequencing assays within this submission"),
@@ -277,10 +276,7 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("projects:create").description("Create a new project resource"),
                                 linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
-                                linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samplesSheets").description("Upreadsheets uploaded to this submission")
-
-
+                                linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
@@ -825,10 +821,8 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("sequencingAssays:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
-                                linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+                                linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")

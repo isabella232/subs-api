@@ -9,7 +9,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.subs.api.controllers.SpreadsheetController;
+import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -18,16 +18,13 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
-import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,14 +38,15 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     @NonNull
     private LinkHelper linkHelper;
     @NonNull
-    private OperationControlService operationControlService;
-    @NonNull
     private ProjectRepository projectRepository;
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
 
     @NonNull
     private DataTypeRepository dataTypeRepository;
+
+    @NonNull
+    private OperationControlService operationControlService;
 
     @NonNull
     private List<Class<? extends StoredSubmittable>> submittablesClassList;
@@ -64,12 +62,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         addSubmittablesInSubmission(dataTypesInSubmission, resource);
         addFilesLink(resource, subId);
         addProjectLink(resource, subId);
-        addSpreadsheetLinks(resource, subId);
-
-        if (operationControlService.isUpdateable(resource.getContent().getSubmission())) {
-            addUpdateLinks(dataTypesInSubmission, resource);
-            addSpreadsheetUploadLinks(resource, subId);
-        }
 
         resource.getContent().setSubmission(null);
 
@@ -95,65 +87,31 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         return dataTypesInSubmission;
     }
 
-    private void addSpreadsheetLinks(Resource<SubmissionContents> resource, String submissionId) {
-        Map<String, String> templateExpansionParameters = paramWithSubmissionID(submissionId);
-        templateExpansionParameters.put("dataTypeId", "samples");
-
-        resource.add(createResourceLink(Spreadsheet.class, "by-submission-and-data-type",
-                templateExpansionParameters, "samplesSheets"));
-    }
-
-    private void addSpreadsheetUploadLinks(Resource<SubmissionContents> resource, String subId) {
-
-        try {
-            Link link =
-                    linkTo(
-                            methodOn(SpreadsheetController.class)
-                                    .uploadCsv(
-                                            subId,
-                                            null,//template name is required, must select one and use as param
-                                            null
-                                    )
-                    ).withRel("sheetUpload");
-            resource.add(link);
-        } catch (IOException e) {
-            //method is not actually invoked, so the exception can't occur
-        }
-
-    }
 
     private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
+        boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
+
         for (DataType dataType : dataTypesInSubmission) {
 
-            Map<String, String> params = new HashMap<>();
-            params.put("submissionId", resource.getContent().getSubmission().getId());
-            params.put("dataTypeId", dataType.getId());
+            Link collectionLink = linkTo(
+                    methodOn(SubmissionContentsController.class)
+                            .getSubmissionContents(
+                                    resource.getContent().getSubmission().getId(),
+                                    dataType.getId(),
+                                    null,
+                                    null
+                            )
+            ).withRel(dataType.getId());
 
-            Optional<Class<? extends StoredSubmittable>> optionalClass = submittablesClassList.stream()
-                    .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
-                    .findAny();
 
-            if (optionalClass.isPresent()) {
-                Link searchLink = repositoryEntityLinks.linkToSearchResource(optionalClass.get(), "by-submission-and-dataType");
-                Link expandedLinks = searchLink.expand(params).withRel(dataType.getId());
-                resource.getLinks().add(expandedLinks);
-            } else {
-                logger.error("Could not find class for data type {} in configured class list {}", dataType, submittablesClassList);
+            resource.add(collectionLink);
+
+            if (updateable) {
+                Link createLink = linkHelper.submittableCreateLink(dataType,resource.getContent().getSubmission());
+                resource.add(createLink);
             }
+
         }
-    }
-
-    private void addUpdateLinks(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
-
-
-        for (DataType dataType : dataTypesInSubmission) {
-            linkHelper.addSubmittableCreateLink(
-                    resource.getLinks(),
-                    dataType,
-                    resource.getContent().getSubmission());
-        }
-
-
     }
 
     private void addProjectLink(Resource<SubmissionContents> resource, String submissionId) {

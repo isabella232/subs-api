@@ -147,12 +147,15 @@ public class SubmissionContentsController {
                         .expand(params)
                         .withRel("spreadsheets");
 
+                Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
+
                 addLinks(
                         modifiableResponse,
                         selfLink,
                         checklistLink,
                         spreadsheetLink,
-                        summaryLink
+                        summaryLink,
+                        dataTypeLink
                 );
 
                 if (operationControlService.isUpdateable(submission)) {
