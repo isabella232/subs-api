@@ -6,6 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.params.HttpParams;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +31,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
@@ -76,6 +83,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -1032,20 +1040,61 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         List<Sample> samples = storeSamples(sub, 30);
 
-        this.mockMvc.perform(
-                get("/api/samples/search/by-submission?submissionId={submissionId}&size=2", sub.getId())
+        MvcResult result = this.mockMvc.perform(
+                get("/api/samples/search/by-submission-and-dataType?submissionId={submissionId}&dataTypeId={dataTypeId}&size=2",
+                        sub.getId(),
+                        "samples")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("samples/by-submission",
+                        document("samples-by-submission-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        DocumentationHelper.selfRelLink(),
+                                        DocumentationHelper.selfRelLink()
+                                        /*,
                                         DocumentationHelper.nextRelLink(),
                                         DocumentationHelper.firstRelLink(),
-                                        DocumentationHelper.lastRelLink()
+                                        DocumentationHelper.lastRelLink()*/
+                                ),
+                                responseFields(
+                                        DocumentationHelper.linksResponseField(),
+                                        fieldWithPath("_embedded.samples").description("Samples within the submission"),
+                                        DocumentationHelper.paginationBlock()
+                                )
+                        )
+                ).andReturn();
+
+        HttpResponse<String> response = DocumentationHelper.convert(result);
+
+        Mockito.when(http.get(Mockito.anyString(),Mockito.anyMapOf(String.class,String.class))).thenReturn(
+                response
+        );
+
+        this.mockMvc.perform(
+                get("/api/submissions/{submissionId}/contents/samples", sub.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("samples-by-submission-proxied",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        DocumentationHelper.selfRelLink(),/*
+                                        DocumentationHelper.nextRelLink(),
+                                        DocumentationHelper.firstRelLink(),
+                                        DocumentationHelper.lastRelLink()*/
+                                        linkWithRel("create").description("Create new entries"),
+                                        linkWithRel("checklists").description("Optional checklists for this data type"),
+                                        linkWithRel("spreadsheets").description("Spreadsheets already uploaded"),
+                                        linkWithRel("sheetUpload").description("Upload spreadsheets here"),
+                                        linkWithRel("validationSummaryCounts").description("Summary of how many records there are in total and how many have warnings or errors"),
+                                        linkWithRel("dataType").description("Description of the data type")
+
+
+
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
