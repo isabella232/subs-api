@@ -155,13 +155,13 @@ public class SubmissionContentsController {
                         summaryLink
                 );
 
-                // if (operationControlService.isUpdateable(submission)){
-                addLinks(
-                        modifiableResponse,
-                        linkHelper.submittableCreateLink(dataType, submission).withRel("create"),
-                        linkHelper.spreadsheetUploadLink(submission)
-                );
-                //}
+                if (operationControlService.isUpdateable(submission)) {
+                    addLinks(
+                            modifiableResponse,
+                            linkHelper.submittableCreateLink(dataType, submission).withRel("create"),
+                            linkHelper.spreadsheetUploadLink(submission)
+                    );
+                }
 
 
             }
