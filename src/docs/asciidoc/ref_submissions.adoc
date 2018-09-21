@@ -63,6 +63,16 @@ include::{snippets}/submission-contents-post-project-creation/curl-request.adoc[
 
 include::{snippets}/submission-contents-post-project-creation/http-response.adoc[]
 
+=== Submission contents - samples
+
+==== Request
+
+include::{snippets}/samples-by-submission-proxied/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/samples-by-submission-proxied/http-response.adoc[]
+
 
 == Submission status
 
