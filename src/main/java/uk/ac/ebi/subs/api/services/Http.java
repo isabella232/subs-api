@@ -16,4 +16,10 @@ public class Http{
                 .asString();
 
     }
+
+    public HttpResponse<String> get(String url, Map<String,String> headers) throws UnirestException {
+        return com.mashape.unirest.http.Unirest.get(url)
+                .headers(headers)
+                .asString();
+    }
 }
