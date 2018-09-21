@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +87,7 @@ public class SubmissionContentsController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
-    public ResponseEntity getSubmissionContents(
+    public ResponseEntity getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable,
@@ -131,7 +130,7 @@ public class SubmissionContentsController {
 
             if (modifiableResponse.has("_links") && modifiableResponse.get("_links").isObject()) {
 
-                Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContents(submissionId, dataTypeId, pageable, originalRequest))
+                Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submissionId, dataTypeId, pageable, originalRequest))
                         .withSelfRel();
 
                 Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submissionId, dataTypeId))
@@ -174,7 +173,7 @@ public class SubmissionContentsController {
             throw new RuntimeException(e);
         }
 
-        HttpHeaders responseHeaders = resonseHeaders(response);
+        HttpHeaders responseHeaders = responseHeaders(response);
 
         return new ResponseEntity(
                 modifiableResponse,
@@ -232,7 +231,7 @@ public class SubmissionContentsController {
                     jsonPayload.toString()
             );
 
-            HttpHeaders responseHeaders = resonseHeaders(response);
+            HttpHeaders responseHeaders = responseHeaders(response);
 
             return new ResponseEntity<>(
                     response.getBody(),
@@ -253,7 +252,7 @@ public class SubmissionContentsController {
         }
     }
 
-    private HttpHeaders resonseHeaders(HttpResponse<String> response) {
+    private HttpHeaders responseHeaders(HttpResponse<String> response) {
         HttpHeaders responseHeaders = new HttpHeaders();
         Set<String> responseHeadersToSkip = new HashSet<>();
         responseHeadersToSkip.add(HttpHeaders.TRANSFER_ENCODING.toLowerCase());

@@ -95,7 +95,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
             Link collectionLink = linkTo(
                     methodOn(SubmissionContentsController.class)
-                            .getSubmissionContents(
+                            .getSubmissionContentsForDataType(
                                     resource.getContent().getSubmission().getId(),
                                     dataType.getId(),
                                     null,
