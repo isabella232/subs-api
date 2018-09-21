@@ -8,8 +8,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
+import org.apache.http.ParseException;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
@@ -33,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -265,7 +268,28 @@ public class DocumentationHelper {
 
         @Override
         public Header[] getAllHeaders() {
-            return new Header[0];
+            List<Header> headerList = new ArrayList<>();
+            for (String headerName : mvcResult.getResponse().getHeaderNames()){
+                headerList.add(new Header() {
+                    @Override
+                    public HeaderElement[] getElements() throws ParseException {
+                        return new HeaderElement[0];
+                    }
+
+                    @Override
+                    public String getName() {
+                        return headerName;
+                    }
+
+                    @Override
+                    public String getValue() {
+                        return mvcResult.getResponse().getHeader(headerName);
+                    }
+                });
+            }
+            return headerList.toArray(new Header[0]);
+
+
         }
 
         @Override
