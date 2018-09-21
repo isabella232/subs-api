@@ -10,6 +10,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import uk.ac.ebi.subs.api.controllers.SpreadsheetController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Project;
@@ -17,6 +18,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,23 +36,41 @@ public class LinkHelper {
     @NonNull
     private List<Class<? extends StoredSubmittable>> submittablesClassList;
 
-    static final String CREATE_REL_SUFFIX = ":create";
-    static final String SEARCH_REL_SUFFIX = ":search";
-    static final String UPDATE_REL_SUFFIX = ":update";
-    static final String DELETE_REL_SUFFIX = ":delete";
+    public static final String CREATE_REL_SUFFIX = ":create";
+    public static final String SEARCH_REL_SUFFIX = ":search";
+    public static final String UPDATE_REL_SUFFIX = ":update";
+    public static final String DELETE_REL_SUFFIX = ":delete";
 
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
 
-    public void addSubmittableCreateLink(Collection<Link> links, DataType type, Submission submission) {
+    public Link spreadsheetUploadLink(Submission submission){
+        Link link = null;
+        try {
+            link =
+                    linkTo(
+                            methodOn(SpreadsheetController.class)
+                                    .uploadCsv(
+                                            submission.getId(),
+                                            null,//template name is required, must select one and use as param
+                                            null
+                                    )
+                    ).withRel("sheetUpload");
+        } catch (IOException e) {
+            //method is never invoked, exception cannot occur
+        }
+        return link;
+    }
 
-        String createRel = type.getId() + CREATE_REL_SUFFIX;
+
+    public Link submittableCreateLink(DataType dataType, Submission submission){
+        String createRel = dataType.getId() + CREATE_REL_SUFFIX;
 
         Link submittablesCreateLink = linkTo(
                 methodOn(SubmissionContentsController.class)
                         .createSubmissionContents(
                                 submission.getId(),
-                                type.getId(),
+                                dataType.getId(),
                                 null,
                                 null
                         )
@@ -58,7 +78,11 @@ public class LinkHelper {
                 .withRel(createRel)
                 .expand();
 
-        links.add(submittablesCreateLink);
+        return submittablesCreateLink;
+    }
+
+    public void addSubmittableCreateLink(Collection<Link> links, DataType type, Submission submission) {
+        links.add(submittableCreateLink(type,submission));
     }
 
     public void addSubmittablesInTeamLinks(Collection<Link> links, String teamName) {
