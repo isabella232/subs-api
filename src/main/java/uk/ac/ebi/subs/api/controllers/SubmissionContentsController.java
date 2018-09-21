@@ -88,7 +88,7 @@ public class SubmissionContentsController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
-    public ResponseEntity<Resource<StoredSubmittable>> getSubmissionContents(
+    public ResponseEntity getSubmissionContents(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable,
