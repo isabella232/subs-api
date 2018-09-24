@@ -1091,10 +1091,9 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("spreadsheets").description("Spreadsheets already uploaded"),
                                         linkWithRel("sheetUpload").description("Upload spreadsheets here"),
                                         linkWithRel("validationSummaryCounts").description("Summary of how many records there are in total and how many have warnings or errors"),
-                                        linkWithRel("dataType").description("Description of the data type")
-
-
-
+                                        linkWithRel("dataType").description("Description of the data type"),
+                                        linkWithRel("documents-with-errors").description("Sample documents that have validation errors"),
+                                        linkWithRel("documents-with-warnings").description("Sample documents that have validation warnings")
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),

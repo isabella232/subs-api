@@ -34,6 +34,7 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
@@ -148,13 +149,23 @@ public class SubmissionContentsController {
 
                 Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
 
+                Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass,"by-submission-and-data-type-with-errors")
+                        .expand(params)
+                        .withRel("documents-with-errors");
+
+                Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass,"by-submission-and-data-type-with-warnings")
+                        .expand(params)
+                        .withRel("documents-with-warnings");
+
                 addLinks(
                         modifiableResponse,
                         selfLink,
                         checklistLink,
                         spreadsheetLink,
                         summaryLink,
-                        dataTypeLink
+                        dataTypeLink,
+                        withErrorsLink,
+                        withWarningsLink
                 );
 
                 if (operationControlService.isUpdateable(submission)) {
