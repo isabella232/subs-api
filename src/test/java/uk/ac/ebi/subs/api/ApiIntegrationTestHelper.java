@@ -277,8 +277,8 @@ public class ApiIntegrationTestHelper {
         List<DataType> dataTypes = Arrays.asList(
                 buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class, "sample", "samples", Archive.BioSamples),
                 buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class, "project", "projects", Archive.BioStudies),
-                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
-                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing assay", "sequencing assays", Archive.Ena),
+                buildDataType("enaStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
+                buildDataType("sequencingExperiments", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing experiment", "sequencing assays", Archive.Ena),
                 buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class, "sequencing runs", "sequencing run", Archive.Ena)
         );
         dataTypeRepository.insert(dataTypes);

@@ -275,19 +275,21 @@ public class SubmissionApiDocumentation {
                         links(
                                 halLinks(),
                                 linkWithRel("files").description("Collection of files within this submission"),
-                                linkWithRel("sequencingStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("enaStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("enaStudies:create").description("Create a new sequencing study resource"),
                                 linkWithRel("sequencingRuns").description("collection of sequencing runs within this submission"),
-                                linkWithRel("sequencingAssays").description("collection of sequencing assays within this submission"),
-                                linkWithRel("sequencingAssays:create").description("Create a new sequencing assay resource"),
                                 linkWithRel("sequencingRuns:create").description("Create a new sequencing run resource"),
-                                linkWithRel("sequencingStudies:create").description("Create a new sequencing study resource"),
+                                linkWithRel("sequencingExperiments").description("collection of sequencing assays within this submission"),
+                                linkWithRel("sequencingExperiments:create").description("Create a new sequencing assay resource"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
                                 linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
+
                         )
                 ));
 
@@ -436,7 +438,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies/").content(objectMapper.writeValueAsString(study))
+                post("/api/submissions/" + sub.getId() + "/contents/enaStudies/").content(objectMapper.writeValueAsString(study))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -447,7 +449,7 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"sequencingStudies");
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"enaStudies");
 
         this.mockMvc.perform(
                 post("/api/studies").content(contentForRealSubmission)
@@ -517,7 +519,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assay))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assay))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -529,7 +531,7 @@ public class SubmissionApiDocumentation {
                 );
 
 
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingAssays");
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingExperiments");
 
 
         this.mockMvc.perform(
@@ -588,7 +590,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assayData))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -825,15 +827,16 @@ public class SubmissionApiDocumentation {
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("sequencingAssays").description("Collection of assays within this submission"),
-                                linkWithRel("sequencingAssays:create").description("Create a new assay resource"),
+                                //linkWithRel("sequencingExperiments").description("Collection of assays within this submission"),
+                                //linkWithRel("sequencingExperiments:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
                                 linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
                         )
                 ));
     }
