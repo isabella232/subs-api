@@ -149,7 +149,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     private void addTeams(List<Link> links) {
         Link teamsLink =
-                linkTo(methodOn(TeamController.class).getTeams(null)
+                linkTo(methodOn(TeamController.class).getTeams(null,null)
                 ).withRel("userTeams");
 
         links.add(teamsLink);

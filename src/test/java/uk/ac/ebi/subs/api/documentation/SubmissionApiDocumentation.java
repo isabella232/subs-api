@@ -1164,6 +1164,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
                                         linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
                                         linkWithRel("by-submission-and-dataType").description("Search for a sample by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-warnings").description("Search for records that have validation warnings by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-errors").description("Search for records that has validation errors by data type within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 
