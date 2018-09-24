@@ -59,6 +59,8 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
         List<DataType> dataTypesInSubmission = dataTypesInSubmission(resource.getContent().getSubmission());
 
+        resource.getContent().setDataTypes(dataTypesInSubmission);
+
         addSubmittablesInSubmission(dataTypesInSubmission, resource);
         addFilesLink(resource, subId);
         addProjectLink(resource, subId);

@@ -317,7 +317,7 @@ public class Helpers {
         submissionPlan.setId(UUID.randomUUID().toString());
         submissionPlan.setDescription("Test submission Plan description");
         submissionPlan.setDisplayName("Test display name for submission plan");
-        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingAssays"));
+        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingExperiments"));
 
         return submissionPlan;
     }
