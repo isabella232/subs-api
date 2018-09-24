@@ -1091,10 +1091,9 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("spreadsheets").description("Spreadsheets already uploaded"),
                                         linkWithRel("sheetUpload").description("Upload spreadsheets here"),
                                         linkWithRel("validationSummaryCounts").description("Summary of how many records there are in total and how many have warnings or errors"),
-                                        linkWithRel("dataType").description("Description of the data type")
-
-
-
+                                        linkWithRel("dataType").description("Description of the data type"),
+                                        linkWithRel("documents-with-errors").description("Sample documents that have validation errors"),
+                                        linkWithRel("documents-with-warnings").description("Sample documents that have validation warnings")
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
@@ -1164,6 +1163,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
                                         linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
                                         linkWithRel("by-submission-and-dataType").description("Search for a sample by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-warnings").description("Search for records that have validation warnings by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-errors").description("Search for records that has validation errors by data type within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 

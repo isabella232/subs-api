@@ -148,13 +148,23 @@ public class SubmissionContentsController {
 
                 Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
 
+                Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-errors")
+                        .expand(params)
+                        .withRel("documents-with-errors");
+
+                Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-warnings")
+                        .expand(params)
+                        .withRel("documents-with-warnings");
+
                 addLinks(
                         modifiableResponse,
                         selfLink,
                         checklistLink,
                         spreadsheetLink,
                         summaryLink,
-                        dataTypeLink
+                        dataTypeLink,
+                        withErrorsLink,
+                        withWarningsLink
                 );
 
                 if (operationControlService.isUpdateable(submission)) {
