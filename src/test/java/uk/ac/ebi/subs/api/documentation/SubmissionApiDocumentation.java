@@ -827,8 +827,8 @@ public class SubmissionApiDocumentation {
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                //linkWithRel("sequencingExperiments").description("Collection of assays within this submission"),
-                                //linkWithRel("sequencingExperiments:create").description("Create a new assay resource"),
+                                linkWithRel("sequencingExperiments").description("Collection of assays within this submission"),
+                                linkWithRel("sequencingExperiments:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
