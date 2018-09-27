@@ -264,12 +264,24 @@ public class SubmissionContentsController {
 
     private HttpHeaders responseHeaders(HttpResponse<String> response) {
         HttpHeaders responseHeaders = new HttpHeaders();
-        Set<String> responseHeadersToSkip = new HashSet<>();
-        responseHeadersToSkip.add(HttpHeaders.TRANSFER_ENCODING.toLowerCase());
+       // Set<String> responseHeadersToSkip = new HashSet<>();
+       // responseHeadersToSkip.add(HttpHeaders.TRANSFER_ENCODING.toLowerCase());
+
+        Set<String> responseHeadersToKeep = new HashSet<>();
+        responseHeadersToKeep.add(HttpHeaders.CACHE_CONTROL);
+        responseHeadersToKeep.add(HttpHeaders.CONTENT_TYPE);
+        responseHeadersToKeep.add(HttpHeaders.DATE);
+        responseHeadersToKeep.add(HttpHeaders.EXPIRES);
+        responseHeadersToKeep.add(HttpHeaders.PRAGMA);
+
+
+
+
+
 
 
         for (Map.Entry<String, List<String>> headerEntry : response.getHeaders().entrySet()) {
-            if (!responseHeadersToSkip.contains(headerEntry.getKey().toLowerCase())) {
+            if (responseHeadersToKeep.contains(headerEntry.getKey().toLowerCase())) {
                 responseHeaders.put(
                         headerEntry.getKey(),
                         headerEntry.getValue());
