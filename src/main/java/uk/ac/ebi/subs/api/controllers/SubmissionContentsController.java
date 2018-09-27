@@ -273,15 +273,13 @@ public class SubmissionContentsController {
         responseHeadersToKeep.add(HttpHeaders.DATE);
         responseHeadersToKeep.add(HttpHeaders.EXPIRES);
         responseHeadersToKeep.add(HttpHeaders.PRAGMA);
-
-
-
-
-
-
+        responseHeadersToKeep.add(HttpHeaders.LOCATION);
+        responseHeadersToKeep.add(HttpHeaders.LINK);
+        responseHeadersToKeep.add(HttpHeaders.LAST_MODIFIED);
+        responseHeadersToKeep.add(HttpHeaders.ETAG);
 
         for (Map.Entry<String, List<String>> headerEntry : response.getHeaders().entrySet()) {
-            if (responseHeadersToKeep.contains(headerEntry.getKey().toLowerCase())) {
+            if (responseHeadersToKeep.contains(headerEntry.getKey())) {
                 responseHeaders.put(
                         headerEntry.getKey(),
                         headerEntry.getValue());
