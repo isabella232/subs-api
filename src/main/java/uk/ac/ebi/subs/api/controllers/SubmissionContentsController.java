@@ -264,8 +264,6 @@ public class SubmissionContentsController {
 
     private HttpHeaders responseHeaders(HttpResponse<String> response) {
         HttpHeaders responseHeaders = new HttpHeaders();
-       // Set<String> responseHeadersToSkip = new HashSet<>();
-       // responseHeadersToSkip.add(HttpHeaders.TRANSFER_ENCODING.toLowerCase());
 
         Set<String> responseHeadersToKeep = new HashSet<>();
         responseHeadersToKeep.add(HttpHeaders.CACHE_CONTROL);
