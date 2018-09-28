@@ -467,11 +467,8 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
-
-                                        fieldWithPath("studyType").description("Type of data in this study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
                                         fieldWithPath("projectRef").description("References to the overall project that this study is part of"),
-
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
@@ -1255,29 +1252,6 @@ public class SubmissionApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("content").description("Number of submissions for each status")
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void studyDataTypes() throws Exception {
-
-        this.mockMvc.perform(
-                get("/api/studyDataTypes")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("studyDataTypes",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        DocumentationHelper.selfRelLink()
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("content").description("Study data types and available subtypes")
                                 )
                         )
                 );
