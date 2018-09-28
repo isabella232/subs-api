@@ -13,14 +13,13 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.config.AapLinkConfig;
 import uk.ac.ebi.subs.api.config.TusUploadConfig;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
-import uk.ac.ebi.subs.api.controllers.StudyDataTypeController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
 import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.UiSupportItem;
-import uk.ac.ebi.subs.repository.model.templates.Template;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +51,6 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addTeams(links);
         addUserProjects(links);
         addUserSubmissions(links);
-        addStudyDataType(links);
         addAapApiLink(links);
         addTusUploadLink(links);
         addUiSupportLinks(links);
@@ -83,6 +81,12 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         links.add(
                 repositoryEntityLinks.linkToCollectionResource(Checklist.class).expand(new HashMap<>())
         );
+
+        linkHelper.addSearchLink(links, DataType.class);
+
+        links.add(
+                repositoryEntityLinks.linkToCollectionResource(DataType.class).expand(new HashMap<>())
+        );
     }
 
     private void addSubmissionPlanLinks(List<Link> links) {
@@ -100,14 +104,6 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
                         "aap-api-root"
                 )
         );
-    }
-
-    private void addStudyDataType(List<Link> links) {
-        Link studyDataTypeLink =
-                linkTo(methodOn(StudyDataTypeController.class).getStudyDataTypes())
-                        .withRel("studyDataTypes");
-
-        links.add(studyDataTypeLink);
     }
 
     private void addUserProjects(List<Link> links) {
@@ -149,7 +145,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
     private void addTeams(List<Link> links) {
         Link teamsLink =
-                linkTo(methodOn(TeamController.class).getTeams(null,null)
+                linkTo(methodOn(TeamController.class).getTeams(null, null)
                 ).withRel("userTeams");
 
         links.add(teamsLink);
