@@ -33,34 +33,6 @@ public class StudyValidator implements Validator {
     public void validate(Object target, Errors errors) {
         Study study = (Study) target;
         coreSubmittableValidationHelper.validate(study, studyRepository, errors);
-        validateAliasIsLockedToDataType(study, errors);
-
-    }
-
-    public void validateAliasIsLockedToDataType(Study target, Errors errors) {
-        if (target.getAlias() == null) {
-            return;
-        }
-
-        Stream<Study> itemsWithAliasStream = studyRepository.streamByTeamNameAndAliasOrderByCreatedDateDesc(
-                target.getSubmission().getTeam().getName(),
-                target.getAlias());
-
-        Set<String> dataTypeIds = itemsWithAliasStream
-                .map(study -> study.getDataType())
-                .filter(Objects::nonNull)
-                .map(dataType -> dataType.getId())
-                .distinct()
-                .collect(Collectors.toSet());
-
-
-        if (dataTypeIds.size() > 1) {
-            throw new IllegalStateException("Multiple dataTypes found in history of item " + target);
-        }
-
-        if (dataTypeIds.size() == 1 && !target.getDataType().getId().equals(dataTypeIds.iterator().next())) {
-            SubsApiErrors.invalid.addError(errors, "dataType");
-        }
     }
 }
 

@@ -14,13 +14,17 @@ import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Base validator for submitted items
@@ -63,6 +67,8 @@ public class CoreSubmittableValidationHelper {
         this.validate(target, storedVersion, errors);
 
         this.validateIfDuplicateWithinTeamAsDraft(target, repository, errors);
+
+        this.validateAliasIsLockedToDataType(target,repository,errors);
     }
 
     private void ensureChecklistIsForSameDataTypeAsSubmittable(StoredSubmittable target, Errors errors) {
@@ -155,6 +161,32 @@ public class CoreSubmittableValidationHelper {
 
         if (duplicateItem) {
             SubsApiErrors.already_exists_and_not_completed.addError(errors);
+        }
+    }
+
+    public void validateAliasIsLockedToDataType(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+        if (target.getAlias() == null) {
+            return;
+        }
+
+        Stream<StoredSubmittable> itemsWithAliasStream = repository.streamByTeamNameAndAliasOrderByCreatedDateDesc(
+                target.getSubmission().getTeam().getName(),
+                target.getAlias());
+
+        Set<String> dataTypeIds = itemsWithAliasStream
+                .map(doc -> doc.getDataType())
+                .filter(Objects::nonNull)
+                .map(dataType -> dataType.getId())
+                .distinct()
+                .collect(Collectors.toSet());
+
+
+        if (dataTypeIds.size() > 1) {
+            throw new IllegalStateException("Multiple dataTypes found in history of item " + target);
+        }
+
+        if (dataTypeIds.size() == 1 && !target.getDataType().getId().equals(dataTypeIds.iterator().next())) {
+            SubsApiErrors.invalid.addError(errors, "dataType");
         }
     }
 }
