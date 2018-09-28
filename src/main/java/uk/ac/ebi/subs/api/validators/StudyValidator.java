@@ -6,11 +6,6 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Component
 public class StudyValidator implements Validator {
 
