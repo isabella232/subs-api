@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -17,6 +18,7 @@ import uk.ac.ebi.subs.api.validators.CoreSubmittableValidationHelper;
 import uk.ac.ebi.subs.api.validators.SubsApiErrors;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
@@ -26,7 +28,9 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -51,11 +55,12 @@ public class CoreValidatorTest {
     @Autowired
     ValidationResultRepository validationResultRepository;
     @Autowired
-    DataTypeRepository dataTypeRepository;
-    @Autowired
     CoreSubmittableValidationHelper coreSubmittableValidationHelper;
     @Autowired
     SubmittableHelperService submittableHelperService;
+    @Autowired
+    DataTypeRepository dataTypeRepository;
+    DataType sampleDataType;
 
     Errors errors;
     Sample sampleUnderValidation;
@@ -85,7 +90,9 @@ public class CoreValidatorTest {
 
         errors = new BeanPropertyBindingResult(sampleUnderValidation, "sample");
 
-        ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+        List<DataType> dataTypes = ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+
+        sampleDataType = dataTypes.stream().filter(dt -> dt.getId().equals("samples")).findAny().get();
     }
 
     @Test
@@ -139,7 +146,7 @@ public class CoreValidatorTest {
         String alias = "alias-" + UUID.randomUUID();
 
         Sample originalSample = createSampleWithAlias(alias);
-        originalSample.setDataType(dataTypeRepository.findOne("samples"));
+        originalSample.setDataType(sampleDataType);
         submittableHelperService.uuidAndTeamFromSubmissionSetUp(originalSample);
         submittableHelperService.processingStatusAndValidationResultSetUp(originalSample);
         sampleRepository.save(originalSample);
@@ -162,11 +169,13 @@ public class CoreValidatorTest {
 
     @After
     public void tearDown() {
-     submissionRepository.deleteAll();
-     sampleRepository.deleteAll();
-     processingStatusRepository.deleteAll();
-     validationResultRepository.deleteAll();
-     dataTypeRepository.deleteAll();
+        Stream.of(
+                submissionRepository,
+                sampleRepository,
+                processingStatusRepository,
+                validationResultRepository,
+                dataTypeRepository
+        ).forEach(MongoRepository::deleteAll);
     }
 
 }

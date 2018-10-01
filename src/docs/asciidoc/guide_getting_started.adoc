@@ -118,11 +118,11 @@ The structure of the sample document is shown in the <<ref_samples.adoc#,referen
 From the `submission:contents` resource, use the `samples:create` link to make a POST request. The sample document
 should be the request body.
 
-include::{snippets}/create-sample/curl-request.adoc[]
+include::{snippets}/create-sample-proxy/curl-request.adoc[]
 
 This will return a response to show that the sample record has been created, with links to other
 
-include::{snippets}/create-sample/http-response.adoc[]
+include::{snippets}/create-sample-real/http-response.adoc[]
 
 endif::sample[]
 
@@ -167,11 +167,11 @@ ifdef::project[]
 
 Projects have a release date, title and description. As with samples, they are created using `POST` requests:
 
-include::{snippets}/create-project/curl-request.adoc[]
+include::{snippets}/create-project-proxy/curl-request.adoc[]
 
 This will return a response to show that the project record has been created:
 
-include::{snippets}/create-project/http-response.adoc[]
+include::{snippets}/create-project-real/http-response.adoc[]
 
 A submission can only have one project, so once you have added a project to a submission the `projects:create` link
 will not be available from the submission contents endpoint:
@@ -193,11 +193,11 @@ reference a project.
 
 As with samples, study records are created using `POST` requests:
 
-include::{snippets}/create-study/curl-request.adoc[]
+include::{snippets}/create-study-proxy/curl-request.adoc[]
 
 This will return a response to show that the study record has been created:
 
-include::{snippets}/create-study/http-response.adoc[]
+include::{snippets}/create-study-real/http-response.adoc[]
 
 endif::study[]
 
@@ -208,11 +208,11 @@ ifdef::assay[]
 Assay documents describes the processes performed on the sample to produce data. For example, this could be library
 preparation and sequencing for an NGS study. If you are familiar with the ENA SRA submission system, an assay is equivalent to an Experiment.
 
-include::{snippets}/create-assay/curl-request.adoc[]
+include::{snippets}/create-assay-proxy/curl-request.adoc[]
 
 This will return a response to show that the assay record has been created:
 
-include::{snippets}/create-assay/http-response.adoc[]
+include::{snippets}/create-assay-real/http-response.adoc[]
 
 endif::assay[]
 
@@ -222,11 +222,11 @@ ifdef::assayData[]
 
 If you are familiar with the ENA SRA submission system, assay data is equivalent to a Run.
 
-include::{snippets}/create-assay-data/curl-request.adoc[]
+include::{snippets}/create-assay-data-proxy/curl-request.adoc[]
 
 This will return a response to show that the assay record has been created:
 
-include::{snippets}/create-assay-data/http-response.adoc[]
+include::{snippets}/create-assay-data-real/http-response.adoc[]
 
 endif::assayData[]
 

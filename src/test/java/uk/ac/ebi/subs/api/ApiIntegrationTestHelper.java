@@ -149,13 +149,13 @@ public class ApiIntegrationTestHelper {
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
         Map<String,String> submissionContentsRels = relsFromUri(submissionRels.get("contents"));
-        assertThat(submissionContentsRels.get("sequencingStudies:create"), notNullValue());
+        assertThat(submissionContentsRels.get("enaStudies:create"), notNullValue());
 
         List<Study> testStudies = Helpers.generateTestClientStudies(2);
         //add samples to the submission
         for (Study study : testStudies) {
 
-            HttpResponse<JsonNode> studyResponse = Unirest.post(submissionContentsRels.get("sequencingStudies:create"))
+            HttpResponse<JsonNode> studyResponse = Unirest.post(submissionContentsRels.get("enaStudies:create"))
                     .headers(postHeaders)
                     .body(study)
                     .asJson();
@@ -277,8 +277,8 @@ public class ApiIntegrationTestHelper {
         List<DataType> dataTypes = Arrays.asList(
                 buildDataType("samples", uk.ac.ebi.subs.repository.model.Sample.class, "sample", "samples", Archive.BioSamples),
                 buildDataType("projects", uk.ac.ebi.subs.repository.model.Project.class, "project", "projects", Archive.BioStudies),
-                buildDataType("sequencingStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
-                buildDataType("sequencingAssays", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing assay", "sequencing assays", Archive.Ena),
+                buildDataType("enaStudies", uk.ac.ebi.subs.repository.model.Study.class, "sequencing studies", "sequencing study", Archive.Ena),
+                buildDataType("sequencingExperiments", uk.ac.ebi.subs.repository.model.Assay.class ,"sequencing experiment", "sequencing assays", Archive.Ena),
                 buildDataType("sequencingRuns", uk.ac.ebi.subs.repository.model.AssayData.class, "sequencing runs", "sequencing run", Archive.Ena)
         );
         dataTypeRepository.insert(dataTypes);

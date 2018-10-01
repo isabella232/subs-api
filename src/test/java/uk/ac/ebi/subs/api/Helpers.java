@@ -7,7 +7,6 @@ import uk.ac.ebi.subs.data.component.File;
 import uk.ac.ebi.subs.data.component.ProjectRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
-import uk.ac.ebi.subs.data.component.StudyDataType;
 import uk.ac.ebi.subs.data.component.StudyRef;
 import uk.ac.ebi.subs.data.component.Submitter;
 import uk.ac.ebi.subs.data.component.Team;
@@ -88,11 +87,11 @@ public class Helpers {
     }
 
     public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired) {
-        return generateTestClientStudies(numberOfStudiesRequired,generateClientProject().getAlias());
+        return generateTestClientStudies(numberOfStudiesRequired, generateClientProject().getAlias());
     }
 
-        public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired, String projectAlias) {
-        List<uk.ac.ebi.subs.data.client.Study> studies= new ArrayList<>(numberOfStudiesRequired);
+    public static List<uk.ac.ebi.subs.data.client.Study> generateTestClientStudies(int numberOfStudiesRequired, String projectAlias) {
+        List<uk.ac.ebi.subs.data.client.Study> studies = new ArrayList<>(numberOfStudiesRequired);
 
         for (int i = 1; i <= numberOfStudiesRequired; i++) {
             uk.ac.ebi.subs.data.client.Study s = new uk.ac.ebi.subs.data.client.Study();
@@ -104,8 +103,6 @@ public class Helpers {
             s.setAlias("Study" + i);
             s.setTitle("My Sequencing Study " + i);
             s.setDescription("We sequenced some humans to discover variants linked with a disease");
-
-            s.setStudyType(StudyDataType.Sequencing);
 
             ProjectRef projectRef = new ProjectRef();
             projectRef.setAlias(projectAlias);
@@ -121,7 +118,7 @@ public class Helpers {
         return studies;
     }
 
-    public static Attribute attribute(String value){
+    public static Attribute attribute(String value) {
         Attribute attribute = new Attribute();
         attribute.setValue(value);
         return attribute;
@@ -156,10 +153,10 @@ public class Helpers {
             a.setStudyRef(studyRef);
 
             SampleRef sampleRef = new SampleRef();
-            sampleRef.setAlias(samples.get(i-1).getAlias());
+            sampleRef.setAlias(samples.get(i - 1).getAlias());
 
             SampleUse sampleUse = new SampleUse();
-            sampleUse.setSampleRef( sampleRef);
+            sampleUse.setSampleRef(sampleRef);
             a.getSampleUses().add(sampleUse);
 
             a.getAttributes().put("library_strategy", Collections.singletonList(attribute("WGS")));
@@ -191,7 +188,7 @@ public class Helpers {
             ad.setDescription("Human sequencing experiment run");
 
             AssayRef assayRef = new AssayRef();
-            assayRef.setAlias(assays.get(i-1).getAlias());
+            assayRef.setAlias(assays.get(i - 1).getAlias());
             ad.setAssayRefs(Arrays.asList(assayRef));
 
             File file = new File();
@@ -234,7 +231,7 @@ public class Helpers {
     }
 
     public static List<Project> generateTestProjects(int numberRequired) {
-        List<Project> projects= new ArrayList<>(numberRequired);
+        List<Project> projects = new ArrayList<>(numberRequired);
 
         for (int i = 1; i <= numberRequired; i++) {
             Project p = new Project();
@@ -317,7 +314,7 @@ public class Helpers {
         submissionPlan.setId(UUID.randomUUID().toString());
         submissionPlan.setDescription("Test submission Plan description");
         submissionPlan.setDisplayName("Test display name for submission plan");
-        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingAssays"));
+        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingExperiments"));
 
         return submissionPlan;
     }

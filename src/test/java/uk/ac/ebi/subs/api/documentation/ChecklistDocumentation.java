@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,11 +23,16 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.Template;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+
+import java.io.IOException;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -46,8 +52,8 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
-@WithMockUser(username = "template_docs_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
-public class TemplateDocumentation {
+@WithMockUser(username = "checklist_docs_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
+public class ChecklistDocumentation {
 
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -65,22 +71,43 @@ public class TemplateDocumentation {
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
+
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
     private Template template;
+    private Checklist checklist;
+    private DataType dataType;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         clearDatabases();
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
 
+        this.dataType = new DataType();
+        this.dataType.setId("samples");
 
-        this.template = Template.builder().name("test-template").targetType("samples").build();
+        dataTypeRepository.insert(dataType);
+
+        String jsonSchema = "{\n" +
+                "  \"$schema\": \"http://json-schema.org/draft-07/schema#\"\n}";
+
+
+        this.checklist = new Checklist();
+        this.checklist.setId("test-template");
+        this.checklist.setDataTypeId(dataType.getId());
+        this.checklist.setValidationSchema(objectMapper.readValue(jsonSchema,ObjectNode.class));
+        this.checklist.setDisplayName("Simple samples");
+        this.checklist.setDescription("Minimal set of requirements for a sample, including taxonomic information");
+
+
+        this.template = new Template();
         template
                 .add(
                         "alias",
@@ -93,19 +120,20 @@ public class TemplateDocumentation {
                 .add(
                         "taxon",
                         FieldCapture.builder().fieldName("taxon").build()
-                )
-                .addTag("tag1")
-                .addTag("tag2");
+                );
 
         template.setDefaultCapture(
                 AttributeCapture.builder().build()
         );
 
-        templateRepository.insert(template);
+        this.checklist.setSpreadsheetTemplate(template);
+
+        checklistRepository.insert(checklist);
     }
 
     private void clearDatabases() {
-        this.templateRepository.deleteAll();
+        this.checklistRepository.deleteAll();
+        this.dataTypeRepository.deleteAll();
     }
 
     @After
@@ -116,22 +144,22 @@ public class TemplateDocumentation {
     @Test
     public void templateList() throws Exception {
         this.mockMvc.perform(
-                get("/api/templates")
+                get("/api/checklists")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("templates-list",
+                        document("checklists-list",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("search").description("Search resource for UI Support items"),
+                                        linkWithRel("search").description("Search resource for checklists items"),
                                         linkWithRel("profile").description("Profile")
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.templates").description("Spreadsheet templates available"),
+                                        fieldWithPath("_embedded.checklists").description("Checklists available"),
                                         paginationBlock()
                                 )
 
@@ -139,22 +167,21 @@ public class TemplateDocumentation {
                         )
                 );
     }
+
     @Test
     public void templateSearchResources() throws Exception {
         this.mockMvc.perform(
-                get("/api/templates/search")
+                get("/api/checklists/search")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("templates-search",
+                        document("checklists-search",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("by-target-type").description("Search for templates with a specific target type"),
-                                        linkWithRel("by-name").description("Find a template by its name"),
-                                        linkWithRel("by-target-type-and-tags").description("Search for templates matching a target type and a set of tags")
+                                        linkWithRel("by-data-type-id").description("Search for templates with a specific target type")
                                 ),
                                 responseFields(
                                         linksResponseField()
@@ -166,46 +193,44 @@ public class TemplateDocumentation {
     }
 
     @Test
-    public void templateFindByName() throws Exception {
+    public void get_one_checklist_by_id() throws Exception {
         this.mockMvc.perform(
-                get("/api/templates/search/findOneByName?name=test-template")
+                get("/api/checklists/{id}", checklist.getId())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("test-template-one",
+                        document("get-one-checklist",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
                                         selfRelLink(),
-                                        linkWithRel("template").description("Link to spreadsheet template"),
-                                        linkWithRel("spreadsheet-csv-download").description("Link to download a spreadsheet template")
+                                        linkWithRel("spreadsheet-csv-download").description("Download the checklist as a spreadsheet"),
+                                        linkWithRel("checklist").ignored()
                                 ),
                                 responseFields(
-                                        linksResponseField(),
-                                        fieldWithPath("name").description("Unique name for this template"),
-                                        fieldWithPath("targetType").description("The type of item to be created from spreadsheets based on this template"),
-                                        fieldWithPath("columnCaptures").description("Column names for the spreadsheet, and the definition of how to map values to JSON documents"),
-                                        fieldWithPath("defaultCapture").description("Handler for any columns in the spreadsheet that aren't expected based on the template"),
-                                        fieldWithPath("tags").description("Text tags to help users search for templates"),
-                                        fieldWithPath("createdDate").ignored(),
-                                        fieldWithPath("lastModifiedDate").ignored(),
-                                        fieldWithPath("createdBy").ignored(),
-                                        fieldWithPath("lastModifiedBy").ignored()
+                                        fieldWithPath("spreadsheetTemplate").description("description of spreadsheet columns and how to convert them to a JSON document"),
+                                        fieldWithPath("dataTypeId").description("Data type that this checklist can be used with"),
+                                        fieldWithPath("displayName").description("Human friendly name for the checklist"),
+                                        fieldWithPath("description").description("Description of the checklist"),
+                                        fieldWithPath("validationSchema").description("A JSON schema that will be applied to any documents using this checklist"),
+                                        linksResponseField()
                                 )
+
+
                         )
                 );
-
     }
+
 
     @Test
     public void templateFindByType() throws Exception {
         this.mockMvc.perform(
-                get("/api/templates/search/findByTargetType?targetType=samples")
+                get("/api/checklists/search/by-data-type-id?dataTypeId=samples")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("test-template-by-type",
+                        document("checklists-by-dataType",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -214,40 +239,9 @@ public class TemplateDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameter"),
+                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter"),
                                         paginationBlock()
                                 )
-                        )
-                );
-    }
-
-    @Test
-    public void templateByTags() throws Exception {
-
-        String[] templateTags = this.template.getTags().toArray(new String[]{});
-
-        this.mockMvc.perform(
-                get("/api/templates/search/findByTargetTypeAndTagsAllMatch?targetType={type}&tags={tagOne}&tags={tagTwo}",
-                        this.template.getTargetType(),
-                        templateTags[0],
-                        templateTags[1]
-                )
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("templates-by-tags-and-type",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        selfRelLink()
-                                ),
-                                responseFields(
-                                        linksResponseField(),
-                                        fieldWithPath("_embedded.templates").description("Templates matching the query parameters")
-                                )
-
-
                         )
                 );
     }

@@ -15,11 +15,9 @@ import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,13 +25,13 @@ import uk.ac.ebi.subs.api.aap.TeamCreationService;
 import uk.ac.ebi.subs.api.aap.TeamDto;
 import uk.ac.ebi.subs.api.processors.TeamResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTeamService;
+import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.api.validators.TeamDtoValidator;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
-import javax.validation.Valid;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -62,11 +60,15 @@ public class TeamController {
     @NonNull
     private TeamDtoValidator teamDtoValidator;
 
-    @RequestMapping("/user/teams")
-    public Resources<Resource<Team>> getTeams(Pageable pageable) {
+    @NonNull
+    private UserTokenService userTokenService;
 
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        List<Team> teamList = userTeamService.userTeams();
+    @RequestMapping("/user/teams")
+    public Resources<Resource<Team>> getTeams(@RequestHeader("Authorization") String authorizationHeader, Pageable pageable) {
+
+
+        String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
+        List<Team> teamList = userTeamService.userTeams(token);
 
         final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, teamList.size());
         return teamPagedResourcesAssembler.toResource(teams);
@@ -100,23 +102,23 @@ public class TeamController {
     @RequestMapping(value = "/user/teams", method = RequestMethod.POST)
     public ResponseEntity<Resource<Team>> createTeam(@RequestBody TeamDto teamDto, BindingResult result) {
 
-        teamDtoValidator.validate(teamDto,result);
+        teamDtoValidator.validate(teamDto, result);
 
-        if (result.hasErrors()){
+        if (result.hasErrors()) {
             throw new RepositoryConstraintViolationException(result);
         }
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getDetails();
 
-        Team team = teamCreationService.createTeam(user,teamDto);
+        Team team = teamCreationService.createTeam(user, teamDto);
 
         Resource<Team> teamResource = new Resource<>(team);
 
-        addSelfLink(team,teamResource);
+        addSelfLink(team, teamResource);
 
 
-       return new ResponseEntity<>(
+        return new ResponseEntity<>(
                 teamResourceProcessor.process(teamResource),
                 HttpStatus.CREATED
         );

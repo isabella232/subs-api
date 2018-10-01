@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,14 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.aap.TeamCreationService;
 import uk.ac.ebi.subs.api.aap.TeamDto;
+import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.Profile;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
+
+import java.util.Arrays;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -58,6 +66,8 @@ public class TeamDocumentation {
     @Value("${usi.docs.scheme:http}")
     private String scheme;
 
+    private final String fakeToken = "TOKEN";
+    private final String fakeAuthHeader = "Bearer "+fakeToken;
 
     @Autowired
     private WebApplicationContext context;
@@ -68,11 +78,30 @@ public class TeamDocumentation {
     @MockBean
     private TeamCreationService teamCreationService;
 
+    @MockBean
+    private DomainService domainService;
+
+    @MockBean
+    private ProfileService profileService;
+
+    private Domain fakeDomain;
+    private Profile fakeProfile;
+
     @Before
     public void setUp() {
         MockMvcRestDocumentationConfigurer docConfig = DocumentationHelper.docConfig(restDocumentation, scheme, host, port);
         this.mockMvc = DocumentationHelper.mockMvc(this.context, docConfig);
         this.objectMapper = DocumentationHelper.mapper();
+
+        fakeDomain = Domain.builder()
+                .withDescription("An example team")
+                .withName("subs.team-1234")
+                .withReference("foo")
+                .build();
+
+        fakeProfile = Profile.builder()
+                .withAttribute("centre name","My Institute")
+                .build();
     }
 
     @Test
@@ -158,14 +187,23 @@ public class TeamDocumentation {
     @Test
     public void teams() throws Exception {
 
+        Mockito.when(domainService.getMyDomains(Mockito.anyString())).thenReturn(
+                Arrays.asList(fakeDomain)
+        );
+
+        Mockito.when(profileService.getDomainProfile(Mockito.anyString(),Mockito.anyString())).thenReturn(
+                fakeProfile
+        );
+
 
         this.mockMvc.perform(
                 get("/api/user/teams")
+                        .header("Authorization",this.fakeAuthHeader)
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
                         document("get-teams",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         linkWithRel("self").description("This resource list")

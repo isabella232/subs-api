@@ -63,5 +63,6 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
         resource.getContent().setEntityType(null);
         resource.getContent().setEntityUuid(null);
         resource.getContent().setSubmissionId(null);
+        resource.getContent().setDataTypeId(null);
     }
 }

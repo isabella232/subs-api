@@ -158,14 +158,14 @@ public class CoreApiDocumentation {
                                         linkWithRel("userTeams").description("Collection resource for teams"),
                                         linkWithRel("team").description("Templated link for finding one team"),
                                         //ref data
-                                        linkWithRel("studyDataTypes").description("Collection resource for study data types"),
+                                        linkWithRel("dataTypes").description("Collection resource for data types"),
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
                                         linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
                                         linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
-                                        linkWithRel("templates").description("Collection of spreadsheet templates for bulk entry of data"),
-                                        linkWithRel("templates:search").description("Search resource for spreadsheet templates"),
+                                        linkWithRel("checklists").description("Collection of data checklists"),
+                                        linkWithRel("checklists:search").description("Search resource for checklists"),
                                         linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),

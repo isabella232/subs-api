@@ -3,44 +3,43 @@ package uk.ac.ebi.subs.api.controllers;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.subs.api.services.TemplateToSheetConverter;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
-import uk.ac.ebi.subs.repository.model.templates.Template;
-import uk.ac.ebi.subs.repository.repos.TemplateRepository;
+import uk.ac.ebi.subs.api.services.ChecklistToSheetConverter;
+import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 
 import java.io.IOException;
 
 @Data
 @RestController
-public class TemplateController {
+public class SpreadsheetTemplateController {
 
     @NonNull
-    private TemplateRepository templateRepository;
+    private ChecklistRepository checklistRepository;
 
     @NonNull
-    private TemplateToSheetConverter templateToSheet;
+    private ChecklistToSheetConverter templateToSheet;
 
     @ResponseBody
     @RequestMapping(
-            path = "/templates/{templateId}/sheet",
+            path = "/checklists/{checklistId}/spreadsheet",
             produces = {
                     "text/csv;charset=UTF-8",
                     "text/csv"
             })
-    public Sheet templateAsSheet(@PathVariable String templateId) throws IOException {
+    public Spreadsheet templateAsSheet(@PathVariable String checklistId) throws IOException {
 
-        Template template = templateRepository.findOne(templateId);
+        Checklist checklist = checklistRepository.findOne(checklistId);
 
-        if (template == null) {
+        if (checklist == null) {
             throw new ResourceNotFoundException();
         }
 
-        Sheet templateSheet = templateToSheet.convert(template);
+        Spreadsheet templateSheet = templateToSheet.convert(checklist);
 
         return templateSheet;
 

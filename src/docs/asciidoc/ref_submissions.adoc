@@ -6,7 +6,6 @@
 
 === Request
 
-
 include::{snippets}/userSubmissions/curl-request.adoc[]
 
 === Response
@@ -51,6 +50,29 @@ include::{snippets}/create-submission/links.adoc[]
 `DELETE`-ing a submission will delete the submission and all resources within it e.g. studies, samples.
 
 // TODO add delete example
+
+== Submission contents
+
+Provides links to different parts of the submission
+
+=== Request
+
+include::{snippets}/submission-contents-post-project-creation/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/submission-contents-post-project-creation/http-response.adoc[]
+
+=== Submission contents - samples
+
+==== Request
+
+include::{snippets}/samples-by-submission-proxied/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/samples-by-submission-proxied/http-response.adoc[]
+
 
 == Submission status
 

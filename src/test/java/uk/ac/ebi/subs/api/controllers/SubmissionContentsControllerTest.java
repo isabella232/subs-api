@@ -18,9 +18,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.api.services.Http;
+import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
@@ -65,12 +69,22 @@ public class SubmissionContentsControllerTest {
     private ValidationResultRepository validationResultRepository;
 
     @MockBean
-    private List<Class<? extends StoredSubmittable>> submittableClassList;
+    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
 
     @MockBean
     private DomainService domainService;
     @MockBean
     private ProfileRepositoryRest profileRepositoryRest;
+
+    @MockBean
+    private OperationControlService operationControlService;
+
+    @MockBean
+    private SubmissionRepository submissionRepository;
+
+    @MockBean
+    private LinkHelper linkHelper;
+
 
     @Autowired
     private WebApplicationContext context;

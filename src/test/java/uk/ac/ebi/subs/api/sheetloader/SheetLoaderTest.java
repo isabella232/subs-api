@@ -1,7 +1,6 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,31 +11,33 @@ import org.mockito.stubbing.Answer;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.util.Pair;
-import org.springframework.hateoas.RelProvider;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
-import uk.ac.ebi.subs.repository.model.sheets.Sheet;
 import uk.ac.ebi.subs.repository.model.sheets.SheetStatusEnum;
+import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.Capture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
 import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
 import uk.ac.ebi.subs.repository.model.templates.NoOpCapture;
 import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
-import uk.ac.ebi.subs.repository.repos.SheetRepository;
+import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,17 +64,20 @@ public class SheetLoaderTest {
 
     @MockBean
     private SheetBulkOps sheetBulkOps;
-
     @MockBean
-    private SheetRepository sheetRepository;
-
+    private SpreadsheetRepository spreadsheetRepository;
     @MockBean
     private SampleRepository sampleRepository;
-
     @MockBean
     private DataTypeRepository dataTypeRepository;
+    @MockBean
+    private ChecklistRepository checklistRepository;
+    @MockBean
+    private SubmissionRepository submissionRepository;
 
     private Submission submission;
+    private Checklist checklist;
+    private DataType dataType;
 
     @Before
     public void setUp() {
@@ -83,23 +86,33 @@ public class SheetLoaderTest {
         submittableRepositoryMap.put(Sample.class, sampleRepository);
 
         Map<String, Class<? extends StoredSubmittable>> submittablesByCollectionName = new HashMap<>();
-        submittablesByCollectionName.put("samples",Sample.class);
+        submittablesByCollectionName.put("samples", Sample.class);
 
 
-        sheetLoaderService = new SheetLoaderService(
+        this.sheetLoaderService = new SheetLoaderService(
                 submittableRepositoryMap,
-                submittablesByCollectionName,
                 objectMapper,
-                sheetRepository,
+                spreadsheetRepository,
                 submittableValidationDispatcher,
                 sheetBulkOps,
-                dataTypeRepository
+                dataTypeRepository,
+                checklistRepository,
+                submissionRepository
         );
 
-        submission = new Submission();
-        submission.setTeam(Team.build("test"));
-        submission.setId("1234");
-        this.sheet = sheet(submission);
+        this.dataType = new DataType();
+        this.dataType.setId("foo");
+        this.dataType.setSubmittableClassName(Sample.class.getName());
+
+        this.checklist = new Checklist();
+        this.checklist.setId("bar");
+        this.checklist.setDataTypeId(dataType.getId());
+        this.checklist.setSpreadsheetTemplate(template());
+
+        this.submission = new Submission();
+        this.submission.setTeam(Team.build("test"));
+        this.submission.setId("1234");
+        this.sheet = sheet(submission, checklist);
 
         Template template = template();
         Map<String, Capture> captureMap = template.getColumnCaptures();
@@ -115,20 +128,23 @@ public class SheetLoaderTest {
         );
 
 
-
+        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
+        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
+        Mockito.when(submissionRepository.findOne(submission.getId())).thenReturn(submission);
     }
 
-    private Sheet sheet;
+    private Spreadsheet sheet;
     private List<Capture> expectedCaptures;
 
 
     @Test
     public void map_headings_to_column_captures() {
+        Template template = checklist.getSpreadsheetTemplate();
 
         List<Capture> actualColumnMappings = sheetLoaderService.mapColumns(
                 sheet.getHeaderRow(),
-                sheet.getTemplate().getColumnCaptures(),
-                Optional.of(sheet.getTemplate().getDefaultCapture())
+                template.getColumnCaptures(),
+                Optional.of(template.getDefaultCapture())
         );
 
         assertThat(actualColumnMappings, equalTo(expectedCaptures));
@@ -190,9 +206,10 @@ public class SheetLoaderTest {
 
         Sample actualSample = (Sample) sheetLoaderService.documentToSubmittable(
                 Sample.class,
-                sheet.getSubmission(),
+                submission,
                 sheet.getRows().get(0),
-                json
+                json,
+                dataType
         );
 
         Assert.assertEquals(expectedSample, actualSample);
@@ -203,7 +220,7 @@ public class SheetLoaderTest {
     public void convert_sheet_to_submittables() {
         List<Pair<Row, ? extends StoredSubmittable>> expected = submittablesWithPairs();
 
-        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class);
+        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType);
 
         Assert.assertEquals(expected, actual);
     }
@@ -212,16 +229,15 @@ public class SheetLoaderTest {
     public void convert_sheet_to_submittables_without_alias() {
 
         //clear all alias fields, should not get converted to submittables
-        sheet.getRows().forEach(r -> r.getCells().set(0,""));
+        sheet.getRows().forEach(r -> r.getCells().set(0, ""));
 
-        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class);
+        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType);
 
         Assert.assertTrue(actual.isEmpty());
 
-        for (Row row : sheet.getRows()){
+        for (Row row : sheet.getRows()) {
             Assert.assertTrue(row.hasErrors());
         }
-
 
 
     }
@@ -232,7 +248,7 @@ public class SheetLoaderTest {
                 Pair.of(sheet.getRows().get(1), sample("s2"))
         );
 
-        for (Pair<Row, ? extends StoredSubmittable> p : pairs ){
+        for (Pair<Row, ? extends StoredSubmittable> p : pairs) {
             p.getSecond().setTeam(submission.getTeam());
             p.getSecond().setSubmission(submission);
         }
@@ -249,7 +265,7 @@ public class SheetLoaderTest {
             return submittablesWithPairs;
         };
 
-        when(sheetBulkOps.lookupExistingEntries(sheet.getSubmission(),
+        when(sheetBulkOps.lookupExistingEntries(submission,
                 submittablesWithPairs,
                 sampleRepository)).thenAnswer(ans);
 
@@ -258,7 +274,7 @@ public class SheetLoaderTest {
 
         sheetLoaderService.loadSheet(sheet);
 
-        verify(sheetBulkOps).lookupExistingEntries(org.mockito.Matchers.eq(sheet.getSubmission()),
+        verify(sheetBulkOps).lookupExistingEntries(org.mockito.Matchers.eq(submission),
                 org.mockito.Matchers.anyCollection(),
                 org.mockito.Matchers.eq(sampleRepository));
 
@@ -268,8 +284,8 @@ public class SheetLoaderTest {
 
         verify(submittableValidationDispatcher).validateUpdate(submittablesWithPairs.get(0).getSecond());
 
-        verify(sheetRepository,times(2)).save(sheet);
-        assertEquals(SheetStatusEnum.Completed,sheet.getStatus());
+        verify(spreadsheetRepository, times(2)).save(sheet);
+        assertEquals(SheetStatusEnum.Completed, sheet.getStatus());
 
     }
 
@@ -292,11 +308,12 @@ public class SheetLoaderTest {
     }
 
 
-    private Sheet sheet(Submission submission) {
-        Sheet sheet = new Sheet();
+    private Spreadsheet sheet(Submission submission, Checklist checklist) {
+        Spreadsheet sheet = new Spreadsheet();
 
-        sheet.setSubmission(submission);
-        sheet.setTemplate(template());
+        sheet.setSubmissionId(submission.getId());
+        sheet.setChecklistId(checklist.getId());
+        sheet.setDataTypeId(checklist.getDataTypeId());
 
         sheet.setVersion(0L);
 
@@ -328,10 +345,7 @@ public class SheetLoaderTest {
     }
 
     private Template template() {
-        Template template = Template.builder()
-                .name("samples-template")
-                .targetType("samples")
-                .build();
+        Template template = new Template();
 
         template
                 .add(

@@ -1,7 +1,8 @@
 package uk.ac.ebi.subs.api.controllers;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.processors.SubmissionResourceProcessor;
+import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
@@ -28,7 +30,6 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
-import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileService;
 
 import java.net.URI;
@@ -46,25 +47,18 @@ import java.util.Optional;
  * We have therefore reimplemented some functionality from SDR.
  */
 @RestController
+@RequiredArgsConstructor
 public class TeamSubmissionController {
 
-    private SubmissionRepository submissionRepository;
-    private ApplicationEventPublisher publisher;
-    private RepositoryRestConfiguration config;
-    private RepositoryEntityLinks repositoryEntityLinks;
-    private SubmissionResourceProcessor submissionResourceProcessor;
-    private ProfileService profileService;
-    private DomainService domainService;
+    @NonNull private SubmissionRepository submissionRepository;
+    @NonNull private ApplicationEventPublisher publisher;
+    @NonNull private RepositoryRestConfiguration config;
+    @NonNull private RepositoryEntityLinks repositoryEntityLinks;
+    @NonNull private SubmissionResourceProcessor submissionResourceProcessor;
+    @NonNull private ProfileService profileService;
+    @NonNull private DomainService domainService;
+    @NonNull private UserTokenService userTokenService;
 
-    public TeamSubmissionController(SubmissionRepository submissionRepository, ApplicationEventPublisher publisher, RepositoryRestConfiguration config, RepositoryEntityLinks repositoryEntityLinks, SubmissionResourceProcessor submissionResourceProcessor, ProfileRepositoryRest profileRepositoryRest, DomainService domainService) {
-        this.submissionRepository = submissionRepository;
-        this.publisher = publisher;
-        this.config = config;
-        this.repositoryEntityLinks = repositoryEntityLinks;
-        this.submissionResourceProcessor = submissionResourceProcessor;
-        this.profileService = new ProfileService(profileRepositoryRest);
-        this.domainService = domainService;
-    }
 
     @PreAuthorizeParamTeamName
     @RequestMapping(value = "/teams/{teamName:.+}/submissions", method = RequestMethod.POST)
@@ -75,7 +69,7 @@ public class TeamSubmissionController {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
 
-        String token = authorizationHeader.replaceFirst("Bearer ", "");
+        String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
         Collection<Domain> userDomains = domainService.getMyDomains(token);
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
 

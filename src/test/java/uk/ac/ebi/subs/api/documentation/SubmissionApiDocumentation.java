@@ -6,6 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.params.HttpParams;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +31,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
@@ -76,6 +83,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -267,23 +275,21 @@ public class SubmissionApiDocumentation {
                         links(
                                 halLinks(),
                                 linkWithRel("files").description("Collection of files within this submission"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
-                                linkWithRel("sequencingStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("enaStudies").description("collection of sequencing studies within this submission"),
+                                linkWithRel("enaStudies:create").description("Create a new sequencing study resource"),
                                 linkWithRel("sequencingRuns").description("collection of sequencing runs within this submission"),
-                                linkWithRel("sequencingAssays").description("collection of sequencing assays within this submission"),
-                                linkWithRel("sequencingAssays:create").description("Create a new sequencing assay resource"),
                                 linkWithRel("sequencingRuns:create").description("Create a new sequencing run resource"),
-                                linkWithRel("sequencingStudies:create").description("Create a new sequencing study resource"),
+                                linkWithRel("sequencingExperiments").description("collection of sequencing assays within this submission"),
+                                linkWithRel("sequencingExperiments:create").description("Create a new sequencing assay resource"),
                                 linkWithRel("projects:create").description("Create a new project resource"),
                                 linkWithRel("projects").description("Collection of projects within this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
-                                linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samplesSheets").description("Upreadsheets uploaded to this submission")
-
-
+                                linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
+
                         )
                 ));
 
@@ -432,7 +438,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.Study study = Helpers.generateTestClientStudies(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingStudies/").content(objectMapper.writeValueAsString(study))
+                post("/api/submissions/" + sub.getId() + "/contents/enaStudies/").content(objectMapper.writeValueAsString(study))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -443,7 +449,7 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"sequencingStudies");
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"enaStudies");
 
         this.mockMvc.perform(
                 post("/api/studies").content(contentForRealSubmission)
@@ -461,11 +467,8 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
-
-                                        fieldWithPath("studyType").description("Type of data in this study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
                                         fieldWithPath("projectRef").description("References to the overall project that this study is part of"),
-
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
@@ -513,7 +516,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assay))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assay))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -525,7 +528,7 @@ public class SubmissionApiDocumentation {
                 );
 
 
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingAssays");
+        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingExperiments");
 
 
         this.mockMvc.perform(
@@ -584,7 +587,7 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingAssays/").content(objectMapper.writeValueAsString(assayData))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -821,17 +824,16 @@ public class SubmissionApiDocumentation {
                         preprocessResponse(prettyPrint()),
                         links(
                                 halLinks(),
-                                linkWithRel("sequencingAssays").description("Collection of assays within this submission"),
-                                linkWithRel("sequencingAssays:create").description("Create a new assay resource"),
+                                linkWithRel("sequencingExperiments").description("Collection of assays within this submission"),
+                                linkWithRel("sequencingExperiments:create").description("Create a new assay resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
-                                linkWithRel("sheetUpload").description("Upload a spreadsheet of submittables, based on a template"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),
-                                linkWithRel("samples:create").description("Create a new sample resource"),
-                                linkWithRel("samplesSheets").description("Samples spreadsheets that have been uploaded but not processed")
+                                linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
                         )
                 ));
     }
@@ -1018,7 +1020,6 @@ public class SubmissionApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
-                                        fieldWithPath("dataTypeId").description("The ID of the data type the validation result belongs to"),
                                         fieldWithPath("validationStatus").description("Is validation pending or complete?"),
                                         fieldWithPath("version").description("Version of this resource.")
                                 ),
@@ -1039,20 +1040,60 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         List<Sample> samples = storeSamples(sub, 30);
 
-        this.mockMvc.perform(
-                get("/api/samples/search/by-submission?submissionId={submissionId}&size=2", sub.getId())
+        MvcResult result = this.mockMvc.perform(
+                get("/api/samples/search/by-submission-and-dataType?submissionId={submissionId}&dataTypeId={dataTypeId}&size=2",
+                        sub.getId(),
+                        "samples")
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("samples/by-submission",
+                        document("samples-by-submission-real",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        DocumentationHelper.selfRelLink(),
+                                        DocumentationHelper.selfRelLink()
+                                        /*,
                                         DocumentationHelper.nextRelLink(),
                                         DocumentationHelper.firstRelLink(),
-                                        DocumentationHelper.lastRelLink()
+                                        DocumentationHelper.lastRelLink()*/
+                                ),
+                                responseFields(
+                                        DocumentationHelper.linksResponseField(),
+                                        fieldWithPath("_embedded.samples").description("Samples within the submission"),
+                                        DocumentationHelper.paginationBlock()
+                                )
+                        )
+                ).andReturn();
+
+        HttpResponse<String> response = DocumentationHelper.convert(result);
+
+        Mockito.when(http.get(Mockito.anyString(),Mockito.anyMapOf(String.class,String.class))).thenReturn(
+                response
+        );
+
+        this.mockMvc.perform(
+                get("/api/submissions/{submissionId}/contents/samples", sub.getId())
+                        .accept(RestMediaTypes.HAL_JSON)
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("samples-by-submission-proxied",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                links(
+                                        halLinks(),
+                                        DocumentationHelper.selfRelLink(),/*
+                                        DocumentationHelper.nextRelLink(),
+                                        DocumentationHelper.firstRelLink(),
+                                        DocumentationHelper.lastRelLink()*/
+                                        linkWithRel("create").description("Create new entries"),
+                                        linkWithRel("checklists").description("Optional checklists for this data type"),
+                                        linkWithRel("spreadsheets").description("Spreadsheets already uploaded"),
+                                        linkWithRel("sheetUpload").description("Upload spreadsheets here"),
+                                        linkWithRel("validationSummaryCounts").description("Summary of how many records there are in total and how many have warnings or errors"),
+                                        linkWithRel("dataType").description("Description of the data type"),
+                                        linkWithRel("documents-with-errors").description("Sample documents that have validation errors"),
+                                        linkWithRel("documents-with-warnings").description("Sample documents that have validation warnings")
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
@@ -1122,6 +1163,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("by-accession").description("Find the current version of a sample by archive accession"),
                                         linkWithRel("by-submissionId-and-alias").description("Search for a sample by alias within a submission"),
                                         linkWithRel("by-submission-and-dataType").description("Search for a sample by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-warnings").description("Search for records that have validation warnings by data type within a submission"),
+                                        linkWithRel("by-submission-and-data-type-with-errors").description("Search for records that has validation errors by data type within a submission"),
                                         linkWithRel("current-version").description("Find the current version of a sample by team and alias"),
                                         linkWithRel("history").description("Search for all versions of a sample by team and alias ")
 
@@ -1209,29 +1252,6 @@ public class SubmissionApiDocumentation {
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
                                         fieldWithPath("content").description("Number of submissions for each status")
-                                )
-                        )
-                );
-    }
-
-    @Test
-    public void studyDataTypes() throws Exception {
-
-        this.mockMvc.perform(
-                get("/api/studyDataTypes")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("studyDataTypes",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        DocumentationHelper.selfRelLink()
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("content").description("Study data types and available subtypes")
                                 )
                         )
                 );
