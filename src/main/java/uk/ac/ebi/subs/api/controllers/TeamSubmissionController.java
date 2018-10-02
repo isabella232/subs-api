@@ -20,11 +20,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.processors.SubmissionResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
@@ -58,6 +61,7 @@ public class TeamSubmissionController {
     @NonNull private ProfileService profileService;
     @NonNull private DomainService domainService;
     @NonNull private UserTokenService userTokenService;
+    @NonNull private SubmissionPlanRepository submissionPlanRepository;
 
 
     @PreAuthorizeParamTeamName
@@ -66,9 +70,10 @@ public class TeamSubmissionController {
             @PathVariable @P("teamName") String teamName,
             @RequestBody Submission submission,
             @RequestHeader(value = "Accept", required = false) String acceptHeader,
-            @RequestHeader("Authorization") String authorizationHeader
-    ) {
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(required = false) @P("submissionPlanId") String submissionPlanId
 
+    ) {
         String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
         Collection<Domain> userDomains = domainService.getMyDomains(token);
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
@@ -93,6 +98,12 @@ public class TeamSubmissionController {
         team.setProfile(attributes);
 
         submission.setTeam(team);
+
+        if (submissionPlanId != null){
+            SubmissionPlan submissionPlan = submissionPlanRepository.findOne(submissionPlanId);
+            submission.setSubmissionPlan(submissionPlan);
+        }
+
 
         Submission savedSubmission = createSubmission(submission);
 
