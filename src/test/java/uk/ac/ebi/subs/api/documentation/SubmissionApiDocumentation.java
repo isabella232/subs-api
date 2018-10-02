@@ -233,6 +233,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
+                                        fieldWithPath("id").ignored(),
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("submitter").description("Submitter who is responsible for this submission"),
                                         fieldWithPath("team").description("Team this submission belongs to"),

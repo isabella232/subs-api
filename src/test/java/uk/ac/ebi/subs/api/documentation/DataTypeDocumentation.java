@@ -112,6 +112,7 @@ public class DataTypeDocumentation {
 
                         ),
                         responseFields(
+                                fieldWithPath("id").ignored(),
                                 fieldWithPath("displayNameSingular").description("singular name for the data type"),
                                 fieldWithPath("displayNamePlural").description("plural name for the data type"),
                                 fieldWithPath("description").description("descritpion of the data type"),
