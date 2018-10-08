@@ -37,9 +37,11 @@ public class ChecklistResourceProcessor implements ResourceProcessor<Resource<Ch
         );
 
         // mongo can't store valid schema due to key constraints
-        String originalSchema = checklist.getValidationSchema();
-        JsonNode fixedSchema = SchemaConverterFromMongo.fixStoredJson(originalSchema);
-        checklist.setValidationSchema(fixedSchema);
+        if (checklist.getValidationSchema() != null) {
+            String originalSchema = checklist.getValidationSchema();
+            JsonNode fixedSchema = SchemaConverterFromMongo.fixStoredJson(originalSchema);
+            checklist.setValidationSchema(fixedSchema);
+        }
 
         return resource;
     }

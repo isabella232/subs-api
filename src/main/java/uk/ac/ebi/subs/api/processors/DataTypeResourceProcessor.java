@@ -40,9 +40,11 @@ public class DataTypeResourceProcessor implements ResourceProcessor<Resource<Dat
 
 
         // mongo can't store valid schema due to key constraints
-        String originalSchema = dataType.getValidationSchema();
-        JsonNode fixedSchema = SchemaConverterFromMongo.fixStoredJson(originalSchema);
-        dataType.setValidationSchema(fixedSchema);
+        if (dataType.getValidationSchema() != null) {
+            String originalSchema = dataType.getValidationSchema();
+            JsonNode fixedSchema = SchemaConverterFromMongo.fixStoredJson(originalSchema);
+            dataType.setValidationSchema(fixedSchema);
+        }
 
         return resource;
     }
