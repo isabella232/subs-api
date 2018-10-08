@@ -162,9 +162,7 @@ public class SheetLoaderTest {
                         "  \"alias\": \"s1\",\n" +
                         "  \"taxon\": \"Homo sapiens\",\n" +
                         "  \"taxonId\": 9606,\n" +
-                        "  \"description\": \"\",\n" +
                         "  \"releaseDate\": \"2018-10-04\",\n" +
-                        "  \"title\": \"\",\n" +
                         "  \"attributes\": {\n" +
                         "    \"height\": [\n" +
                         "      {\n" +
@@ -193,9 +191,7 @@ public class SheetLoaderTest {
                         "  \"alias\": \"s1\",\n" +
                         "  \"taxon\": \"Homo sapiens\",\n" +
                         "  \"taxonId\": 9606,\n" +
-                        "  \"description\": \"\",\n" +
                         "  \"releaseDate\": \"2018-10-04\",\n" +
-                        "  \"title\": \"\",\n" +
                         "  \"attributes\": {\n" +
                         "    \"height\": [\n" +
                         "      {\n" +
@@ -342,8 +338,6 @@ public class SheetLoaderTest {
         sample.setAlias(alias);
         sample.setTaxon("Homo sapiens");
         sample.setTaxonId(9606L);
-        sample.setDescription("");
-        sample.setTitle("");
         Attribute heightAttribute = new Attribute();
         heightAttribute.setValue("1.7");
         heightAttribute.setUnits("meters");
