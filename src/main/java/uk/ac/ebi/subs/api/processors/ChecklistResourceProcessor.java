@@ -1,11 +1,13 @@
 package uk.ac.ebi.subs.api.processors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.controllers.SpreadsheetTemplateController;
 import uk.ac.ebi.subs.repository.model.Checklist;
+import uk.ac.ebi.subs.repository.util.SchemaConverterFromMongo;
 
 import java.io.IOException;
 
@@ -33,6 +35,13 @@ public class ChecklistResourceProcessor implements ResourceProcessor<Resource<Ch
                 new Link(baseDownloadHref + ".csv", "spreadsheet-csv-download")
 
         );
+
+        // mongo can't store valid schema due to key constraints
+        if (checklist.getValidationSchema() != null) {
+            String originalSchema = checklist.getValidationSchema();
+            JsonNode fixedSchema = SchemaConverterFromMongo.fixStoredJson(originalSchema);
+            checklist.setValidationSchema(fixedSchema);
+        }
 
         return resource;
     }
