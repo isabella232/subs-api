@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.sheetloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +37,7 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -81,6 +83,8 @@ public class SheetLoaderTest {
 
     @Before
     public void setUp() {
+        objectMapper.registerModule(new JavaTimeModule());
+
         Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>>
                 submittableRepositoryMap = new HashMap<>();
         submittableRepositoryMap.put(Sample.class, sampleRepository);
@@ -124,7 +128,8 @@ public class SheetLoaderTest {
                 captureMap.get("taxon"),
                 captureMap.get("taxon id"),
                 AttributeCapture.builder().build(),
-                NoOpCapture.builder().build()
+                NoOpCapture.builder().build(),
+                captureMap.get("release date")
         );
 
 
@@ -158,6 +163,7 @@ public class SheetLoaderTest {
                         "  \"taxon\": \"Homo sapiens\",\n" +
                         "  \"taxonId\": 9606,\n" +
                         "  \"description\": \"\",\n" +
+                        "  \"releaseDate\": \"2018-10-04\",\n" +
                         "  \"title\": \"\",\n" +
                         "  \"attributes\": {\n" +
                         "    \"height\": [\n" +
@@ -188,6 +194,7 @@ public class SheetLoaderTest {
                         "  \"taxon\": \"Homo sapiens\",\n" +
                         "  \"taxonId\": 9606,\n" +
                         "  \"description\": \"\",\n" +
+                        "  \"releaseDate\": \"2018-10-04\",\n" +
                         "  \"title\": \"\",\n" +
                         "  \"attributes\": {\n" +
                         "    \"height\": [\n" +
@@ -317,12 +324,12 @@ public class SheetLoaderTest {
 
         sheet.setVersion(0L);
 
-        sheet.setHeaderRow(new Row(new String[]{"unique name", "title", "description", "taxon", "taxon id", "height", "units"}));
+        sheet.setHeaderRow(new Row(new String[]{"unique name", "title", "description", "taxon", "taxon id", "height", "units", "release date"}));
         sheet.addRow(new String[]{
-                "s1", "", "", "Homo sapiens", "9606", "1.7", "meters"
+                "s1", "", "", "Homo sapiens", "9606", "1.7", "meters", "2018-10-04"
         });
         sheet.addRow(new String[]{
-                "s2", "", "", "Homo sapiens", "9606", "1.7", "meters"
+                "s2", "", "", "Homo sapiens", "9606", "1.7", "meters", "2018-10-04"
         });
 
         sheet.setStatus(SheetStatusEnum.Submitted);
@@ -341,6 +348,7 @@ public class SheetLoaderTest {
         heightAttribute.setValue("1.7");
         heightAttribute.setUnits("meters");
         sample.getAttributes().put("height", Arrays.asList(heightAttribute));
+        sample.setReleaseDate(LocalDate.of(2018, 10, 4));
         return sample;
     }
 
@@ -358,6 +366,10 @@ public class SheetLoaderTest {
                 .add(
                         "description",
                         FieldCapture.builder().fieldName("description").build()
+                )
+                .add(
+                        "release date",
+                        FieldCapture.builder().fieldName("releaseDate").build()
                 )
                 .add("taxon",
                         FieldCapture.builder().fieldName("taxon").build()

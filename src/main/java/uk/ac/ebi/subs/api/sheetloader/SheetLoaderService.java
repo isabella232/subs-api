@@ -305,6 +305,13 @@ public class SheetLoaderService {
                 submittable.setSubmission(submission);
                 submittable.setDataType(dataType);
                 submittable.setTeam(submission.getTeam());
+                String teamName = submission.getTeam().getName();
+                submittable.refs()
+                        .filter(ref -> ref.getTeam() == null)
+                        .filter(ref -> ref.getAccession() == null)
+                        .filter(ref -> ref.getAlias() != null)
+                        .forEach(ref -> ref.setTeam(teamName));
+
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);
                 row.getErrors().add("Unrecoverable error while converting row");
