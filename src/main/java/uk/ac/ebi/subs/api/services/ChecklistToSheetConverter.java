@@ -27,7 +27,7 @@ public class ChecklistToSheetConverter implements Converter<Checklist, Spreadshe
                         .stream()
                         .flatMap(entry -> Stream.concat(
                                 Stream.of(entry.getKey()),
-                                entry.getValue().expectedColumnHeaders().stream()
+                                entry.getValue().additionalExpectedColumnHeaders().stream()
                         ))
                         .collect(Collectors.toList())
         );
