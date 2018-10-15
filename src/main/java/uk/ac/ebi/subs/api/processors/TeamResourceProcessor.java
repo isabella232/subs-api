@@ -42,10 +42,12 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     }
 
     private void addItemsRel(Resource<Team> resource) {
-        resource.getLinks().add(
-                linkTo(methodOn(TeamItemsController.class).teamItems(resource.getContent().getName())
-                ).withRel("items")
-        );
+        if (resource.getLink("items") == null) {
+            resource.getLinks().add(
+                    linkTo(methodOn(TeamItemsController.class).teamItems(resource.getContent().getName())
+                    ).withRel("items")
+            );
+        }
     }
 
     private void addSubmissionsRel(Resource<Team> resource) {
