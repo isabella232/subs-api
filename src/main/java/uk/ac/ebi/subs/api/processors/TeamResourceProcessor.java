@@ -51,9 +51,18 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     private void addSubmissionsRel(Resource<Team> resource) {
         addGetSubmissionsRel(resource);
 
+        addCreateSubmissionRel(resource);
+    }
 
-        Map<String,String> expansionParams= new HashMap<>();
-        expansionParams.put("repository","submissions");
+    private void addCreateSubmissionRel(Resource<Team> resource) {
+        String submissionsRel = "submissions" + LinkHelper.CREATE_REL_SUFFIX;
+
+        if (resource.getLink(submissionsRel) != null) {
+            return;
+        }
+
+        Map<String, String> expansionParams = new HashMap<>();
+        expansionParams.put("repository", "submissions");
 
         Link submissionCreateLink = linkTo(
                 methodOn(TeamSubmissionController.class)
@@ -64,13 +73,14 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
                                 null,
                                 null
                         )
-        ).withRel("submissions"+LinkHelper.CREATE_REL_SUFFIX)
+        ).withRel(submissionsRel)
                 .expand(expansionParams);
 
         resource.add(submissionCreateLink);
     }
 
     private void addGetSubmissionsRel(Resource<Team> resource) {
+
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("teamName", resource.getContent().getName());
 
@@ -85,9 +95,10 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
         Assert.notNull(contentsLink);
         Assert.notNull(collectionLink);
 
-
-        resource.add(
-                contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
-        );
+        if (resource.getLink(collectionLink.getRel()) == null) {
+            resource.add(
+                    contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
+            );
+        }
     }
 }
