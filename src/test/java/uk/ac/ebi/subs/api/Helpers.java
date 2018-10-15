@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api;
 
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.Attribute;
@@ -45,6 +46,7 @@ public class Helpers {
     public static final String FILE_TARGET_PATH = "/file/target/path";
     public static final String FILE_CREATED_BY = "test_user";
     public static final String FILE_CHECKSUM = "12345678901234567890abcdef0123ab";
+    private static final String TEST_SUBMISSION_PLAN_URI = "submissionPlans";
 
     public static Submission generateSubmission() {
         Submission s = new Submission();
@@ -53,6 +55,14 @@ public class Helpers {
         s.setSubmissionPlan(generateSubmissionPlan());
 
         return s;
+    }
+
+    public static SubmissionDTO generateSubmissionDTO(String rootURI, SubmissionPlan submissionPlan) {
+        SubmissionDTO submissionDTO = new SubmissionDTO();
+
+        submissionDTO.setSubmissionPlan(getSubmissionPlanURI(rootURI, submissionPlan));
+
+        return submissionDTO;
     }
 
     private static Submitter generateTestSubmitter() {
@@ -314,8 +324,12 @@ public class Helpers {
         submissionPlan.setId(UUID.randomUUID().toString());
         submissionPlan.setDescription("Test submission Plan description");
         submissionPlan.setDisplayName("Test display name for submission plan");
-        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingExperiments"));
+        submissionPlan.setDataTypeIds(Arrays.asList("samples", "sequencingExperiments", "enaStudies"));
 
         return submissionPlan;
+    }
+
+    public static String getSubmissionPlanURI(String rootURI, SubmissionPlan submissionPlan) {
+        return String.join("/", rootURI, TEST_SUBMISSION_PLAN_URI, submissionPlan.getId()) ;
     }
 }

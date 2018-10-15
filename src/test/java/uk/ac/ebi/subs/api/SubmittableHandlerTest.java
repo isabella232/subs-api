@@ -13,11 +13,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Study;
-import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -58,6 +60,8 @@ public class SubmittableHandlerTest {
     private ValidationResultRepository validationResultRepository;
     @Autowired
     private DataTypeRepository dataTypeRepository;
+    @Autowired
+    private SubmissionPlanRepository submissionPlanRepository;
 
     @Autowired
     private SubmittableValidationDispatcher submittableValidationDispatcher;
@@ -86,14 +90,20 @@ public class SubmittableHandlerTest {
 
     @Test
     public void testValidationMessageSamplesOnSubmit() throws Exception {
-        Submission submission = Helpers.generateSubmission();
-        testHelper.submissionWithSamples(submission, testHelper.rootRels());
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
+        testHelper.submissionWithSamples(submissionDTO, testHelper.rootRels());
         verify(submittableValidationDispatcher, atLeast(1)).validateCreate(any(Sample.class));
     }
 
     @Test
     public void testValidationMessageStudiesOnSubmit() throws Exception {
-        testHelper.submissionWithStudies(testHelper.rootRels());
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        testHelper.submissionWithStudies(testHelper.rootRels(), submissionPlan);
 
         verify(submittableValidationDispatcher, atLeast(1)).validateCreate(any(Study.class));
     }
@@ -110,5 +120,6 @@ public class SubmittableHandlerTest {
         submissionStatusRepository.deleteAll();
         validationResultRepository.deleteAll();
         dataTypeRepository.deleteAll();
+        submissionPlanRepository.deleteAll();
     }
 }

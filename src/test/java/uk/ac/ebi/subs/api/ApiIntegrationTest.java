@@ -20,13 +20,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.api.error.ApiError;
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
 import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
@@ -131,7 +132,8 @@ public abstract class ApiIntegrationTest {
                 checklistRepository,
                 validationResultRepository,
                 processingStatusRepository,
-                dataTypeRepository
+                dataTypeRepository,
+                submissionPlanRepository
         ).forEach(CrudRepository::deleteAll);
     }
 
@@ -200,8 +202,11 @@ public abstract class ApiIntegrationTest {
     public void postSubmission() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        Submission submission = Helpers.generateSubmission();
-        testHelper.postSubmission(rootRels, submission);
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
+        testHelper.postSubmission(rootRels, submissionDTO);
 
         List<SubmissionStatus> submissionStatuses = submissionStatusRepository.findAll();
         assertThat(submissionStatuses, notNullValue());
@@ -218,12 +223,15 @@ public abstract class ApiIntegrationTest {
     public void reuseAliasInSubmissionGivesError() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        Submission submission = Helpers.generateSubmission();
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
         List<Sample> testSamples = Helpers.generateTestClientSamples(1);
         Sample sample = testSamples.get(0);
 
 
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submissionDTO);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
@@ -269,12 +277,16 @@ public abstract class ApiIntegrationTest {
     @Test
     public void postSampleWithNoAlias() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
-        Submission submission = Helpers.generateSubmission();
+
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
 
         Sample sample = Helpers.generateTestClientSamples(1).get(0);
         sample.setAlias(null);
 
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submissionDTO);
 
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
         Map<String, String> submissionContentsRels = testHelper.relsFromUri(submissionRels.get("contents"));
@@ -298,11 +310,14 @@ public abstract class ApiIntegrationTest {
     public void sneakyReuseAliasInSubmissionGivesError() throws IOException, UnirestException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        Submission submission = Helpers.generateSubmission();
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
         List<Sample> testSamples = Helpers.generateTestClientSamples(2);
         Map<Sample, String> testSampleLocations = new HashMap<>();
 
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submissionDTO);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());
@@ -450,10 +465,13 @@ public abstract class ApiIntegrationTest {
 
     @Test
     public void testPut() throws IOException, UnirestException {
-        Submission submission = Helpers.generateSubmission();
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
         Map<String, String> teamRels = testHelper.teamRels(Helpers.TEAM_NAME);
 
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submission);
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(teamRels, submissionDTO);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = testHelper.relsFromPayload(submissionResponse.getBody().getObject());

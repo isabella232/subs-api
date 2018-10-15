@@ -70,7 +70,6 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
                                 resource.getContent().getName(),
                                 null,
                                 null,
-                                null,
                                 null
                         )
         ).withRel(submissionsRel)
