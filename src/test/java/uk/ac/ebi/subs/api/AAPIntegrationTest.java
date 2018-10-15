@@ -8,13 +8,16 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
-import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
+import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,6 +42,9 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
 
     @Value("${aap.password}")
     private String appPassword;
+
+    @Autowired
+    private SubmissionPlanRepository submissionPlanRepository;
 
     @Override
     public Map<String, String> createGetHeaders() throws UnirestException {
@@ -85,9 +91,12 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
     public void postSubmission() throws UnirestException, IOException {
         Map<String, String> rootRels = testHelper.rootRels();
 
-        Submission submission = new Submission();
-        submission.setSubmissionPlan(Helpers.generateSubmissionPlan());
-        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submission);
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
+
+        HttpResponse<JsonNode> submissionResponse = testHelper.postSubmission(rootRels, submissionDTO);
 
         JSONObject submissionResponseObject = submissionResponse.getBody().getObject();
         JSONObject submitterObject = submissionResponseObject.getJSONObject("submitter");

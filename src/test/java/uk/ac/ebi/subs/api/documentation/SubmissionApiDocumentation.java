@@ -1,17 +1,9 @@
 package uk.ac.ebi.subs.api.documentation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.params.HttpParams;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,7 +75,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -827,6 +818,8 @@ public class SubmissionApiDocumentation {
                                 halLinks(),
                                 linkWithRel("sequencingExperiments").description("Collection of assays within this submission"),
                                 linkWithRel("sequencingExperiments:create").description("Create a new assay resource"),
+                                linkWithRel("enaStudies").description("Collection of ENA studies within this submission"),
+                                linkWithRel("enaStudies:create").description("Create a new ENA study resource"),
                                 linkWithRel("files").description("Collection of files within this submission"),
                                 linkWithRel("project").description("View the project for this submission"),
                                 linkWithRel("samples").description("Collection of samples within this submission"),

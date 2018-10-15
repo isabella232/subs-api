@@ -21,12 +21,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.converters.SubmissionDTOConverter;
 import uk.ac.ebi.subs.api.processors.SubmissionResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.model.SubmissionPlan;
-import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
@@ -60,7 +59,7 @@ public class TeamSubmissionController {
     @NonNull private ProfileService profileService;
     @NonNull private DomainService domainService;
     @NonNull private UserTokenService userTokenService;
-    @NonNull private SubmissionPlanRepository submissionPlanRepository;
+    @NonNull private SubmissionDTOConverter submissionDTOConverter;
 
 
     @PreAuthorizeParamTeamName
@@ -78,7 +77,7 @@ public class TeamSubmissionController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Submission submission = convertSubmissionDTO(submissionDTO);
+        Submission submission = submissionDTOConverter.convert(submissionDTO);
         submission.setTeam(team);
 
         Submission savedSubmission = createSubmission(submission);
@@ -116,22 +115,6 @@ public class TeamSubmissionController {
         team.setProfile(attributes);
 
         return team;
-    }
-
-    private Submission convertSubmissionDTO(SubmissionDTO submissionDTO) {
-        Submission submission = new Submission();
-        submission.setName(submissionDTO.getName());
-        submission.setProjectName(submissionDTO.getProjectName());
-        submission.setUiData(submissionDTO.getUiData());
-
-        String submissionPlanId = submissionDTO.getSubmissionPlanID();
-
-        if (submissionPlanId != null){
-            SubmissionPlan submissionPlan = submissionPlanRepository.findOne(submissionPlanId);
-            submission.setSubmissionPlan(submissionPlan);
-        }
-
-        return submission;
     }
 
     private Submission createSubmission(@RequestBody Submission submission) {

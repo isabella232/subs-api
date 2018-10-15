@@ -12,7 +12,7 @@ public class SubmissionDTO {
     String projectName;
     @JsonRawValue
     String uiData;
-    String submissionPlanID;
+    String submissionPlan;
 
     @JsonSetter("uiData")
     public void setUiData(JsonNode uiData) {

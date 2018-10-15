@@ -8,7 +8,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.http.utils.Base64Coder;
 import org.apache.http.HttpHeaders;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mockito.Mockito;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -17,11 +16,12 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
@@ -81,12 +81,12 @@ public class ApiIntegrationTestHelper {
         repositoriesToInit.forEach(MongoRepository::deleteAll);
     }
 
-    public HttpResponse<JsonNode> postSubmission(Map<String, String> rootRels, Submission submission) throws UnirestException, IOException {
+    public HttpResponse<JsonNode> postSubmission(Map<String, String> rootRels, SubmissionDTO submissionDTO) throws UnirestException, IOException {
         Map<String, String> teamRels = teamRels(Helpers.TEAM_NAME);
         //create a new submission
         HttpResponse<JsonNode> submissionResponse = Unirest.post(teamRels.get("submissions:create"))
                 .headers(postHeaders)
-                .body(submission)
+                .body(submissionDTO)
                 .asJson();
 
         assertThat(submissionResponse.getStatus(), is(equalTo(HttpStatus.CREATED.value())));
@@ -94,9 +94,9 @@ public class ApiIntegrationTestHelper {
         return submissionResponse;
     }
 
-    public String submissionWithSamples(Submission submission, Map<String, String> rootRels) throws UnirestException, IOException {
+    public String submissionWithSamples(SubmissionDTO submissionDTO, Map<String, String> rootRels) throws UnirestException, IOException {
         Map<String,String> teamRels = teamRels(Helpers.TEAM_NAME);
-        HttpResponse<JsonNode> submissionResponse = postSubmission(teamRels, submission);
+        HttpResponse<JsonNode> submissionResponse = postSubmission(teamRels, submissionDTO);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());
@@ -142,9 +142,9 @@ public class ApiIntegrationTestHelper {
         return submissionLocation;
     }
 
-    public String submissionWithStudies(Map<String, String> rootRels) throws UnirestException, IOException {
-        Submission submission = Helpers.generateSubmission();
-        HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels, submission);
+    public String submissionWithStudies(Map<String, String> rootRels, SubmissionPlan submissionPlan) throws UnirestException, IOException {
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
+        HttpResponse<JsonNode> submissionResponse = postSubmission(rootRels, submissionDTO);
 
         String submissionLocation = submissionResponse.getHeaders().getFirst("Location");
         Map<String, String> submissionRels = relsFromPayload(submissionResponse.getBody().getObject());

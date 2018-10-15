@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +22,21 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.RabbitMQDependentTest;
+import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.api.processors.SubmissionStatusResourceProcessor;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
-import uk.ac.ebi.tsc.aap.client.model.Domain;
-import uk.ac.ebi.tsc.aap.client.model.Profile;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,16 +106,20 @@ public class ApiIntegrationTestRabbitDependent {
         sampleRepository.deleteAll();
         submissionStatusRepository.deleteAll();
         dataTypeRepository.deleteAll();
+        submissionPlanRepository.deleteAll();
     }
 
     @Test
     @Category(RabbitMQDependentTest.class)
     //Requires dispatcher to delete the contents
     public void postThenDeleteSubmission() throws UnirestException, IOException {
-        Map<String, String> rootRels = testHelper.rootRels();
-        Submission submission = Helpers.generateSubmission();
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
 
-        String submissionLocation = testHelper.submissionWithSamples(submission, rootRels);
+        Map<String, String> rootRels = testHelper.rootRels();
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
+
+        String submissionLocation = testHelper.submissionWithSamples(submissionDTO, rootRels);
         HttpResponse<JsonNode> deleteResponse = Unirest.delete(submissionLocation)
                 .headers(testHelper.getPostHeaders())
                 .asJson();
@@ -137,12 +139,13 @@ public class ApiIntegrationTestRabbitDependent {
     @Test
     @Category(RabbitMQDependentTest.class)
     public void simpleSubmissionWorkflow() throws IOException, UnirestException {
+        SubmissionPlan submissionPlan = Helpers.generateSubmissionPlan();
+        submissionPlanRepository.insert(submissionPlan);
+
         Map<String, String> rootRels = testHelper.rootRels();
-        Submission submission = Helpers.generateSubmission();
+        SubmissionDTO submissionDTO = Helpers.generateSubmissionDTO(rootUri, submissionPlan);
 
-        submissionPlanRepository.insert(submission.getSubmissionPlan());
-
-        String submissionLocation = testHelper.submissionWithSamples(submission, rootRels);
+        String submissionLocation = testHelper.submissionWithSamples(submissionDTO, rootRels);
 
         HttpResponse<JsonNode> submissionGetResponse = Unirest
                 .get(submissionLocation)
