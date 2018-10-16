@@ -78,8 +78,8 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
     }
 
     static class EmbeddedWrappingResource extends Resource<StoredSubmittable> {
-        EmbeddedWrappingResource(StoredSubmittable content, Link... links) {
-            super(content, links);
+        EmbeddedWrappingResource(StoredSubmittable content) {
+            super(content);
             wrapEmbeddedData(content);
         }
 
