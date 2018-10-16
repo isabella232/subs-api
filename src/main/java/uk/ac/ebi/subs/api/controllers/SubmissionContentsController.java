@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
@@ -99,7 +98,7 @@ public class SubmissionContentsController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<StoredSubmittable>>> getSubmissionContentsForDataType(
+    public PagedResources<Resource<StoredSubmittable>> getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable) {
@@ -130,11 +129,7 @@ public class SubmissionContentsController {
         addContentListPageLinks(pageable, submission, dataType, submittableClass, pagedResources);
 
 
-        return new ResponseEntity(
-                pagedResources,
-                new LinkedMultiValueMap<>(),
-                HttpStatus.OK
-        );
+        return pagedResources;
     }
 
     private void addContentListPageLinks(Pageable pageable, Submission submission, DataType dataType, Class submittableClass, PagedResources<Resource<StoredSubmittable>> pagedResources) {
