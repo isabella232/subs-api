@@ -41,6 +41,7 @@ import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -976,44 +977,12 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         List<Sample> samples = storeSamples(sub, 30);
 
-        MvcResult result = this.mockMvc.perform(
-                get("/api/samples/search/by-submission-and-dataType?submissionId={submissionId}&dataTypeId={dataTypeId}&size=2",
-                        sub.getId(),
-                        "samples")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("samples-by-submission-real",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        DocumentationHelper.selfRelLink()
-                                        /*,
-                                        DocumentationHelper.nextRelLink(),
-                                        DocumentationHelper.firstRelLink(),
-                                        DocumentationHelper.lastRelLink()*/
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.samples").description("Samples within the submission"),
-                                        DocumentationHelper.paginationBlock()
-                                )
-                        )
-                ).andReturn();
-
-        HttpResponse<String> response = DocumentationHelper.convert(result);
-
-        Mockito.when(http.get(Mockito.anyString(),Mockito.anyMapOf(String.class,String.class))).thenReturn(
-                response
-        );
-
         this.mockMvc.perform(
                 get("/api/submissions/{submissionId}/contents/samples", sub.getId())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("samples-by-submission-proxied",
+                        document("samples-by-submission",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -1316,10 +1285,11 @@ public class SubmissionApiDocumentation {
 
     private List<Sample> storeSamples(Submission sub, int numberRequired) {
         List<Sample> samples = Helpers.generateTestSamples(numberRequired);
-
+        DataType samplesDataType = dataTypeRepository.findOne("samples");
         for (Sample s : samples) {
             s.setCreatedDate(new Date());
             s.setSubmission(sub);
+            s.setDataType(samplesDataType);
 
             Attribute cellLineType = Helpers.attribute("EBV-LCL cell line");
             Term ebvLclCellLine = new Term();

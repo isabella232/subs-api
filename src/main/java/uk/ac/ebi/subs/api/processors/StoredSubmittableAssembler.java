@@ -6,7 +6,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
@@ -18,31 +17,36 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmittable,Resource<StoredSubmittable>> {
+public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmittable, Resource<StoredSubmittable>> {
 
-    @NonNull private RepositoryEntityLinks repositoryEntityLinks;
+    @NonNull
+    private RepositoryEntityLinks repositoryEntityLinks;
 
     @Override
     public Resource<StoredSubmittable> toResource(StoredSubmittable entity) {
 
-        EmbeddedWrappingResource resource =  new EmbeddedWrappingResource(entity);
+        EmbeddedWrappingResource resource = new EmbeddedWrappingResource(entity);
 
         List<Link> links = new ArrayList();
 
         links.add(repositoryEntityLinks.linkToSingleResource(entity).withSelfRel());
         links.add(repositoryEntityLinks.linkToSingleResource(entity));
         links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.submission));
-        links.add(repositoryEntityLinks.linkToSingleResource(ValidationResult.class,resource.embeddedResources.validationResult.getUuid()));
-        links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.processingStatus));
-        links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.dataType));
 
+        if (resource.embeddedResources.validationResult != null) {
+            links.add(repositoryEntityLinks.linkToSingleResource(ValidationResult.class, resource.embeddedResources.validationResult.getUuid()));
+        }
+        if (resource.embeddedResources.processingStatus != null) {
+            links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.processingStatus));
+        }
+        if (resource.embeddedResources.dataType != null) {
+            links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.dataType));
+        }
         if (resource.embeddedResources.checklist != null) {
             links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.checklist));
         }
@@ -63,7 +67,7 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
         private DataType dataType;
         private Checklist checklist;
 
-        EmbeddedResources(StoredSubmittable storedSubmittable){
+        EmbeddedResources(StoredSubmittable storedSubmittable) {
             this.submission = storedSubmittable.getSubmission();
             this.validationResult = storedSubmittable.getValidationResult();
             this.processingStatus = storedSubmittable.getProcessingStatus();
@@ -89,8 +93,8 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
         @JsonProperty("_embedded")
         private EmbeddedResources embeddedResources;
 
-        private void wrapEmbeddedData(StoredSubmittable storedSubmittable){
-           this.embeddedResources = new EmbeddedResources(storedSubmittable);
+        private void wrapEmbeddedData(StoredSubmittable storedSubmittable) {
+            this.embeddedResources = new EmbeddedResources(storedSubmittable);
         }
     }
 }

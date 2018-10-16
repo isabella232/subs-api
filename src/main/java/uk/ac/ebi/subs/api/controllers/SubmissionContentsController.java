@@ -3,29 +3,25 @@ package uk.ac.ebi.subs.api.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.method.P;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -61,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -85,8 +82,7 @@ public class SubmissionContentsController {
     private StoredSubmittableAssembler storedSubmittableAssembler;
 
     @NonNull
-    private StoredSubmittableResourceProcessor storedSubmittableResourceProcessor;
-
+    private StoredSubmittableResourceProcessor<StoredSubmittable> storedSubmittableResourceProcessor;
 
     @NonNull
     private Http http;
@@ -107,120 +103,91 @@ public class SubmissionContentsController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
-    public ResponseEntity getSubmissionContentsForDataType(
+    public ResponseEntity<PagedResources<Resource<StoredSubmittable>>> getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable,
             HttpServletRequest originalRequest) {
 
-        DataType dataType = dataTypeRepository.findOne(dataTypeId);
+        pageable = new PageRequest(1,2);
+
         Submission submission = submissionRepository.findOne(submissionId);
+        DataType dataType = dataTypeRepository.findOne(dataTypeId);
 
         if (dataType == null || submission == null) {
             throw new ResourceNotFoundException();
         }
 
         Class submittableClass = submittableClassForDataType(dataType);
+        SubmittableRepository repository = submittableRepositoryMap.get(submittableClass);
+
+        Page<StoredSubmittable> page = repository.findBySubmissionIdAndDataTypeId(submissionId, dataTypeId, pageable);
+
+        List<Resource<StoredSubmittable>> resourceList = page.getContent().stream()
+                .map(item -> storedSubmittableAssembler.toResource(item))
+                .map(resource -> storedSubmittableResourceProcessor.process(resource))
+                .collect(Collectors.toList());
+
+
+        PagedResources<Resource<StoredSubmittable>> pagedResources = new PagedResources<>(
+                resourceList,
+                new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages())
+        );
+
         Map<String, String> params = new HashMap<>();
         params.put("submissionId", submissionId);
         params.put("dataTypeId", dataTypeId);
 
-        Link realQueryLink = repositoryEntityLinks
-                .linkToSearchResource(submittableClass, "by-submission-and-dataType")
-                .expand(params);
 
-        Map<String, String> headers = requestHeaders(originalRequest);
+        Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submissionId, dataTypeId, pageable, originalRequest))
+                .withSelfRel();
 
-        HttpResponse<String> response = null;
-        try {
-            response = http.get(
-                    realQueryLink.getHref(),
-                    headers
+        Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submissionId, dataTypeId))
+                .withRel("validationSummaryCounts");
+
+        Link checklistLink = repositoryEntityLinks
+                .linkToSearchResource(Checklist.class, "by-data-type-id")
+                .expand(params)
+                .withRel("checklists");
+
+        Link spreadsheetLink = repositoryEntityLinks
+                .linkToSearchResource(Spreadsheet.class, "by-submission-and-data-type")
+                .expand(params)
+                .withRel("spreadsheets");
+
+        Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
+
+        Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-errors")
+                .expand(params)
+                .withRel("documents-with-errors");
+
+        Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-warnings")
+                .expand(params)
+                .withRel("documents-with-warnings");
+
+        pagedResources.add(
+                selfLink,
+                checklistLink,
+                spreadsheetLink,
+                summaryLink,
+                dataTypeLink,
+                withErrorsLink,
+                withWarningsLink
+        );
+
+        if (operationControlService.isUpdateable(submission)) {
+            pagedResources.add(
+                    linkHelper.submittableCreateLink(dataType, submission).withRel("create"),
+                    linkHelper.spreadsheetUploadLink(submission)
             );
-        } catch (UnirestException e) {
-            logger.error("UniRestException when proxing request to spring data rest controller", e);
-            throw new RuntimeException(e);
         }
 
-
-        ObjectNode modifiableResponse = null;
-
-        try {
-            modifiableResponse = objectMapper.readValue(response.getBody(), ObjectNode.class);
-
-            if (modifiableResponse.has("_links") && modifiableResponse.get("_links").isObject()) {
-
-                Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submissionId, dataTypeId, pageable, originalRequest))
-                        .withSelfRel();
-
-                Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submissionId, dataTypeId))
-                        .withRel("validationSummaryCounts");
-
-                Link checklistLink = repositoryEntityLinks
-                        .linkToSearchResource(Checklist.class, "by-data-type-id")
-                        .expand(params)
-                        .withRel("checklists");
-
-                Link spreadsheetLink = repositoryEntityLinks
-                        .linkToSearchResource(Spreadsheet.class, "by-submission-and-data-type")
-                        .expand(params)
-                        .withRel("spreadsheets");
-
-                Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
-
-                Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-errors")
-                        .expand(params)
-                        .withRel("documents-with-errors");
-
-                Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-warnings")
-                        .expand(params)
-                        .withRel("documents-with-warnings");
-
-                addLinks(
-                        modifiableResponse,
-                        selfLink,
-                        checklistLink,
-                        spreadsheetLink,
-                        summaryLink,
-                        dataTypeLink,
-                        withErrorsLink,
-                        withWarningsLink
-                );
-
-                if (operationControlService.isUpdateable(submission)) {
-                    addLinks(
-                            modifiableResponse,
-                            linkHelper.submittableCreateLink(dataType, submission).withRel("create"),
-                            linkHelper.spreadsheetUploadLink(submission)
-                    );
-                }
-
-
-            }
-
-        } catch (Exception e) {
-            logger.error("Error when reading  proxied response", e);
-            throw new RuntimeException(e);
-        }
-
-        HttpHeaders responseHeaders = responseHeaders(response);
 
         return new ResponseEntity(
-                modifiableResponse,
-                responseHeaders,
-                HttpStatus.valueOf(response.getStatus())
+                pagedResources,
+                new LinkedMultiValueMap<>(),
+                HttpStatus.OK
         );
-    }
-
-    private void addLinks(ObjectNode modifiableResponse, Link... links) throws IOException {
-        ObjectNode linksNode = (ObjectNode) modifiableResponse.get("_links");
-
-        for (Link link : links) {
-            String linkString = objectMapper.writeValueAsString(link);
-            ObjectNode linkNode = objectMapper.readValue(linkString, ObjectNode.class);
-            linkNode.remove("rel");
-            linksNode.set(link.getRel(), linkNode);
-        }
     }
 
 
@@ -275,8 +242,8 @@ public class SubmissionContentsController {
         resource = storedSubmittableResourceProcessor.process(resource);
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add(HttpHeaders.LOCATION,selfLink.getHref());
-        headers.add(HttpHeaders.ETAG,item.getVersion().toString());
+        headers.add(HttpHeaders.LOCATION, selfLink.getHref());
+        headers.add(HttpHeaders.ETAG, item.getVersion().toString());
 
         return new ResponseEntity<>(
                 resource,
@@ -381,9 +348,11 @@ public class SubmissionContentsController {
         void increaseTotalNumberByOne() {
             this.totalNumber++;
         }
+
         void increaseErrorCountByOne() {
             this.hasError++;
         }
+
         void increaseWarningCountByOne() {
             this.hasWarning++;
         }
