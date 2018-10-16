@@ -19,6 +19,8 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.processors.LinkHelper;
+import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
+import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
 import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -54,7 +56,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @MockBeans({
         @MockBean(DataTypeRepository.class),
         @MockBean(RepositoryEntityLinks.class),
-        @MockBean(Http.class)
+        @MockBean(Http.class),
+        @MockBean(StoredSubmittableAssembler.class),
+        @MockBean(StoredSubmittableResourceProcessor.class)
 })
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionContentsControllerTest {

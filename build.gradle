@@ -49,7 +49,9 @@ dependencies {
     compile("org.apache.commons:commons-csv:1.5")
 
     testCompile("junit:junit")
-    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("org.springframework.boot:spring-boot-starter-test"){
+        exclude group: "com.vaadin.external.google", module:"android-json"
+    }
     testCompile("com.google.code.gson:gson:2.7")
     testCompile("org.yaml:snakeyaml:1.8")
     //bug in spring boot, see https://github.com/spring-projects/spring-boot/issues/6502
