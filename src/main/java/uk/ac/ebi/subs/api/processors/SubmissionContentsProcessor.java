@@ -100,7 +100,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                             .getSubmissionContentsForDataType(
                                     resource.getContent().getSubmission().getId(),
                                     dataType.getId(),
-                                    null,
                                     null
                             )
             ).withRel(dataType.getId());

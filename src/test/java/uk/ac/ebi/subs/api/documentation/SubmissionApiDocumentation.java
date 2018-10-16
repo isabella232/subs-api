@@ -1,8 +1,6 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.Headers;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,14 +21,12 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -41,6 +37,7 @@ import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -156,11 +153,6 @@ public class SubmissionApiDocumentation {
     @MockBean
     private SubmissionStatusService submissionStatusService;
 
-    @MockBean
-    private Http http;
-
-    private HttpResponse<String> mockResponse = Mockito.mock(HttpResponse.class);
-
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
@@ -192,13 +184,6 @@ public class SubmissionApiDocumentation {
                 .thenReturn(Boolean.TRUE);
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(SubmissionStatus.class)))
                 .thenReturn(Boolean.TRUE);
-
-
-        Mockito.when(http.post(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResponse);
-        Mockito.when(mockResponse.getStatus()).thenReturn(201);
-        Mockito.when(mockResponse.getHeaders()).thenReturn(new Headers());
-        Mockito.when(mockResponse.getBody()).thenReturn("");
-
 
     }
 
@@ -436,21 +421,7 @@ public class SubmissionApiDocumentation {
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-study-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(study,sub.getId(),"enaStudies");
-
-        this.mockMvc.perform(
-                post("/api/studies").content(contentForRealSubmission)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-study-real",
+                        document("create-study",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -464,6 +435,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -481,8 +453,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
                                 )
                         )
                 );
@@ -495,42 +466,20 @@ public class SubmissionApiDocumentation {
         );
     }
 
-    private String addSubmissionAndDataTypeToSubmittable(Submittable submittable, String submissionId, String dataTypeId) throws IOException {
-        Map<String,Object> map = objectToJsonNode(submittable);
-        map.put("submission",urlBase + "/submissions/" + submissionId);
-        map.put("dataType",urlBase + "/dataTypes/" + dataTypeId);
-        return objectMapper.writeValueAsString(map);
-    }
-
     @Test
     public void createAssay() throws Exception {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Assay assay = Helpers.generateTestClientAssays(1).get(0);
 
+
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assay))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments").content(objectMapper.writeValueAsString(assay))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assay,sub.getId(),"sequencingExperiments");
-
-
-        this.mockMvc.perform(
-                post("/api/assays").content(contentForRealSubmission)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-assay-real",
+                        document("create-assay",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -540,15 +489,14 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
-
                                         fieldWithPath("studyRef").description("Reference to the study that this assay is part of"),
                                         fieldWithPath("sampleUses").description("Samples used in this assay"),
                                         fieldWithPath("sampleUses[0].sampleRef").description("Reference to the sample used in this assay"),
                                         fieldWithPath("protocolUses").description("Protocols used in this study"),
-
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this assay."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this assay."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -566,8 +514,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
                                 )
                         )
                 );
@@ -579,27 +526,13 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assayData))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingRuns/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay-data-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assayData,sub.getId(),"sequencingRuns");
-
-        this.mockMvc.perform(
-                post("/api/assayData").content(contentForRealSubmission)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-assay-data-real",
+                        document("create-assay-data",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -619,6 +552,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -636,8 +570,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
                                 )
                         )
                 );
@@ -648,26 +581,13 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         uk.ac.ebi.subs.data.client.Project project = Helpers.generateClientProject();
 
-        this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/projects/").content(objectMapper.writeValueAsString(project))
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-project-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(project,sub.getId(),"projects");
 
 
-        this.mockMvc.perform(post("/api/projects").content(contentForRealSubmission)
+        this.mockMvc.perform(post("/api/submissions/" + sub.getId() + "/contents/projects/").content(objectMapper.writeValueAsString(project))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isCreated())
-                .andDo(document("create-project-real",
+                .andDo(document("create-project",
                         preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
@@ -681,6 +601,7 @@ public class SubmissionApiDocumentation {
                                 fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
                                 fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
                                 fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                fieldWithPath("_embedded.dataType").description("Data type description."),
                                 fieldWithPath("team").description("Team this project belongs to"),
                                 fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                 fieldWithPath("createdDate").description("Date this resource was created"),
@@ -699,8 +620,7 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("self:delete").description("This resource can be deleted"),
                                 linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                 linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                linkWithRel("dataType").description("Resource describing the requirements for this data type")
 
                         )
                 ));
@@ -845,21 +765,7 @@ public class SubmissionApiDocumentation {
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-sample-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(sample,sub.getId(),"samples");
-
-        this.mockMvc.perform(
-                post("/api/samples").content(contentForRealSubmission)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-sample-real",
+                        document("create-sample",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -874,6 +780,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this sample will be released"),
@@ -893,8 +800,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
                                 )
                         )
                 );
@@ -1034,44 +940,12 @@ public class SubmissionApiDocumentation {
         Submission sub = storeSubmission();
         List<Sample> samples = storeSamples(sub, 30);
 
-        MvcResult result = this.mockMvc.perform(
-                get("/api/samples/search/by-submission-and-dataType?submissionId={submissionId}&dataTypeId={dataTypeId}&size=2",
-                        sub.getId(),
-                        "samples")
-                        .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("samples-by-submission-real",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
-                                        halLinks(),
-                                        DocumentationHelper.selfRelLink()
-                                        /*,
-                                        DocumentationHelper.nextRelLink(),
-                                        DocumentationHelper.firstRelLink(),
-                                        DocumentationHelper.lastRelLink()*/
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.samples").description("Samples within the submission"),
-                                        DocumentationHelper.paginationBlock()
-                                )
-                        )
-                ).andReturn();
-
-        HttpResponse<String> response = DocumentationHelper.convert(result);
-
-        Mockito.when(http.get(Mockito.anyString(),Mockito.anyMapOf(String.class,String.class))).thenReturn(
-                response
-        );
-
         this.mockMvc.perform(
                 get("/api/submissions/{submissionId}/contents/samples", sub.getId())
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
-                        document("samples-by-submission-proxied",
+                        document("samples-by-submission",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 links(
@@ -1374,10 +1248,11 @@ public class SubmissionApiDocumentation {
 
     private List<Sample> storeSamples(Submission sub, int numberRequired) {
         List<Sample> samples = Helpers.generateTestSamples(numberRequired);
-
+        DataType samplesDataType = dataTypeRepository.findOne("samples");
         for (Sample s : samples) {
             s.setCreatedDate(new Date());
             s.setSubmission(sub);
+            s.setDataType(samplesDataType);
 
             Attribute cellLineType = Helpers.attribute("EBV-LCL cell line");
             Term ebvLclCellLine = new Term();

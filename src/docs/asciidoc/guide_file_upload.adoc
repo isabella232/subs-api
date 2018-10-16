@@ -89,7 +89,7 @@ include::{snippets}/delete-file/http-response.adoc[]
 
 At the end of the file upload process our pipeline calculates the MD5 checksum of every uploaded file.
 Depending on the file size it could take from a couple of seconds till couple of minutes
-(in case of really-really huge files) to calculate this value.
+(in case of large files) to calculate this value.
 If you have already generated your own checksum you could compare it with our checksum.
 
 To get the generated checksum you have to go to the

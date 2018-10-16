@@ -67,11 +67,11 @@ include::{snippets}/submission-contents-post-project-creation/http-response.adoc
 
 ==== Request
 
-include::{snippets}/samples-by-submission-proxied/curl-request.adoc[]
+include::{snippets}/samples-by-submission/curl-request.adoc[]
 
 ==== Response
 
-include::{snippets}/samples-by-submission-proxied/http-response.adoc[]
+include::{snippets}/samples-by-submission/http-response.adoc[]
 
 
 == Submission status
