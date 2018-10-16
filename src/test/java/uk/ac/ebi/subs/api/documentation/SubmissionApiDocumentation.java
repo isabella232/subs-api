@@ -466,13 +466,6 @@ public class SubmissionApiDocumentation {
         );
     }
 
-    private String addSubmissionAndDataTypeToSubmittable(Submittable submittable, String submissionId, String dataTypeId) throws IOException {
-        Map<String,Object> map = objectToJsonNode(submittable);
-        map.put("submission",urlBase + "/submissions/" + submissionId);
-        map.put("dataType",urlBase + "/dataTypes/" + dataTypeId);
-        return objectMapper.writeValueAsString(map);
-    }
-
     @Test
     public void createAssay() throws Exception {
         Submission sub = storeSubmission();
@@ -533,27 +526,13 @@ public class SubmissionApiDocumentation {
         uk.ac.ebi.subs.data.client.AssayData assayData = Helpers.generateTestClientAssayData(1).get(0);
 
         this.mockMvc.perform(
-                post("/api/submissions/" + sub.getId() + "/contents/sequencingExperiments/").content(objectMapper.writeValueAsString(assayData))
+                post("/api/submissions/" + sub.getId() + "/contents/sequencingRuns/").content(objectMapper.writeValueAsString(assayData))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
         ).andExpect(status().isCreated())
                 .andDo(
-                        document("create-assay-data-proxy",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader())
-                        )
-                );
-
-        String contentForRealSubmission = addSubmissionAndDataTypeToSubmittable(assayData,sub.getId(),"sequencingRuns");
-
-        this.mockMvc.perform(
-                post("/api/assayData").content(contentForRealSubmission)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(RestMediaTypes.HAL_JSON)
-
-        ).andExpect(status().isCreated())
-                .andDo(
-                        document("create-assay-data-real",
+                        document("create-assay-data",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
@@ -573,6 +552,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         fieldWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
                                         fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -590,8 +570,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
                                 )
                         )
                 );

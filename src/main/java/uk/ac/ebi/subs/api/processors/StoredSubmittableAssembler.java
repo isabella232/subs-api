@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.processors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -73,23 +74,16 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
             this.processingStatus = storedSubmittable.getProcessingStatus();
             this.dataType = storedSubmittable.getDataType();
             this.checklist = storedSubmittable.getChecklist();
-
-
         }
     }
 
-    @Data
     static class EmbeddedWrappingResource extends Resource<StoredSubmittable> {
-        public EmbeddedWrappingResource(StoredSubmittable content, Link... links) {
+        EmbeddedWrappingResource(StoredSubmittable content, Link... links) {
             super(content, links);
             wrapEmbeddedData(content);
         }
 
-        public EmbeddedWrappingResource(StoredSubmittable content, Iterable<Link> links) {
-            super(content, links);
-            wrapEmbeddedData(content);
-        }
-
+        @Getter
         @JsonProperty("_embedded")
         private EmbeddedResources embeddedResources;
 
