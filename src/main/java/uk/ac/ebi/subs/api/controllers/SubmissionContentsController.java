@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
-import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -85,9 +84,6 @@ public class SubmissionContentsController {
     private StoredSubmittableResourceProcessor<StoredSubmittable> storedSubmittableResourceProcessor;
 
     @NonNull
-    private Http http;
-
-    @NonNull
     private OperationControlService operationControlService;
 
     @NonNull
@@ -106,8 +102,7 @@ public class SubmissionContentsController {
     public ResponseEntity<PagedResources<Resource<StoredSubmittable>>> getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
-            Pageable pageable,
-            HttpServletRequest originalRequest) {
+            Pageable pageable) {
 
         pageable = new PageRequest(1,2);
 
@@ -134,15 +129,26 @@ public class SubmissionContentsController {
                 new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages())
         );
 
+        addContentListPageLinks(pageable, submission, dataType, submittableClass, pagedResources);
+
+
+        return new ResponseEntity(
+                pagedResources,
+                new LinkedMultiValueMap<>(),
+                HttpStatus.OK
+        );
+    }
+
+    private void addContentListPageLinks(Pageable pageable, Submission submission, DataType dataType, Class submittableClass, PagedResources<Resource<StoredSubmittable>> pagedResources) {
         Map<String, String> params = new HashMap<>();
-        params.put("submissionId", submissionId);
-        params.put("dataTypeId", dataTypeId);
+        params.put("submissionId", submission.getId());
+        params.put("dataTypeId", dataType.getId());
 
 
-        Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submissionId, dataTypeId, pageable, originalRequest))
+        Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submission.getId(), dataType.getId(), pageable))
                 .withSelfRel();
 
-        Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submissionId, dataTypeId))
+        Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submission.getId(), dataType.getId()))
                 .withRel("validationSummaryCounts");
 
         Link checklistLink = repositoryEntityLinks
@@ -181,13 +187,6 @@ public class SubmissionContentsController {
                     linkHelper.spreadsheetUploadLink(submission)
             );
         }
-
-
-        return new ResponseEntity(
-                pagedResources,
-                new LinkedMultiValueMap<>(),
-                HttpStatus.OK
-        );
     }
 
 

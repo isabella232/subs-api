@@ -1,8 +1,6 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.Headers;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,14 +21,12 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
-import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -157,11 +153,6 @@ public class SubmissionApiDocumentation {
     @MockBean
     private SubmissionStatusService submissionStatusService;
 
-    @MockBean
-    private Http http;
-
-    private HttpResponse<String> mockResponse = Mockito.mock(HttpResponse.class);
-
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private SubmissionEventService fakeSubmissionEventService = DocumentationHelper.fakeSubmissionEventService();
@@ -193,13 +184,6 @@ public class SubmissionApiDocumentation {
                 .thenReturn(Boolean.TRUE);
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(SubmissionStatus.class)))
                 .thenReturn(Boolean.TRUE);
-
-
-        Mockito.when(http.post(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResponse);
-        Mockito.when(mockResponse.getStatus()).thenReturn(201);
-        Mockito.when(mockResponse.getHeaders()).thenReturn(new Headers());
-        Mockito.when(mockResponse.getBody()).thenReturn("");
-
 
     }
 

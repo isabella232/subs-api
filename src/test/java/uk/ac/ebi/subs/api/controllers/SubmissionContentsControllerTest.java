@@ -21,7 +21,6 @@ import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
-import uk.ac.ebi.subs.api.services.Http;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
@@ -56,7 +55,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @MockBeans({
         @MockBean(DataTypeRepository.class),
         @MockBean(RepositoryEntityLinks.class),
-        @MockBean(Http.class),
         @MockBean(StoredSubmittableAssembler.class),
         @MockBean(StoredSubmittableResourceProcessor.class)
 })
