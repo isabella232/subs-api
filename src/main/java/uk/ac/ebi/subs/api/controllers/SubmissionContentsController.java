@@ -104,8 +104,6 @@ public class SubmissionContentsController {
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable) {
 
-        pageable = new PageRequest(1,2);
-
         Submission submission = submissionRepository.findOne(submissionId);
         DataType dataType = dataTypeRepository.findOne(dataTypeId);
 
