@@ -43,9 +43,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class TeamController {
 
     @NonNull
-    private SubmissionRepository submissionRepository;
-
-    @NonNull
     private PagedResourcesAssembler<Team> teamPagedResourcesAssembler;
 
     @NonNull

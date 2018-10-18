@@ -45,7 +45,7 @@ public class UserTeamService {
     public List<Team> userTeams(String userToken) {
         Collection<Domain> domains = domainService.getMyDomains(userToken);
 
-        List<Team> teams = domains.stream()
+        List<Team> teams = domains.parallelStream()
                 .filter(d -> d.getDomainName().startsWith(teamNamePrefix))
                 .map(d -> domainToTeam(d, userToken))
                 .filter(Objects::nonNull)
