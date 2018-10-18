@@ -66,8 +66,6 @@ public class CoreSubmittableValidationHelper {
 
         this.validate(target, storedVersion, errors);
 
-        this.validateIfDuplicateWithinTeamAsDraft(target, repository, errors);
-
         this.validateAliasIsLockedToDataType(target,repository,errors);
     }
 
@@ -145,24 +143,6 @@ public class CoreSubmittableValidationHelper {
         submittable.setCreatedBy(storedVersion.getCreatedBy());
     }
 
-    public void validateIfDuplicateWithinTeamAsDraft(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
-        if (target.getAlias() == null || target.getSubmission() == null || target.getSubmission().getTeam() == null || target.getSubmission().getTeam().getName() == null) {
-            return;
-        }
-
-        List<StoredSubmittable> results = repository.findByTeamNameAndAliasOrderByCreatedDateDesc(target.getSubmission().getTeam().getName(), target.getAlias(), new PageRequest(0,50)).getContent();
-
-        List<? extends StoredSubmittable> itemsWithSameAliasDifferentId = results.stream()
-                .filter(item -> !item.getId().equals(target.getId()))
-                .collect(Collectors.toList());
-
-        boolean duplicateItem = itemsWithSameAliasDifferentId.stream()
-                .anyMatch(item -> item.getProcessingStatus() == null || !item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Completed.name()));
-
-        if (duplicateItem) {
-            SubsApiErrors.already_exists_and_not_completed.addError(errors);
-        }
-    }
 
     public void validateAliasIsLockedToDataType(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
         if (target.getAlias() == null) {
