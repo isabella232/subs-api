@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 
 import java.util.List;
@@ -23,6 +27,10 @@ public class SubmissionContentsIssuesSummaryController {
     private FileRepository fileRepository;
     @NonNull
     private ValidatorResultRepositoryCustom validatorResultRepositoryCustom;
+    @NonNull
+    private ValidationResultRepository validationResultRepository;
+    @NonNull
+    private ProcessingStatusRepository processingStatusRepository;
 
     @GetMapping(value = "/submissions/{submissionId}/contents/issuesSummary")
     public SubmissionIssuesSummary getSubmissionContentsIssuesSummary(@PathVariable @P("submissionId") String submissionId) {
@@ -30,6 +38,7 @@ public class SubmissionContentsIssuesSummaryController {
 
         getFileIssues(submissionId, submissionIssuesSummary);
         getMetadataIssues(submissionId, submissionIssuesSummary);
+        checkSubmissionEmptiness(submissionId, submissionIssuesSummary);
 
         return submissionIssuesSummary;
     }
@@ -49,9 +58,19 @@ public class SubmissionContentsIssuesSummaryController {
                 validatorResultRepositoryCustom.validationIssuesPerDataTypeId(submissionId));
     }
 
+    private void checkSubmissionEmptiness(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
+        List<ValidationResult> validationResults = validationResultRepository.findAllBySubmissionId(submissionId);
+        List<ProcessingStatus> processingStatuses = processingStatusRepository.findBySubmissionId(submissionId);
+
+        if (validationResults.size() == 0 || processingStatuses.size() == 0) {
+            submissionIssuesSummary.setEmptySubmission(true);
+        }
+    }
+
     @Data
     class SubmissionIssuesSummary {
         int notReadyFileCount;
         Map<String, Integer> validationIssuesPerDataTypeId;
+        boolean emptySubmission;
     }
 }

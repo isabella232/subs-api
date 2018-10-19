@@ -19,12 +19,14 @@ import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +58,11 @@ public class SubmissionContentsIssuesSummaryControllerTest {
     @MockBean
     private ProfileRepositoryRest profileRepositoryRest;
 
-//    @MockBean
-//    private ValidationResultRepository validationResultRepository;
+    @MockBean
+    private ValidationResultRepository validationResultRepository;
+
+    @MockBean
+    private ProcessingStatusRepository processingStatusRepository;
 
     @MockBean
     FileRepository fileRepository;
@@ -105,6 +110,22 @@ public class SubmissionContentsIssuesSummaryControllerTest {
                 .andExpect(jsonPath("$.validationIssuesPerDataTypeId.samples", is(equalTo(3))))
                 .andExpect(jsonPath("$.validationIssuesPerDataTypeId.studies", is(equalTo(1))));
     }
+
+    @Test
+    public void givenEmptySubmission_ReturnsEmptySubmissionMessage()
+            throws Exception {
+        given(validationResultRepository.findAllBySubmissionId(any()))
+                .willReturn(Collections.emptyList());
+        given(processingStatusRepository.findBySubmissionId(any()))
+                .willReturn(Collections.emptyList());
+
+        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.emptySubmission", is(equalTo(true))));
+    }
+
 
     private Map<String, Integer> generateMetadataIssues() {
         Map<String, Integer> metadataIssues = new HashMap<>();
