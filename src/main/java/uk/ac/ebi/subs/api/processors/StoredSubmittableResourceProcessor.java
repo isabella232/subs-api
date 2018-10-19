@@ -41,6 +41,9 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
             linkHelper.addSelfUpdateLink(resource.getLinks(),resource.getContent());
         }
 
+        //redact content for internal use only
+        resource.getContent().setReferences(null);
+
 
         return resource;
     }

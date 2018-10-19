@@ -42,12 +42,13 @@ public class CoreSubmittableEventHandler {
     /**
      * Give submittable an ID and set Team from submission.
      *
-     * @param submittable
+     * @param storedSubmittable
      */
     @HandleBeforeCreate
-    public void addDependentObjectsToSubmittable(StoredSubmittable submittable) {
-        submittableHelperService.uuidAndTeamFromSubmissionSetUp(submittable);
-        fillInReferenceWithDefaultTeam(submittable);
+    public void addDependentObjectsToSubmittable(StoredSubmittable storedSubmittable) {
+        submittableHelperService.uuidAndTeamFromSubmissionSetUp(storedSubmittable);
+        submittableHelperService.fillInReferences(storedSubmittable);
+        fillInReferenceWithDefaultTeam(storedSubmittable);
     }
 
     @HandleAfterCreate
@@ -62,6 +63,7 @@ public class CoreSubmittableEventHandler {
     public void beforeSave(StoredSubmittable storedSubmittable) {
         submittableHelperService.setTeamFromSubmission(storedSubmittable);
         fillInReferenceWithDefaultTeam(storedSubmittable);
+        submittableHelperService.fillInReferences(storedSubmittable);
     }
 
     @HandleAfterSave
