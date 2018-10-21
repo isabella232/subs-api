@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -90,14 +91,24 @@ public class SubmissionContentsIssuesSummaryControllerTest {
                 .build();
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
+
+        given(fileRepository.findBySubmissionIdAndStatusNot(SUBMISSION_ID, FileStatus.READY_FOR_ARCHIVE))
+                .willReturn(Stream.of(files.get(1), files.get(2), files.get(3)));
+
+        Map<ValidationAuthor, List<SingleValidationResult>> validationResultByValidationAuthors = new HashMap<>();
+        validationResultByValidationAuthors.putAll(generateExpectedResults(
+                Arrays.asList(SingleValidationResultStatus.Pass, SingleValidationResultStatus.Error, SingleValidationResultStatus.Warning)));
+
+        ValidationResult validationResult = generateValidationResult(validationResultByValidationAuthors);
+        validationResult.setValidationStatus(GlobalValidationStatus.Pending);
+
+        given(validationResultRepository.findBySubmissionIdAndValidationStatusIs(SUBMISSION_ID, GlobalValidationStatus.Pending))
+            .willReturn(Stream.of(validationResult));
     }
 
     @Test
     public void given2FilesRelatedToTheSubmissionAreNotInReady_to_Archive_Status__Returns2FilesUploadingMessage()
             throws Exception {
-        given(fileRepository.findBySubmissionId(any()))
-                .willReturn(files);
-
         mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -124,6 +135,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
             throws Exception {
         given(validationResultRepository.findAllBySubmissionId(any()))
                 .willReturn(Collections.emptyList());
+
         given(processingStatusRepository.findBySubmissionId(any()))
                 .willReturn(Collections.emptyList());
 
@@ -137,16 +149,6 @@ public class SubmissionContentsIssuesSummaryControllerTest {
     @Test
     public void givenSubmissionsValidationResultPending_ReturnsValidationResultPendinghnMessage()
             throws Exception {
-        Map<ValidationAuthor, List<SingleValidationResult>> validationResultByValidationAuthors = new HashMap<>();
-        validationResultByValidationAuthors.putAll(generateExpectedResults(
-                Arrays.asList(SingleValidationResultStatus.Pass, SingleValidationResultStatus.Error, SingleValidationResultStatus.Warning)));
-
-        ValidationResult validationResult = generateValidationResult(validationResultByValidationAuthors);
-        validationResult.setValidationStatus(GlobalValidationStatus.Pending);
-
-        given(validationResultRepository.findAllBySubmissionId(any()))
-                .willReturn(Collections.singletonList(validationResult));
-
         mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())

@@ -19,6 +19,7 @@ import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,13 +47,9 @@ public class SubmissionContentsIssuesSummaryController {
     }
 
     private void getFileIssues(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
-        List<File> files = fileRepository.findBySubmissionId(submissionId);
+        Stream<File> files = fileRepository.findBySubmissionIdAndStatusNot(submissionId, FileStatus.READY_FOR_ARCHIVE);
 
-        for (File file : files) {
-            if (!file.getStatus().equals(FileStatus.READY_FOR_ARCHIVE)) {
-                submissionIssuesSummary.notReadyFileCount++;
-            }
-        }
+        submissionIssuesSummary.notReadyFileCount = files.count();
     }
 
     private void getMetadataIssues(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
@@ -70,18 +67,15 @@ public class SubmissionContentsIssuesSummaryController {
     }
 
     private void checkPendingValidationResults(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
-        List<ValidationResult> validationResults = validationResultRepository.findAllBySubmissionId(submissionId);
-        for (ValidationResult validationResult : validationResults) {
-            if (validationResult.getValidationStatus().equals(GlobalValidationStatus.Pending)) {
-                submissionIssuesSummary.anyPendingValidationResult = true;
-                break;
-            }
-        }
+        Stream<ValidationResult> pendingValidationResults =
+                validationResultRepository.findBySubmissionIdAndValidationStatusIs(submissionId, GlobalValidationStatus.Pending);
+
+        submissionIssuesSummary.anyPendingValidationResult = pendingValidationResults.findAny().isPresent();
     }
 
     @Data
     class SubmissionIssuesSummary {
-        int notReadyFileCount;
+        long notReadyFileCount;
         Map<String, Integer> validationIssuesPerDataTypeId;
         boolean emptySubmission;
         boolean anyPendingValidationResult;
