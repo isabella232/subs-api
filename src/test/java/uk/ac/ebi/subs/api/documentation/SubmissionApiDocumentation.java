@@ -950,10 +950,10 @@ public class SubmissionApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 links(
                                         halLinks(),
-                                        DocumentationHelper.selfRelLink(),/*
+                                        DocumentationHelper.selfRelLink(),
                                         DocumentationHelper.nextRelLink(),
                                         DocumentationHelper.firstRelLink(),
-                                        DocumentationHelper.lastRelLink()*/
+                                        DocumentationHelper.lastRelLink(),
                                         linkWithRel("create").description("Create new entries"),
                                         linkWithRel("checklists").description("Optional checklists for this data type"),
                                         linkWithRel("spreadsheets").description("Spreadsheets already uploaded"),

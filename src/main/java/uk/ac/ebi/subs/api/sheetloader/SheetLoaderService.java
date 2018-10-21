@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
+import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -311,6 +312,7 @@ public class SheetLoaderService {
                         .filter(ref -> ref.getAccession() == null)
                         .filter(ref -> ref.getAlias() != null)
                         .forEach(ref -> ref.setTeam(teamName));
+                SubmittableHelperService.fillInReferences(submittable);
 
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);

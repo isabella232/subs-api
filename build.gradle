@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.20.0-SNAPSHOT'
+version '2.21.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'

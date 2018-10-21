@@ -15,6 +15,7 @@ import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -55,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -94,6 +94,9 @@ public class SubmissionContentsController {
     @NonNull
     private LinkHelper linkHelper;
 
+    @NonNull
+    private PagedResourcesAssembler pagedResourcesAssembler;
+
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -115,16 +118,12 @@ public class SubmissionContentsController {
 
         Page<StoredSubmittable> page = repository.findBySubmissionIdAndDataTypeId(submissionId, dataTypeId, pageable);
 
-        List<Resource<StoredSubmittable>> resourceList = page.getContent().stream()
-                .map(item -> storedSubmittableAssembler.toResource(item))
-                .map(resource -> storedSubmittableResourceProcessor.process(resource))
-                .collect(Collectors.toList());
 
-
-        PagedResources<Resource<StoredSubmittable>> pagedResources = new PagedResources<>(
-                resourceList,
-                new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages())
+        PagedResources pagedResources = pagedResourcesAssembler.toResource(
+                page,
+                storedSubmittableAssembler
         );
+
 
         addContentListPageLinks(pageable, submission, dataType, submittableClass, pagedResources);
 
@@ -136,10 +135,6 @@ public class SubmissionContentsController {
         Map<String, String> params = new HashMap<>();
         params.put("submissionId", submission.getId());
         params.put("dataTypeId", dataType.getId());
-
-
-        Link selfLink = linkTo(methodOn(this.getClass()).getSubmissionContentsForDataType(submission.getId(), dataType.getId(), pageable))
-                .withSelfRel();
 
         Link summaryLink = linkTo(methodOn(this.getClass()).summariseSubmissionDataTypeErrorStatus(submission.getId(), dataType.getId()))
                 .withRel("validationSummaryCounts");
@@ -165,7 +160,6 @@ public class SubmissionContentsController {
                 .withRel("documents-with-warnings");
 
         pagedResources.add(
-                selfLink,
                 checklistLink,
                 spreadsheetLink,
                 summaryLink,

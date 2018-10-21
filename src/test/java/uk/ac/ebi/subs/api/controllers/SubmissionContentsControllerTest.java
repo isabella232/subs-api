@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -58,7 +59,8 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidation
         @MockBean(DataTypeRepository.class),
         @MockBean(RepositoryEntityLinks.class),
         @MockBean(StoredSubmittableAssembler.class),
-        @MockBean(StoredSubmittableResourceProcessor.class)
+        @MockBean(StoredSubmittableResourceProcessor.class),
+        @MockBean(PagedResourcesAssembler.class)
 })
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionContentsControllerTest {

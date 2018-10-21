@@ -27,6 +27,9 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
 
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
+    @NonNull
+    private StoredSubmittableResourceProcessor<StoredSubmittable> storedSubmittableResourceProcessor;
+
 
     @Override
     public Resource<StoredSubmittable> toResource(StoredSubmittable entity) {
@@ -56,7 +59,7 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
                 links.stream().map(link -> link.expand()).collect(Collectors.toList())
         );
 
-        return resource;
+        return storedSubmittableResourceProcessor.process(resource);
 
     }
 
