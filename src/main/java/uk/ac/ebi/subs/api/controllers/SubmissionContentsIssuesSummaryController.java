@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 
@@ -39,6 +40,7 @@ public class SubmissionContentsIssuesSummaryController {
         getFileIssues(submissionId, submissionIssuesSummary);
         getMetadataIssues(submissionId, submissionIssuesSummary);
         checkSubmissionEmptiness(submissionId, submissionIssuesSummary);
+        checkPendingValidationResults(submissionId, submissionIssuesSummary);
 
         return submissionIssuesSummary;
     }
@@ -67,10 +69,21 @@ public class SubmissionContentsIssuesSummaryController {
         }
     }
 
+    private void checkPendingValidationResults(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
+        List<ValidationResult> validationResults = validationResultRepository.findAllBySubmissionId(submissionId);
+        for (ValidationResult validationResult : validationResults) {
+            if (validationResult.getValidationStatus().equals(GlobalValidationStatus.Pending)) {
+                submissionIssuesSummary.anyPendingValidationResult = true;
+                break;
+            }
+        }
+    }
+
     @Data
     class SubmissionIssuesSummary {
         int notReadyFileCount;
         Map<String, Integer> validationIssuesPerDataTypeId;
         boolean emptySubmission;
+        boolean anyPendingValidationResult;
     }
 }

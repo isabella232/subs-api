@@ -20,12 +20,18 @@ import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
+import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
+import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
+import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +45,8 @@ import static org.mockito.Matchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateExpectedResults;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidationResult;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SubmissionContentsIssuesSummaryController.class)
@@ -126,6 +134,25 @@ public class SubmissionContentsIssuesSummaryControllerTest {
                 .andExpect(jsonPath("$.emptySubmission", is(equalTo(true))));
     }
 
+    @Test
+    public void givenSubmissionsValidationResultPending_ReturnsValidationResultPendinghnMessage()
+            throws Exception {
+        Map<ValidationAuthor, List<SingleValidationResult>> validationResultByValidationAuthors = new HashMap<>();
+        validationResultByValidationAuthors.putAll(generateExpectedResults(
+                Arrays.asList(SingleValidationResultStatus.Pass, SingleValidationResultStatus.Error, SingleValidationResultStatus.Warning)));
+
+        ValidationResult validationResult = generateValidationResult(validationResultByValidationAuthors);
+        validationResult.setValidationStatus(GlobalValidationStatus.Pending);
+
+        given(validationResultRepository.findAllBySubmissionId(any()))
+                .willReturn(Collections.singletonList(validationResult));
+
+        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.anyPendingValidationResult", is(equalTo(true))));
+    }
 
     private Map<String, Integer> generateMetadataIssues() {
         Map<String, Integer> metadataIssues = new HashMap<>();
@@ -150,5 +177,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
 
         return file;
     }
+
+
 
 }
