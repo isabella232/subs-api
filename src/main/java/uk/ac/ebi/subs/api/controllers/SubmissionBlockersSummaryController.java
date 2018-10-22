@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
-public class SubmissionContentsIssuesSummaryController {
+public class SubmissionBlockersSummaryController {
 
     @NonNull
     private FileRepository fileRepository;
@@ -34,7 +34,7 @@ public class SubmissionContentsIssuesSummaryController {
     @NonNull
     private ProcessingStatusRepository processingStatusRepository;
 
-    @GetMapping(value = "/submissions/{submissionId}/contents/issuesSummary")
+    @GetMapping(value = "/submissions/{submissionId}/submissionBlockersSummary")
     public SubmissionIssuesSummary getSubmissionContentsIssuesSummary(@PathVariable @P("submissionId") String submissionId) {
         SubmissionIssuesSummary submissionIssuesSummary = new SubmissionIssuesSummary();
 

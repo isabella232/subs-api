@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -50,9 +49,9 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateExpectedRe
 import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidationResult;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(SubmissionContentsIssuesSummaryController.class)
+@WebMvcTest(SubmissionBlockersSummaryController.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
-public class SubmissionContentsIssuesSummaryControllerTest {
+public class SubmissionBlockersSummaryControllerTest {
 
     private static final String SUBMISSION_ID = "111-222-3333";
 
@@ -109,7 +108,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
     @Test
     public void given2FilesRelatedToTheSubmissionAreNotInReady_to_Archive_Status__Returns2FilesUploadingMessage()
             throws Exception {
-        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+        mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -122,7 +121,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
         given(validatorResultRepositoryCustom.validationIssuesPerDataTypeId(any()))
                 .willReturn(generateMetadataIssues());
 
-        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+        mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -139,7 +138,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
         given(processingStatusRepository.findBySubmissionId(any()))
                 .willReturn(Collections.emptyList());
 
-        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+        mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -149,7 +148,7 @@ public class SubmissionContentsIssuesSummaryControllerTest {
     @Test
     public void givenSubmissionsValidationResultPending_ReturnsValidationResultPendinghnMessage()
             throws Exception {
-        mvc.perform(get(String.format("/api/submissions/%s/contents/issuesSummary", SUBMISSION_ID))
+        mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
