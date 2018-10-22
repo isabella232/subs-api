@@ -225,8 +225,6 @@ public class SubmissionContentsController {
 
         Resource<StoredSubmittable> resource = storedSubmittableAssembler.toResource(item);
 
-        resource = storedSubmittableResourceProcessor.process(resource);
-
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.LOCATION, selfLink.getHref());
         headers.add(HttpHeaders.ETAG, item.getVersion().toString());
