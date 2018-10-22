@@ -10,6 +10,7 @@ import org.springframework.hateoas.core.ControllerEntityLinks;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
+import uk.ac.ebi.subs.api.controllers.SubmissionBlockersSummaryController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsLinksController;
 import uk.ac.ebi.subs.api.controllers.SubmissionStatusController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
@@ -67,6 +68,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         addStatusLinks(resource);
 
         addStatusSummaryReport(resource);
+        addSubmissionBlockersSummary(resource);
         addTypeStatusSummaryReport(resource);
 
         addReceiptLink(resource);
@@ -146,6 +148,16 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
 
         resource.add(statusSummary);
+    }
+
+    private void addSubmissionBlockersSummary(Resource<Submission> resource) {
+        Link blockersSummary =
+                linkTo(
+                        methodOn(SubmissionBlockersSummaryController.class)
+                                .getSubmissionContentsIssuesSummary(resource.getContent().getId())
+                ).withRel("submissionBlockersSummary");
+
+        resource.add(blockersSummary);
     }
 
     private void addTypeStatusSummaryReport(Resource<Submission> resource) {
