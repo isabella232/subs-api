@@ -143,17 +143,14 @@ public class SheetLoaderService {
 
         stopWatch.stop();
         stopWatch.start("validation trigger");
-        Optional<? extends StoredSubmittable> o = submittablesWithRows.stream()
+        submittablesWithRows.stream()
                 .filter(p -> p.getFirst().hasErrors() == false)
                 .map(p -> p.getSecond())
-                .findAny();
+                .forEach(submittable -> submittableValidationDispatcher.validateUpdate(submittable));
 
-        if (o.isPresent()) {
-            //this will trigger validation of everything in the submission
-            submittableValidationDispatcher.validateUpdate(o.get());
-        }
         stopWatch.stop();
         stopWatch.start("save progress");
+
 
         sheet.setStatus(SheetStatusEnum.Completed);
         sheet.setLastModifiedDate(new Date());
