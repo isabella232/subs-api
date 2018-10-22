@@ -47,9 +47,7 @@ public class SubmissionContentsIssuesSummaryController {
     }
 
     private void getFileIssues(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
-        Stream<File> files = fileRepository.findBySubmissionIdAndStatusNot(submissionId, FileStatus.READY_FOR_ARCHIVE);
-
-        submissionIssuesSummary.notReadyFileCount = files.count();
+        submissionIssuesSummary.notReadyFileCount = fileRepository.countBySubmissionIdAndStatusNot(submissionId, FileStatus.READY_FOR_ARCHIVE);
     }
 
     private void getMetadataIssues(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
@@ -67,10 +65,8 @@ public class SubmissionContentsIssuesSummaryController {
     }
 
     private void checkPendingValidationResults(String submissionId, SubmissionIssuesSummary submissionIssuesSummary) {
-        Stream<ValidationResult> pendingValidationResults =
-                validationResultRepository.findBySubmissionIdAndValidationStatusIs(submissionId, GlobalValidationStatus.Pending);
-
-        submissionIssuesSummary.anyPendingValidationResult = pendingValidationResults.findAny().isPresent();
+        submissionIssuesSummary.anyPendingValidationResult =
+                validationResultRepository.countBySubmissionIdAndValidationStatusIs(submissionId, GlobalValidationStatus.Pending) > 0;
     }
 
     @Data

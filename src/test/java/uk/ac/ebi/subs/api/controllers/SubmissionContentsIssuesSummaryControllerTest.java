@@ -92,8 +92,8 @@ public class SubmissionContentsIssuesSummaryControllerTest {
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
 
-        given(fileRepository.findBySubmissionIdAndStatusNot(SUBMISSION_ID, FileStatus.READY_FOR_ARCHIVE))
-                .willReturn(Stream.of(files.get(1), files.get(2), files.get(3)));
+        given(fileRepository.countBySubmissionIdAndStatusNot(SUBMISSION_ID, FileStatus.READY_FOR_ARCHIVE))
+                .willReturn(3L);
 
         Map<ValidationAuthor, List<SingleValidationResult>> validationResultByValidationAuthors = new HashMap<>();
         validationResultByValidationAuthors.putAll(generateExpectedResults(
@@ -102,8 +102,8 @@ public class SubmissionContentsIssuesSummaryControllerTest {
         ValidationResult validationResult = generateValidationResult(validationResultByValidationAuthors);
         validationResult.setValidationStatus(GlobalValidationStatus.Pending);
 
-        given(validationResultRepository.findBySubmissionIdAndValidationStatusIs(SUBMISSION_ID, GlobalValidationStatus.Pending))
-            .willReturn(Stream.of(validationResult));
+        given(validationResultRepository.countBySubmissionIdAndValidationStatusIs(SUBMISSION_ID, GlobalValidationStatus.Pending))
+            .willReturn(1L);
     }
 
     @Test
