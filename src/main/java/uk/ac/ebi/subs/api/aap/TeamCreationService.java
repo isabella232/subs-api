@@ -32,6 +32,18 @@ public class TeamCreationService {
     @NonNull
     private TokenService tokenService;
 
+    /**
+     * Create a subs team as an AAP domain
+     * Our super user has to create the team, nobody else can use the "subs." prefix in the team name
+     *
+     * Once we've done that, we make the user the domain manager, and remove our user
+     * In the end, the user is responsible for managaing the team
+     *
+     *
+     * @param user
+     * @param teamDto
+     * @return
+     */
     public Team createTeam(User user, TeamDto teamDto) {
 
         String description = teamDto.getDescription();
