@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.security.access.method.P;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
@@ -19,6 +22,7 @@ import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 import uk.ac.ebi.subs.validator.repository.ValidatorResultRepositoryCustom;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +41,8 @@ public class SubmissionBlockersSummaryController {
     private ValidationResultRepository validationResultRepository;
     @NonNull
     private ProcessingStatusRepository processingStatusRepository;
+    @NonNull
+    private DataTypeRepository dataTypeRepository;
 
     @GetMapping(value = "/submissions/{submissionId}/submissionBlockersSummary")
     public Resource<SubmissionBlockersSummary> getSubmissionContentsIssuesSummary(@PathVariable @P("submissionId") String submissionId) {
@@ -65,8 +71,29 @@ public class SubmissionBlockersSummaryController {
     }
 
     private void getMetadataIssues(String submissionId, SubmissionBlockersSummary submissionBlockersSummary) {
-        submissionBlockersSummary.setValidationIssuesPerDataTypeId(
-                validatorResultRepositoryCustom.validationIssuesPerDataTypeId(submissionId));
+        Map<String, Integer> validationIssuesPerDataTypeId =
+                validatorResultRepositoryCustom.validationIssuesPerDataTypeId(submissionId);
+        Map<String, Map<String, Object>> validationBlockersByDataTypeId = new HashMap<>();
+
+        validationIssuesPerDataTypeId.forEach((dataTypeId, count) -> {
+            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+
+            if (dataType == null) {
+                throw new ResourceNotFoundException();
+            }
+
+            String dataTypeDisplayName = dataType.getDisplayNamePlural();
+
+            Map<String, Object> blockerDataTypeProperties = new HashMap<>();
+            blockerDataTypeProperties.put("displayName", dataTypeDisplayName);
+            blockerDataTypeProperties.put("count", count);
+
+            validationBlockersByDataTypeId.put(dataTypeId, blockerDataTypeProperties);
+
+            submissionBlockersSummary.totalMetadataBlockers += count;
+        });
+
+        submissionBlockersSummary.setValidationIssuesPerDataTypeId(validationBlockersByDataTypeId);
     }
 
     private void checkSubmissionEmptiness(String submissionId, SubmissionBlockersSummary submissionBlockersSummary) {
@@ -87,7 +114,8 @@ public class SubmissionBlockersSummaryController {
     class SubmissionBlockersSummary {
         long notReadyFileCount;
         @JsonInclude(content= JsonInclude.Include.NON_EMPTY)
-        Map<String, Integer> validationIssuesPerDataTypeId;
+        Map<String, Map<String, Object>> validationIssuesPerDataTypeId;
+        long totalMetadataBlockers;
         boolean emptySubmission;
         boolean anyPendingValidationResult;
     }
