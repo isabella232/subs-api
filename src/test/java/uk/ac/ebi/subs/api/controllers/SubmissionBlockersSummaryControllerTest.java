@@ -17,7 +17,9 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
+import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
@@ -73,10 +75,13 @@ public class SubmissionBlockersSummaryControllerTest {
     private ProcessingStatusRepository processingStatusRepository;
 
     @MockBean
-    FileRepository fileRepository;
+    private FileRepository fileRepository;
 
     @MockBean
-    ValidatorResultRepositoryCustom validatorResultRepositoryCustom;
+    private ValidatorResultRepositoryCustom validatorResultRepositoryCustom;
+
+    @MockBean
+    private DataTypeRepository dataTypeRepository;
 
     private List<File> files;
 
@@ -121,12 +126,31 @@ public class SubmissionBlockersSummaryControllerTest {
         given(validatorResultRepositoryCustom.validationIssuesPerDataTypeId(any()))
                 .willReturn(generateMetadataIssues());
 
+        final String samplesDataTypeId = "samples";
+        final String samplesDisplayName = "samples";
+        final String studiesDataTypeId = "studies";
+        final String studiesDisplayName = "ENA Studies";
+
+        DataType sampleDataType = new DataType();
+        sampleDataType.setId(samplesDataTypeId);
+        sampleDataType.setDisplayNamePlural(samplesDisplayName);
+        DataType studyDataType = new DataType();
+        studyDataType.setId(studiesDataTypeId);
+        studyDataType.setDisplayNamePlural(studiesDisplayName);
+
+        given(dataTypeRepository.findOne(samplesDataTypeId))
+                .willReturn(sampleDataType);
+        given(dataTypeRepository.findOne(studiesDataTypeId))
+                .willReturn(studyDataType);
+
         mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.samples", is(equalTo(3))))
-                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.studies", is(equalTo(1))));
+                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.samples.displayName", is(equalTo(samplesDisplayName))))
+                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.samples.count", is(equalTo(3))))
+                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.studies.displayName", is(equalTo(studiesDisplayName))))
+                .andExpect(jsonPath("$.validationIssuesPerDataTypeId.studies.count", is(equalTo(1))));
     }
 
     @Test
@@ -178,7 +202,4 @@ public class SubmissionBlockersSummaryControllerTest {
 
         return file;
     }
-
-
-
 }
