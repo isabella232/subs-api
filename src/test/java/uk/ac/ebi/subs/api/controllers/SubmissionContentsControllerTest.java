@@ -29,7 +29,6 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
-import uk.ac.ebi.subs.validator.data.structures.GlobalValidationStatus;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.data.structures.ValidationAuthor;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
@@ -37,7 +36,6 @@ import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +48,10 @@ import static org.mockito.Matchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.SAMPLES_DATA_TYPE_ID;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.SUBMISSION_ID;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateExpectedResults;
+import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidationResult;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SubmissionContentsController.class)
@@ -62,9 +64,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionContentsControllerTest {
-
-    private static final String SUBMISSION_ID = "111-222-3333";
-    public static final String SAMPLES_DATA_TYPE_ID = "samples";
 
     @Autowired
     private MockMvc mvc;
@@ -136,36 +135,5 @@ public class SubmissionContentsControllerTest {
                 .andExpect(jsonPath("$.totalNumber", is(equalTo(3))))
                 .andExpect(jsonPath("$.hasError", is(equalTo(2))))
                 .andExpect(jsonPath("$.hasWarning", is(equalTo(1))));
-    }
-
-    private Map<ValidationAuthor, List<SingleValidationResult>> generateExpectedResults(
-            List<SingleValidationResultStatus> singleValidationResultStatuses) {
-        Map<ValidationAuthor, List<SingleValidationResult>> expectedResult = new HashMap<>();
-        expectedResult.put(ValidationAuthor.Core,
-                Collections.singletonList(generateSingleValidationResult(singleValidationResultStatuses.get(0))));
-        expectedResult.put(ValidationAuthor.Ena,
-                Collections.singletonList(generateSingleValidationResult(singleValidationResultStatuses.get(1))));
-        expectedResult.put(ValidationAuthor.JsonSchema,
-                Collections.singletonList(generateSingleValidationResult(singleValidationResultStatuses.get(2))));
-
-        return expectedResult;
-    }
-
-    private SingleValidationResult generateSingleValidationResult(SingleValidationResultStatus singleValidationResultStatus) {
-        SingleValidationResult singleValidationResult = new SingleValidationResult();
-        singleValidationResult.setValidationAuthor(ValidationAuthor.Biosamples);
-        singleValidationResult.setValidationStatus(singleValidationResultStatus);
-
-        return singleValidationResult;
-    }
-
-    private ValidationResult generateValidationResult(Map<ValidationAuthor, List<SingleValidationResult>> validationResultByValidationAuthors) {
-        ValidationResult validationResult = new ValidationResult();
-        validationResult.setDataTypeId(SAMPLES_DATA_TYPE_ID);
-        validationResult.setSubmissionId(SUBMISSION_ID);
-        validationResult.setExpectedResults(validationResultByValidationAuthors);
-        validationResult.setValidationStatus(GlobalValidationStatus.Complete);
-
-        return validationResult;
     }
 }

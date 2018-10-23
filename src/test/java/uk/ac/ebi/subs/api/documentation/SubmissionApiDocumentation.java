@@ -232,6 +232,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("availableStatuses").description("List of values that you can set the submission status to"),
                                         linkWithRel("processingStatuses").description("All processing statuses for the contents of this submission"),
                                         linkWithRel("validationResults").description("All validation results for the contents of this submission"),
+                                        linkWithRel("submissionBlockersSummary").description("Summary of submission blockers for this submission"),
                                         linkWithRel("processingStatusSummary").description("Summary of processing statuses for this submission"),
                                         linkWithRel("typeProcessingStatusSummary").description("Summary of processing statuses per type, for this submission")
 
