@@ -240,8 +240,7 @@ public class ChecklistDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter"),
-                                        paginationBlock()
+                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter")
                                 )
                         )
                 );
