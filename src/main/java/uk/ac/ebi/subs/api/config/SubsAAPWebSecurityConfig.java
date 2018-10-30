@@ -23,6 +23,8 @@ import uk.ac.ebi.tsc.aap.client.security.StatelessAuthenticationFilter;
 import uk.ac.ebi.tsc.aap.client.security.TokenAuthenticationService;
 
 /**
+ * AAP security settings. It defines if the various endpoints/paths accessible with or without a JWT token.
+ *
  * Created by neilg on 24/05/2017.
  */
 @Configuration
