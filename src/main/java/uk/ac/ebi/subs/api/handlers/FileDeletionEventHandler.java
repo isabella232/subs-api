@@ -12,6 +12,9 @@ import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+/**
+ * This class is responsible handling events related to {@link File} deletion.
+ */
 @Component
 @RequiredArgsConstructor
 @RepositoryEventHandler(File.class)

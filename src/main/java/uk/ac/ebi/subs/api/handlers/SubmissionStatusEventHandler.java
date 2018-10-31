@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import java.util.Date;
 
 /**
+ * This class is responsible handling events related to {@link SubmissionStatus} deletion.
  * Created by davidr on 20/02/2017.
  */
 @Component

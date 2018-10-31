@@ -17,15 +17,14 @@ import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
 /**
- * Repo event handler for submissions in the api
+ * Repo event handler for submissions in the api.
  * <p>
- * * locks down changes to non-draft submissions, based on the OperationControlService
- * * send submissions off to rabbit after storing a submission with the 'Submitted' status
+ * Locks down changes to non-draft submissions, based on the {@link uk.ac.ebi.subs.api.services.OperationControlService}.
+ * Send submissions off to rabbit after storing a submission with the 'Submitted' status.
  */
 @Component
 @RepositoryEventHandler(Submission.class)
 public class SubmissionEventHandler {
-
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -73,8 +72,8 @@ public class SubmissionEventHandler {
 
     /**
      * make sure the submission is ready for storing
-     * * give it an ID if it has not got one
-     * * check it can be modified if there it already exists
+     * give it an ID if it has not got one
+     * check it can be modified if there it already exists
      *
      * @param submission
      */
@@ -100,8 +99,6 @@ public class SubmissionEventHandler {
         String email = DEFAULT_USER_EMAIL;
         String name = DEFAULT_USER_NAME;
 
-
-
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
 
@@ -110,7 +107,6 @@ public class SubmissionEventHandler {
                 User user = (User) details;
                 email = user.getEmail();
                 name = user.getFullName();
-
             }
         }
 
