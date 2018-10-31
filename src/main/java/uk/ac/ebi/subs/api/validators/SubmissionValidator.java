@@ -12,6 +12,10 @@ import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Submission} entity.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -22,10 +26,13 @@ public class SubmissionValidator implements Validator {
     @NonNull private SubmitterValidator submitterValidator;
     @NonNull private OperationControlService operationControlService;
 
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return Submission.class.isAssignableFrom(clazz);
+    }
 
     @Override
     public void validate(Object target, Errors errors) {
-
         Submission submission = (Submission) target;
 
         SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submitter");
@@ -51,8 +58,6 @@ public class SubmissionValidator implements Validator {
             Submission storedVersion = submissionRepository.findOne(submission.getId());
 
             if (storedVersion != null) {
-
-
                 if (!operationControlService.isUpdateable(submission)) {
                     SubsApiErrors.resource_locked.addError(errors);
                 } else {
@@ -66,11 +71,9 @@ public class SubmissionValidator implements Validator {
         } else {
             log.debug("no validation errors");
         }
-
     }
 
     private void validateAgainstStoredVersion(Submission target, Submission storedVersion, Errors errors) {
-
         submitterCannotChange(target, storedVersion, errors);
 
         teamCannotChange(target, storedVersion, errors);
@@ -113,11 +116,5 @@ public class SubmissionValidator implements Validator {
                 "submissionDate",
                 errors
         );
-    }
-
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return Submission.class.isAssignableFrom(clazz);
     }
 }

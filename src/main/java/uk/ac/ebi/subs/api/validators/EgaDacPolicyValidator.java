@@ -8,6 +8,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.EgaDacPolicy;
 import uk.ac.ebi.subs.repository.repos.submittables.EgaDacPolicyRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link EgaDacPolicy} entity.
+ */
 @Component
 public class EgaDacPolicyValidator implements Validator {
 

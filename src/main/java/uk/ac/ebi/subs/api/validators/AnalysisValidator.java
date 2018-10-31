@@ -7,6 +7,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Analysis;
 import uk.ac.ebi.subs.repository.repos.submittables.AnalysisRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Analysis} entity.
+ */
 @Component
 public class AnalysisValidator implements Validator {
 

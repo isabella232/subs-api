@@ -7,6 +7,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Protocol;
 import uk.ac.ebi.subs.repository.repos.submittables.ProtocolRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Protocol} entity.
+ */
 @Component
 public class ProtocolValidator implements Validator {
 

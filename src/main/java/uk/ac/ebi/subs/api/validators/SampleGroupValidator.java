@@ -8,6 +8,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.SampleGroup;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleGroupRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link SampleGroup} entity.
+ */
 @Component
 public class SampleGroupValidator implements Validator {
 

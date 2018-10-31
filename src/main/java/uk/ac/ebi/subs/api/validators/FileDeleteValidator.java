@@ -12,6 +12,12 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link File} entity if the given file could be deleted.
+ * The validation executes before the file deletion.
+ * If there is a validation error, then the file is not getting deleted.
+ */
 @Component("beforeDeleteFileValidator")
 public class FileDeleteValidator implements Validator {
 
