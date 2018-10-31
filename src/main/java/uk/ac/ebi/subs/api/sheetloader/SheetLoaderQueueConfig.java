@@ -8,10 +8,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.subs.messaging.Queues;
 
+/**
+ * This configuration class responsible for the RabbitMQ configuration for the sheet loader service.
+ */
 @Configuration
 public class SheetLoaderQueueConfig {
 
-    public final static String SHEET_SUBMITTED_QUEUE = "usi-sheetId-submitted-load-contents";
+    final static String SHEET_SUBMITTED_QUEUE = "usi-sheetId-submitted-load-contents";
     private final String SHEET_SUBMITTED_ROUTING_KEY = "usi.sheetId.submitted";
 
     /**

@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * This is a Spring @Service component for bulk operation related to the
+ * {@link uk.ac.ebi.subs.repository.model.sheets.Spreadsheet} entity.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -39,9 +43,10 @@ public class SheetBulkOps {
     @NonNull
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public Collection<Pair<Row, ? extends StoredSubmittable>> lookupExistingEntries(Submission submission, Collection<Pair<Row, ? extends StoredSubmittable>> submittables, SubmittableRepository<?> repository) {
+    public Collection<Pair<Row, ? extends StoredSubmittable>> lookupExistingEntries(
+            Submission submission,Collection<Pair<Row, ? extends StoredSubmittable>> submittables,
+            SubmittableRepository<?> repository) {
         Map<String, StoredSubmittable> submittablesByAlias = new HashMap<>();
-
 
         for (Pair<Row, ? extends StoredSubmittable> pair : submittables) {
             StoredSubmittable s = pair.getSecond();
@@ -54,7 +59,6 @@ public class SheetBulkOps {
                 submittablesByAlias.keySet()
         );
 
-
         for (StoredSubmittable dbSubmittable : dbSubmittables) {
             StoredSubmittable sheetSubmittable = submittablesByAlias.get(dbSubmittable.getAlias());
 
@@ -65,7 +69,6 @@ public class SheetBulkOps {
             sheetSubmittable.setProcessingStatus(dbSubmittable.getProcessingStatus());
             sheetSubmittable.setValidationResult(dbSubmittable.getValidationResult());
             sheetSubmittable.setSubmission(dbSubmittable.getSubmission());
-
         }
 
         return submittables;
@@ -84,15 +87,8 @@ public class SheetBulkOps {
         repository.save(submittablesToSave);
     }
 
-    private void addErrorToRow(RepositoryConstraintViolationException exception, Row row) {
-        for (ObjectError objectError : exception.getErrors().getAllErrors()) {
-            row.getErrors().add(objectError.getDefaultMessage());
-        }
-    }
-
     public void insertNewSubmittables(Collection<Pair<Row, ? extends StoredSubmittable>> freshSubmittables,
                                       SubmittableRepository repository) {
-
         Collection<ValidationResult> validationResults = new ArrayList<>();
         Collection<ProcessingStatus> processingStatuses = new ArrayList<>();
 

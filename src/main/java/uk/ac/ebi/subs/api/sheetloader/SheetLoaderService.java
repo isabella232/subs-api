@@ -39,6 +39,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This is a Spring @Service component for {@link Spreadsheet} entity.
+ * It loads the {@link Spreadsheet} entity and saves it into the {@link SpreadsheetRepository}.
+ */
 @Service
 @RequiredArgsConstructor
 public class SheetLoaderService {
@@ -63,7 +67,6 @@ public class SheetLoaderService {
     @NonNull
     private SubmissionRepository submissionRepository;
 
-
     public void loadSheet(Spreadsheet sheet) {
         logger.info("processing sheet {}", sheet.getId());
         StopWatch stopWatch = new StopWatch();
@@ -74,7 +77,6 @@ public class SheetLoaderService {
         Assert.notNull(sheet.getRows());
         Assert.notNull(sheet.getDataTypeId());
         Assert.notNull(sheet.getChecklistId());
-
 
         Checklist checklist = checklistRepository.findOne(sheet.getChecklistId());
         DataType dataType = dataTypeRepository.findOne(checklist.getDataTypeId());
@@ -104,7 +106,6 @@ public class SheetLoaderService {
                 submission,
                 dataType
         );
-
 
         stopWatch.stop();
         stopWatch.start("lookup");
@@ -140,7 +141,6 @@ public class SheetLoaderService {
 
         sheetBulkOps.insertNewSubmittables(freshSubmittables, repository);
 
-
         stopWatch.stop();
         stopWatch.start("validation trigger");
         submittablesWithRows.stream()
@@ -150,7 +150,6 @@ public class SheetLoaderService {
 
         stopWatch.stop();
         stopWatch.start("save progress");
-
 
         sheet.setStatus(SheetStatusEnum.Completed);
         sheet.setLastModifiedDate(new Date());
@@ -250,7 +249,6 @@ public class SheetLoaderService {
                     row.getErrors().add(errorMessage);
                 }
             }
-
         }
 
         if (!hasStringAlias(jsonObject)) {
