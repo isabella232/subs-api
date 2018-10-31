@@ -24,7 +24,7 @@ import java.util.Optional;
 
 /**
  * Provides a single token for USI. Checks, if the token is set and if it would expire in 5 minutes.
- * If it would expire, then gets a new token from the <code>TokenService</code>.
+ * If it would expire, then gets a new token from the {@link TokenService} service.
  */
 @Component
 @RequiredArgsConstructor
