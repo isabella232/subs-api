@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * Simplified health reporting - return UP or DOWN only
+ * Simplified health reporting for the load balancer - return UP or DOWN only.
  *
  */
 @RestController

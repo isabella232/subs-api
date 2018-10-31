@@ -12,6 +12,12 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
+/**
+ * This endpoint retrieves the list of links to create or retrieve the contents of a given submission.
+ * The link will be processed by the SubmissionContentsProcessor class.
+ *
+ * Spring will call this class.
+ */
 @RestController
 @BasePathAwareController
 public class SubmissionContentsLinksController {

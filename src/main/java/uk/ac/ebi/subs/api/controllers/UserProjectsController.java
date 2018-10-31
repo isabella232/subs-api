@@ -16,6 +16,9 @@ import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.util.List;
 
+/**
+ * Contains endpoints related the projects of the current user.
+ */
 @RestController
 @BasePathAwareController
 public class UserProjectsController {
@@ -32,6 +35,11 @@ public class UserProjectsController {
         this.identifiablePageToProjectionPage = identifiablePageToProjectionPage;
     }
 
+    /**
+     * Retrieves a pageable list of the projects of the current user.
+     * @param pageable pagination information
+     * @return a pageable list of the projects of the current user.
+     */
     @RequestMapping("/user/projects")
     public PagedResources<Resource<SubmittableWithStatus>> getUserProjects(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();

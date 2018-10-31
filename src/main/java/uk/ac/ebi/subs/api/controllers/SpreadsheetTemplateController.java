@@ -14,6 +14,10 @@ import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 
 import java.io.IOException;
 
+/**
+ * Generating a <code>Spreadsheet</code> entity from a Checklist MongoDB document.
+ * The generated CSV file only contains the headers.
+ */
 @Data
 @RestController
 public class SpreadsheetTemplateController {

@@ -61,6 +61,13 @@ import java.util.stream.Stream;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * This controller contains 3 endpoints related to submission elements.
+ * It can retrieve all the given elements by the submission Id and data type Id.
+ * It can create a new elements for the given submission by the given data type Id.
+ * The summary endpoints can retrieve a summary for the errors/warnings by the given submission Id and data type Id.
+ *
+ */
 @RestController
 @RequiredArgsConstructor
 public class SubmissionContentsController {
@@ -97,9 +104,15 @@ public class SubmissionContentsController {
     @NonNull
     private PagedResourcesAssembler pagedResourcesAssembler;
 
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * It can retrieve all the given elements by the submission Id and data type Id.
+     * @param submissionId the Id of the submission
+     * @param dataTypeId the Id of the data type
+     * @param pageable the pagination information
+     * @return all the given elements by the submission Id and data type Id.
+     */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
     public PagedResources<Resource<StoredSubmittable>> getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
@@ -176,13 +189,19 @@ public class SubmissionContentsController {
         }
     }
 
-
+    /**
+     * It can create a new elements for the given submission by the given data type Id.
+     *
+     * @param submissionId the Id of the submission
+     * @param dataTypeId the Id of the data type
+     * @param payload the object's data
+     * @return a new elements for the given submission by the given data type Id.
+     */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.POST)
     public ResponseEntity<Resource<StoredSubmittable>> createSubmissionContents(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
-            @RequestBody ObjectNode payload,
-            HttpServletRequest originalRequest
+            @RequestBody ObjectNode payload
     ) {
 
         //is it a real data type
@@ -236,49 +255,6 @@ public class SubmissionContentsController {
         );
     }
 
-    private HttpHeaders responseHeaders(HttpResponse<String> response) {
-        HttpHeaders responseHeaders = new HttpHeaders();
-
-        Set<String> responseHeadersToKeep = new HashSet<>();
-        responseHeadersToKeep.add(HttpHeaders.CACHE_CONTROL);
-        responseHeadersToKeep.add(HttpHeaders.CONTENT_TYPE);
-        responseHeadersToKeep.add(HttpHeaders.DATE);
-        responseHeadersToKeep.add(HttpHeaders.EXPIRES);
-        responseHeadersToKeep.add(HttpHeaders.PRAGMA);
-        responseHeadersToKeep.add(HttpHeaders.LOCATION);
-        responseHeadersToKeep.add(HttpHeaders.LINK);
-        responseHeadersToKeep.add(HttpHeaders.LAST_MODIFIED);
-        responseHeadersToKeep.add(HttpHeaders.ETAG);
-
-        for (Map.Entry<String, List<String>> headerEntry : response.getHeaders().entrySet()) {
-            if (responseHeadersToKeep.contains(headerEntry.getKey())) {
-                responseHeaders.put(
-                        headerEntry.getKey(),
-                        headerEntry.getValue());
-            }
-        }
-        return responseHeaders;
-    }
-
-    private Map<String, String> requestHeaders(HttpServletRequest originalRequest) {
-        Map<String, String> headers = new LinkedHashMap<>();
-        Enumeration<String> headerNamesEnum = originalRequest.getHeaderNames();
-
-        Set<String> requestHeadersToSkip = new HashSet<>();
-        requestHeadersToSkip.add(HttpHeaders.CONTENT_LENGTH.toLowerCase());
-
-
-        while (headerNamesEnum.hasMoreElements()) {
-            String headerName = headerNamesEnum.nextElement();
-
-            if (!requestHeadersToSkip.contains(headerName.toLowerCase())) {
-                String headerValue = originalRequest.getHeader(headerName);
-                headers.put(headerName, headerValue);
-            }
-        }
-        return headers;
-    }
-
     private Class<? extends StoredSubmittable> submittableClassForDataType(DataType dataType) {
         Optional<Class<? extends StoredSubmittable>> submittableClass = submittableRepositoryMap.keySet().stream()
                 .filter(clazz -> clazz.getName().equals(dataType.getSubmittableClassName()))
@@ -298,6 +274,12 @@ public class SubmissionContentsController {
         return submittableClass.get();
     }
 
+    /**
+     * The summary endpoints can retrieve a summary for the errors/warnings by the given submission Id and data type Id.
+     * @param submissionId the Id of the submission
+     * @param dataTypeId the Id of the data type
+     * @return a summary for the errors/warnings by the given submission Id and data type Id.
+     */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}/summary", method = RequestMethod.GET)
     public DataTypeSummary summariseSubmissionDataTypeErrorStatus(
             @PathVariable @P("submissionId") String submissionId,

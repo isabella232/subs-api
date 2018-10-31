@@ -22,7 +22,7 @@ public class SubmissionController {
      * This method ensures the HTTP method OPTIONS returns the correct set
      * of allowed methods for the submissions/{id} endpoint: GET, DELETE, OPTIONS
      *
-     * @return
+     * @return the correct set of allowed methods for the submissions/{id} endpoint: GET, DELETE, OPTIONS
      */
     @RequestMapping(path = "submissions/{id}", method = RequestMethod.OPTIONS, produces = MediaTypes.HAL_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> findSubmissionOptions() {

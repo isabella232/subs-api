@@ -9,7 +9,13 @@ import uk.ac.ebi.subs.repository.security.PreAuthorizeSubmissionIdTeamName;
 
 import java.util.Map;
 
-
+/**
+ * This contains 2 endpoints for summarizing processing statuses.
+ * Summarise the processing statuses for a given submission.
+ *
+ * Summarise processing statuses by submittable type.
+ * TODO: this should be data type later
+ */
 @RestController
 @BasePathAwareController
 @RequestMapping("/submissions/{submissionId}")

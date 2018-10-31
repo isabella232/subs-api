@@ -17,6 +17,12 @@ import uk.ac.ebi.subs.data.status.StatusDescription;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * These are REST endpoints describing the various statuses (processingStatus, releaseStatus, submissionStatus) descriptions,
+ * transitions (user, system) and whether it accepts updates from the user.
+ *
+ * TODO: remove the release status related endpoints
+ */
 @RestController
 @BasePathAwareController
 @RequestMapping("/statusDescriptions")
