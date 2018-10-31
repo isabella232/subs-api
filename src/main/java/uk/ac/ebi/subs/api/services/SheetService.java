@@ -1,22 +1,21 @@
 package uk.ac.ebi.subs.api.services;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.sheets.Row;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
-import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 
 import java.util.ListIterator;
 import java.util.Optional;
 
+/**
+ * This is a Spring @Service component for {@link Spreadsheet} entity.
+ */
 @Component
 public class SheetService {
 
     public void preProcessSheet(Spreadsheet sheet) {
         if (sheet.getChecklistId() == null) return;
         if (sheet.getRows() == null) return;
-
 
         sheet.removeEmptyRows();
         sheet.removeColumnsPastLastNonEmpty();
@@ -56,14 +55,12 @@ public class SheetService {
         return false;
     }
 
-
     /**
      * Picks a header row in the sheet
      *
      * @param sheet
      */
     private void guessHeader(Spreadsheet sheet) {
-
         ListIterator<Row> rowIterator = sheet.getRows().listIterator();
 
         while (rowIterator.hasNext()) {
@@ -78,6 +75,4 @@ public class SheetService {
             }
         }
     }
-
-
 }

@@ -12,6 +12,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * This is a Spring @Service component for {@link SubmissionStatus} entity.
+ */
 @Service
 @RequiredArgsConstructor
 public class SubmissionStatusService {

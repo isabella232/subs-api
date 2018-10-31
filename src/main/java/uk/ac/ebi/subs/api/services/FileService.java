@@ -9,6 +9,9 @@ import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
 
 import java.util.List;
 
+/**
+ * This is a Spring @Service component for {@link File} entity.
+ */
 @Service
 @RequiredArgsConstructor
 public class FileService {

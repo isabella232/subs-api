@@ -11,6 +11,9 @@ import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 
 import java.util.Map;
 
+/**
+ * This is a Spring @Service component for checking if the given entity is updatable.
+ */
 @Service
 public class OperationControlServiceImpl implements OperationControlService {
 

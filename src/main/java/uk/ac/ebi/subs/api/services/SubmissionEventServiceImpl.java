@@ -11,7 +11,8 @@ import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 /**
- * send a submission off to the rabbit exchange for processing
+ * This is a Spring @Service component for {@link uk.ac.ebi.subs.repository.model.Submission} entity.
+ * Send a submission off to the RabbitMQ exchange for processing it.
  */
 @Service
 public class SubmissionEventServiceImpl implements SubmissionEventService {

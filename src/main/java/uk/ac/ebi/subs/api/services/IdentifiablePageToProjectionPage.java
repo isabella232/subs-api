@@ -15,6 +15,11 @@ import uk.ac.ebi.subs.api.services.IdentifiableResourceSelfLinker;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * @param <T>
+ * @param <P>
+ */
 @Component
 public class IdentifiablePageToProjectionPage<T extends Identifiable, P>  {
 
