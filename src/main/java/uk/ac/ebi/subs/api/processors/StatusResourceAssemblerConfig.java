@@ -10,6 +10,13 @@ import uk.ac.ebi.subs.data.status.StatusDescription;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * This configuration class contains resource assembler Spring beans for
+ * {@link uk.ac.ebi.subs.repository.model.SubmissionStatus}, {@link uk.ac.ebi.subs.repository.model.ProcessingStatus}
+ * and release status.
+ *
+ * TODO: remove release status. Not used.
+ */
 @Configuration
 public class StatusResourceAssemblerConfig {
 

@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Resource assembler for {@link StoredSubmittable} for Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmittable, Resource<StoredSubmittable>> {

@@ -14,6 +14,10 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Resource processor for {@link StoredSubmittable} entity used by Spring MVC controller.
+ * @param <T> extends {@link StoredSubmittable}
+ */
 @Component
 public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> implements ResourceProcessor<Resource<T>> {
 
@@ -44,7 +48,6 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
         //redact content for internal use only
         resource.getContent().setReferences(null);
 
-
         return resource;
     }
 
@@ -65,7 +68,6 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
             resource.add(
                     contentsLink.expand(expansionParams)
             );
-
         }
     }
 
@@ -86,7 +88,6 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
             resource.add(
                     contentsLink.expand(expansionParams)
             );
-
         }
     }
 }

@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link SubmissionContents} entity used by Spring MVC controller.
+ */
 @Component
 @Data
 public class SubmissionContentsProcessor implements ResourceProcessor<Resource<SubmissionContents>> {
@@ -54,7 +57,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     private static final Logger logger = LoggerFactory.getLogger(SubmissionContentsProcessor.class);
 
     public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
-
         String subId = resource.getContent().getSubmission().getId();
 
         List<DataType> dataTypesInSubmission = dataTypesInSubmission(resource.getContent().getSubmission());
@@ -73,7 +75,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     private List<DataType> dataTypesInSubmission(Submission submission) {
         SubmissionPlan submissionPlan = submission.getSubmissionPlan();
 
-
         List<DataType> dataTypesInSubmission;
         List<DataType> allDataTypes = dataTypeRepository.findAll();
 
@@ -83,12 +84,11 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
             Set<String> dataTypeIds = new HashSet<>(submissionPlan.getDataTypeIds());
 
             dataTypesInSubmission = allDataTypes.stream()
-                    .filter(dt -> dataTypeIds.contains(dt.getId()))
-                    .collect(Collectors.toList());
+                .filter(dt -> dataTypeIds.contains(dt.getId()))
+                .collect(Collectors.toList());
         }
         return dataTypesInSubmission;
     }
-
 
     private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
         boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
@@ -104,14 +104,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                             )
             ).withRel(dataType.getId());
 
-
             resource.add(collectionLink);
 
             if (updateable) {
                 Link createLink = linkHelper.submittableCreateLink(dataType,resource.getContent().getSubmission());
                 resource.add(createLink);
             }
-
         }
     }
 

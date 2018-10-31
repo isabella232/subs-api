@@ -14,6 +14,9 @@ import java.io.IOException;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link Checklist} entity used by Spring MVC controller.
+ */
 @Component
 public class ChecklistResourceProcessor implements ResourceProcessor<Resource<Checklist>> {
 

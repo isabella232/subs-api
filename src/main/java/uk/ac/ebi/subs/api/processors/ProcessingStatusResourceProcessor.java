@@ -9,6 +9,9 @@ import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link ProcessingStatus} entity used by Spring MVC controller.
+ */
 @Component
 public class ProcessingStatusResourceProcessor implements ResourceProcessor<Resource<ProcessingStatus>> {
 

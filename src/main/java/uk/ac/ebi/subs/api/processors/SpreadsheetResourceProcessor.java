@@ -13,6 +13,9 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 
+/**
+ * Resource processor for {@link Spreadsheet} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SpreadsheetResourceProcessor implements ResourceProcessor<Resource<Spreadsheet>> {
@@ -26,20 +29,17 @@ public class SpreadsheetResourceProcessor implements ResourceProcessor<Resource<
 
         Spreadsheet spreadsheet = resource.getContent();
 
-
         //add links
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(Submission.class, spreadsheet.getSubmissionId()),
-                repositoryEntityLinks.linkToSingleResource(Checklist.class, spreadsheet.getChecklistId()),
-                repositoryEntityLinks.linkToSingleResource(DataType.class, spreadsheet.getDataTypeId())
+            repositoryEntityLinks.linkToSingleResource(Submission.class, spreadsheet.getSubmissionId()),
+            repositoryEntityLinks.linkToSingleResource(Checklist.class, spreadsheet.getChecklistId()),
+            repositoryEntityLinks.linkToSingleResource(DataType.class, spreadsheet.getDataTypeId())
         );
-
 
         //redact verbose material
         spreadsheet.setDataTypeId(null);
         spreadsheet.setChecklistId(null);
         spreadsheet.setSubmissionId(null);
-
 
         return resource;
     }

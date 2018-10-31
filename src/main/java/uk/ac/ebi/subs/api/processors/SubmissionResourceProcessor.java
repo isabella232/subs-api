@@ -34,7 +34,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-
+/**
+ * Resource processor for {@link Submission} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SubmissionResourceProcessor implements ResourceProcessor<Resource<Submission>> {
@@ -181,12 +183,11 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private void addContentsRels(Resource<Submission> submissionResource) {
 
         submissionResource.add(
-                linkTo(
-                        methodOn(SubmissionContentsLinksController.class)
-                                .submissionContents(submissionResource.getContent().getId())
-                ).withRel("contents")
+            linkTo(
+                    methodOn(SubmissionContentsLinksController.class)
+                            .submissionContents(submissionResource.getContent().getId())
+            ).withRel("contents")
         );
-
     }
 
     private void addValidationResultLinks(Resource<Submission> submissionResource) {
@@ -203,11 +204,9 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         Assert.notNull(contentsLink);
         Assert.notNull(collectionLink);
 
-
         submissionResource.add(
                 contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
         );
-
     }
 
     private void addTeamRel(Resource<Submission> resource) {
