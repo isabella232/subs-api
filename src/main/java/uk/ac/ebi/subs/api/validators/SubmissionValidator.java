@@ -23,7 +23,6 @@ public class SubmissionValidator implements Validator {
 
     @NonNull private SubmissionRepository submissionRepository;
     @NonNull private TeamValidator teamValidator;
-    @NonNull private SubmitterValidator submitterValidator;
     @NonNull private OperationControlService operationControlService;
 
     @Override
@@ -43,13 +42,6 @@ public class SubmissionValidator implements Validator {
         try {
             errors.pushNestedPath("team");
             ValidationUtils.invokeValidator(this.teamValidator, submission.getTeam(), errors);
-        } finally {
-            errors.popNestedPath();
-        }
-
-        try {
-            errors.pushNestedPath("submitter");
-            ValidationUtils.invokeValidator(this.submitterValidator, submission.getSubmitter(), errors);
         } finally {
             errors.popNestedPath();
         }
