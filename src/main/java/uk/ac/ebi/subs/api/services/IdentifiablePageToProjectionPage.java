@@ -16,9 +16,9 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- *
- * @param <T>
- * @param <P>
+ * Converts a page of identifiable resources to a page of projections (Spring).
+ * @param <T> identifiable resource as input
+ * @param <P> projected resource as output
  */
 @Component
 public class IdentifiablePageToProjectionPage<T extends Identifiable, P>  {
