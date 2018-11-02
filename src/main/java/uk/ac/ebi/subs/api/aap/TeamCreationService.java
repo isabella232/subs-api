@@ -33,11 +33,13 @@ public class TeamCreationService {
     private TokenService tokenService;
 
     /**
-     * Create a subs team as an AAP domain
-     * Our super user has to create the team, nobody else can use the "subs." prefix in the team name
+     * Create a subs team as an AAP domain.
+     * Our super user has to create the team.
+     * Our teams (domains) always starts with "subs." prefix. Nobody else can use the "subs." prefix in the team name.
+     * Users can not name a team.
      *
      * Once we've done that, we make the user the domain manager, and remove our user
-     * In the end, the user is responsible for managaing the team
+     * In the end, the user is responsible for managing the team
      *
      *
      * @param user

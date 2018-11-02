@@ -29,6 +29,15 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * REST endpoint that gathers information about the issues, that blocks submitting a submission.
+ * This could be the following:
+ * - empty submission (no metadata added to the given submission)
+ * - validation of a submittable or file object is in progress
+ * - file(s) upload is in progress
+ * - metadata or file validation has errors
+ *
+ */
 @RestController
 @RequiredArgsConstructor
 public class SubmissionBlockersSummaryController {
@@ -63,8 +72,6 @@ public class SubmissionBlockersSummaryController {
 
         return submissionIssuesSummaryResource;
     }
-
-
 
     private void getFileIssues(String submissionId, SubmissionBlockersSummary submissionBlockersSummary) {
         submissionBlockersSummary.notReadyFileCount = fileRepository.countBySubmissionIdAndStatusNot(submissionId, FileStatus.READY_FOR_ARCHIVE);

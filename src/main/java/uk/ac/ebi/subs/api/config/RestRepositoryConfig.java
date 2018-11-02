@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
+/**
+ * Used by Spring. Tells to Spring the user that is calling the Spring Data REST method.
+ */
 @Configuration
 @EnableMongoAuditing(auditorAwareRef = "auditorProvider")
 public class RestRepositoryConfig {
@@ -18,7 +21,7 @@ public class RestRepositoryConfig {
         return new SpelAwareProxyProjectionFactory();
     }
 
-    public static final String DEFAULT_USI_USER = "usi-user";
+    private static final String DEFAULT_USI_USER = "usi-user";
 
     @Bean
     public AuditorAware<String> auditorProvider() {
@@ -42,5 +45,4 @@ public class RestRepositoryConfig {
             }
         };
     }
-
 }

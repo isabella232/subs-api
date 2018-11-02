@@ -24,10 +24,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * This is a Spring @Service component for {@link Team} entity used by team or user related controllers.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserTeamService {
-
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -41,8 +43,8 @@ public class UserTeamService {
     @NonNull
     private ProfileService profileService;
 
-
     public List<Team> userTeams(String userToken) {
+        // this collection of teams can contain teams that could already been deleted or created after the token created
         Collection<Domain> domains = domainService.getMyDomains(userToken);
 
         List<Team> teams = domains.parallelStream()

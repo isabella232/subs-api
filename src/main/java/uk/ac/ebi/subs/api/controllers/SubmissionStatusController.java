@@ -35,6 +35,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 /**
+ * This REST controller contains endpoints related to the status of a given submission.
+ *
  * Created by karoly on 13/07/2017.
  */
 @RequiredArgsConstructor
@@ -60,7 +62,13 @@ public class SubmissionStatusController {
     @NonNull
     private SubmissionStatusRepository submissionStatusRepository;
 
-
+    /**
+     * This endpoints could be used to update the status of a given submission.
+     *
+     * @param submissionId the Id of the submission
+     * @param submissionStatusDto the payload data for update the status of the given submission
+     * @return the updated submission status
+     */
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.PUT,RequestMethod.PATCH})
     @PreAuthorizeSubmissionIdTeamName
     public Resource<SubmissionStatus> updateStatus(
@@ -80,6 +88,12 @@ public class SubmissionStatusController {
         return resource;
     }
 
+    /**
+     * Retrieves the status of a given submission.
+     *
+     * @param submissionId the Id of a submission
+     * @return the status of the given submission.
+     */
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.GET})
     @PreAuthorizeSubmissionIdTeamName
     public Resource<SubmissionStatus> getStatus(
@@ -121,6 +135,13 @@ public class SubmissionStatusController {
         return status;
     }
 
+    /**
+     * Retrieves the available submission statuses.
+     * The given submission's status could be transition to one of those statuses on the retrieved list.
+     *
+     * @param submissionId the Id of a submission
+     * @return the available submission statuses the given submission's status could be transition to
+     */
     @RequestMapping(value = "/availableSubmissionStatuses")
     @PreAuthorizeSubmissionIdTeamName
     public Resources<Resource<StatusDescription>> availableSubmissionStatuses(@PathVariable String submissionId) {
@@ -148,7 +169,6 @@ public class SubmissionStatusController {
         resources.add(
                 repositoryEntityLinks.linkToSingleResource(Submission.class, submissionId)
         );
-
 
         return resources;
     }

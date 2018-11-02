@@ -8,6 +8,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.EgaDataset;
 import uk.ac.ebi.subs.repository.repos.submittables.EgaDatasetRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link EgaDataset} entity.
+ */
 @Component
 public class EgaDatasetValidator implements Validator {
 

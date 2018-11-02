@@ -7,6 +7,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Assay} entity.
+ */
 @Component
 public class AssayValidator implements Validator {
 

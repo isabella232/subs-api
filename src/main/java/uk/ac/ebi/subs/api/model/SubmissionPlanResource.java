@@ -6,13 +6,14 @@ import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 
 import java.util.List;
 
-
+/**
+ * A value object for {@link SubmissionPlan} resource storing the list of data types belongs to the specific submission plan.
+ */
 public class SubmissionPlanResource extends Resource<SubmissionPlan> {
 
     public SubmissionPlanResource(Resource<SubmissionPlan> resource) {
         super(resource.getContent(), resource.getLinks());
     }
-
 
     private List<DataType> dataTypes;
 

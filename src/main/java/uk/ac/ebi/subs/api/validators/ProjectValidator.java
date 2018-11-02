@@ -11,6 +11,10 @@ import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Project} entity.
+ */
 @Component
 public class ProjectValidator implements Validator {
 
@@ -18,7 +22,6 @@ public class ProjectValidator implements Validator {
     private CoreSubmittableValidationHelper coreSubmittableValidationHelper;
     @Autowired
     private ProjectRepository projectRepository;
-
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -36,7 +39,6 @@ public class ProjectValidator implements Validator {
         }
 
         //there can only be one project in a submission
-
         List<Project> projectsInSubmission = projectRepository.findBySubmissionId(
                 project.getSubmission().getId()
         );
@@ -50,8 +52,7 @@ public class ProjectValidator implements Validator {
 
         if (project.getId() == null){
             tooManyProjects = true;
-        }
-        else {
+        } else {
             Optional<Project> optionalMatchedProject = projectsInSubmission.stream()
                     .filter(storedProject -> storedProject.getId().equals(project.getId()))
                     .findAny();
@@ -64,6 +65,5 @@ public class ProjectValidator implements Validator {
         if (tooManyProjects){
             SubsApiErrors.already_exists.addError(errors);
         }
-
     }
 }

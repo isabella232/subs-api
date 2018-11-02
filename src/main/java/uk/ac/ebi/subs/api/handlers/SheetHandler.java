@@ -14,6 +14,9 @@ import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 
 import java.util.UUID;
 
+/**
+ * This class is responsible handling events related to {@link Spreadsheet} entity.
+ */
 @Component
 @RequiredArgsConstructor
 @RepositoryEventHandler(Spreadsheet.class)

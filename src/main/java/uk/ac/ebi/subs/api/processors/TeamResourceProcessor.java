@@ -17,6 +17,9 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link Team} entity used by Spring MVC controller.
+ */
 @Component
 public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> {
 
@@ -28,15 +31,11 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     private RepositoryEntityLinks repositoryEntityLinks;
     private LinkHelper linkHelper;
 
-
     @Override
     public Resource<Team> process(Resource<Team> resource) {
-
-
         addSubmissionsRel(resource);
 
         addItemsRel(resource);
-
 
         return resource;
     }
@@ -44,15 +43,14 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     private void addItemsRel(Resource<Team> resource) {
         if (resource.getLink("items") == null) {
             resource.getLinks().add(
-                    linkTo(methodOn(TeamItemsController.class).teamItems(resource.getContent().getName())
-                    ).withRel("items")
+                linkTo(methodOn(TeamItemsController.class).teamItems(resource.getContent().getName())
+                ).withRel("items")
             );
         }
     }
 
     private void addSubmissionsRel(Resource<Team> resource) {
         addGetSubmissionsRel(resource);
-
         addCreateSubmissionRel(resource);
     }
 
@@ -67,27 +65,25 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
         expansionParams.put("repository", "submissions");
 
         Link submissionCreateLink = linkTo(
-                methodOn(TeamSubmissionController.class)
-                        .createTeamSubmission(
-                                resource.getContent().getName(),
-                                null,
-                                null,
-                                null
-                        )
+            methodOn(TeamSubmissionController.class)
+                .createTeamSubmission(
+                    resource.getContent().getName(),
+                    null,
+                    null,
+                    null
+                )
         ).withRel(submissionsRel)
-                .expand(expansionParams);
+            .expand(expansionParams);
 
         resource.add(submissionCreateLink);
     }
 
     private void addGetSubmissionsRel(Resource<Team> resource) {
-
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("teamName", resource.getContent().getName());
 
         addRelWithCollectionRelName(resource, expansionParams, Submission.class);
     }
-
 
     private void addRelWithCollectionRelName(Resource<Team> resource, Map<String, String> expansionParams, Class<?> classWithByTeamRel) {
         Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByTeamRel, "by-team");
@@ -98,7 +94,7 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
 
         if (resource.getLink(collectionLink.getRel()) == null) {
             resource.add(
-                    contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
+                contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
             );
         }
     }

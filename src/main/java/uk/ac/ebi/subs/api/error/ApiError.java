@@ -6,10 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The payload of an API Problem
- *
- * Example payload:
- *
+ * A value object representing an API error.
  */
 public class ApiError {
 

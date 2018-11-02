@@ -5,9 +5,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 
 /**
- * Class for validation errors from within the Subs API
- * The API validators should only add errors from this class
- * Convienience methods are included to add errors for a field or resource
+ * Class for validation errors from within the Subs API.
+ * The API validators should only add errors from this class.
+ * Convenience methods are included to add errors for a field or resource
  *
  * All error codes should be documented in the API docs
  */
@@ -48,6 +48,4 @@ public enum SubsApiErrors {
     private void doRejectIfEmptyOrWhitespace(Errors errors, String field) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, field, this.name(), this.name());
     }
-
-
 }

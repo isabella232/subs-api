@@ -12,6 +12,10 @@ import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Helper class to instantiate a new {@link Submission} entity
+ * and set some of its properties based on the the {@link SubmissionDTO} value object's properties.
+ */
 @RequiredArgsConstructor
 @Component
 public class SubmissionDTOConverter implements Converter<SubmissionDTO, Submission> {

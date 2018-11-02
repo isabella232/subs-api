@@ -16,6 +16,10 @@ import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 
 import java.util.Map;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link SubmissionStatus} entity.
+ */
 @Component
 @RequiredArgsConstructor
 public class SubmissionStatusValidator implements Validator {

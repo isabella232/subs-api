@@ -8,6 +8,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Spreadsheet} entity.
+ */
 @Component
 @Data
 public class SheetValidator implements Validator {

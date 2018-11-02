@@ -13,10 +13,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Sets the transitions for the various submission statuses: submission status, release status, processing status.
+ * A transition could be done by a user or the system.
+ * It can be configured in this configuration file, but this is only a kind of documentation.
+ * This configuration is not used to enforced the different possible transitions.
+ * The user transitions are validated with validators.
+ */
 @Configuration
 public class StatusConfiguration {
-
 
     @Bean
     public Map<String, StatusDescription> submissionStatusDescriptionMap() {
@@ -51,7 +56,6 @@ public class StatusConfiguration {
 
         return Collections.unmodifiableList(statuses);
     }
-
 
     @Bean
     public List<StatusDescription> releaseStatuses() {

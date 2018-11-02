@@ -5,6 +5,10 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.api.aap.TeamDto;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link TeamDto} entity.
+ */
 @Component
 public class TeamDtoValidator implements Validator{
 

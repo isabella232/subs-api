@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
+/**
+ * This value object is the request body of the submission creation request.
+ */
 @Data
 public class SubmissionDTO {
 

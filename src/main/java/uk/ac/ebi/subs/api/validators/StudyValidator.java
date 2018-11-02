@@ -6,6 +6,10 @@ import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Study} entity.
+ */
 @Component
 public class StudyValidator implements Validator {
 

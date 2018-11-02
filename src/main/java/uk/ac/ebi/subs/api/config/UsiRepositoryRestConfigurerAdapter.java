@@ -11,6 +11,12 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 
+/**
+ * Configure Spring Data REST.
+ *
+ * Expose IDs for some object listed in the <code>configureRepositoryRestConfiguration</code> method.
+ * Configure Jackson in the <code>configureJacksonObjectMapper</code> method.
+ */
 @Configuration
 public class UsiRepositoryRestConfigurerAdapter extends RepositoryRestConfigurerAdapter {
 

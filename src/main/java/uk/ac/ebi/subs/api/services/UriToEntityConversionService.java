@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.Collections;
 
+/**
+ * This is a Spring @Service component for converting a {@link URI} to an persistent entity.
+ */
 @Service
 @RequiredArgsConstructor
 public class UriToEntityConversionService {

@@ -11,6 +11,8 @@ import uk.ac.ebi.subs.validator.data.ValidationEnvelopeToCoordinator;
 
 /**
  * Created by rolando on 09/06/2017.
+ *
+ * This is a Spring @Service component for handle validation of {@link StoredSubmittable} entity.
  */
 @Component
 public class SubmittableValidationDispatcher {
@@ -59,13 +61,11 @@ public class SubmittableValidationDispatcher {
 
         String routingKey = routingKeyPrefix + submittableQueueSuffix(storedSubmittable);
 
-
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 routingKey,
                 validationEnvelope);
     }
-
 
     protected String submittableQueueSuffix(StoredSubmittable storedSubmittable) {
         return storedSubmittable.getClass().getSimpleName().toLowerCase();
@@ -76,6 +76,4 @@ public class SubmittableValidationDispatcher {
             throw new IllegalArgumentException("StoredSubmittable should also be a base submittable");
         }
     }
-
-
 }

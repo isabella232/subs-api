@@ -15,6 +15,9 @@ import uk.ac.ebi.subs.repository.util.SchemaConverterFromMongo;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Resource processor for {@link DataType} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class DataTypeResourceProcessor implements ResourceProcessor<Resource<DataType>> {

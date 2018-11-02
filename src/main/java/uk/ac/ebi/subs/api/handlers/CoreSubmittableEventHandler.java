@@ -20,6 +20,10 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
+/**
+ * This class responsible for handling Spring framework specific events
+ * for {@link uk.ac.ebi.subs.data.submittable.Submittable} object(s) creation, save and deletion.
+ */
 @Component
 @RepositoryEventHandler
 @RequiredArgsConstructor
@@ -40,8 +44,8 @@ public class CoreSubmittableEventHandler {
     public final static String STORED_SUBMITTABLE_DELETION_ROUTING_KEY = "usi.submittable.deletion";
 
     /**
-     * Give submittable an ID and set Team from submission.
-     *
+     * Give submittable an ID and set Team from submission and add all the referenced {@link uk.ac.ebi.subs.data.submittable.Submittable}
+     * Add {@link uk.ac.ebi.subs.data.component.Team} for all referenced {@link StoredSubmittable} entity.
      * @param storedSubmittable
      */
     @HandleBeforeCreate
@@ -51,14 +55,25 @@ public class CoreSubmittableEventHandler {
         fillInReferenceWithDefaultTeam(storedSubmittable);
     }
 
+    /**
+     * Creates new {@link ProcessingStatus} and {@link ValidationResult} instances
+     * and sets it on the {@link StoredSubmittable} entity.
+     * Also sends an event that a {@link StoredSubmittable} entity has been created.
+     * @param storedSubmittable the {@link StoredSubmittable} entity
+     */
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
         /* Actions here should be also made in SheetLoader Service */
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
         submittableValidationDispatcher.validateCreate(storedSubmittable);
-
     }
 
+    /**
+     * Sets {@link uk.ac.ebi.subs.data.component.Team} for the {@link StoredSubmittable} entity.
+     * Add {@link uk.ac.ebi.subs.data.component.Team} for all referenced {@link StoredSubmittable} entity.
+     * Add all the referenced {@link uk.ac.ebi.subs.data.submittable.Submittable}
+     * @param storedSubmittable the {@link StoredSubmittable} entity
+     */
     @HandleBeforeSave
     public void beforeSave(StoredSubmittable storedSubmittable) {
         submittableHelperService.setTeamFromSubmission(storedSubmittable);
@@ -66,20 +81,28 @@ public class CoreSubmittableEventHandler {
         submittableHelperService.fillInReferences(storedSubmittable);
     }
 
+    /**
+     * Sends an event that a {@link StoredSubmittable} entity has been updated.
+     * @param storedSubmittable the {@link StoredSubmittable} entity
+     */
     @HandleAfterSave
     public void validateOnSave(StoredSubmittable storedSubmittable) {
         /* Actions here should be also made in SheetLoader Service */
         submittableValidationDispatcher.validateUpdate(storedSubmittable);
     }
 
+    /**
+     * Delete the {@link StoredSubmittable} related the {@link ValidationResult}.
+     * Delete the {@link StoredSubmittable} related the {@link ProcessingStatus}.
+     * Sends a message about {@link StoredSubmittable} deletion.
+     * @param storedSubmittable the {@link StoredSubmittable} entity
+     */
     @HandleAfterDelete
     public void handleAfterSubmittableDeletion(StoredSubmittable storedSubmittable) {
         deleteRelatedValidationResult(storedSubmittable);
         deleteRelatedProcessingStatus(storedSubmittable);
         sendStoredSubmittableDeletionMessage(storedSubmittable);
     }
-
-
 
     private void fillInReferenceWithDefaultTeam(StoredSubmittable storedSubmittable){
         String teamName = storedSubmittable.getTeam().getName();
@@ -89,7 +112,6 @@ public class CoreSubmittableEventHandler {
                 .filter(r -> r.getAlias() != null)
                 .filter(r -> r.getAccession() == null)
                 .forEach(r -> r.setTeam(teamName));
-
     }
 
     private void deleteRelatedValidationResult(StoredSubmittable storedSubmittable) {

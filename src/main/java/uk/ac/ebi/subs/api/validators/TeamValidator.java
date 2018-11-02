@@ -7,6 +7,10 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import uk.ac.ebi.subs.data.component.Team;
 
+/**
+ * This class implements a Spring {@link Validator}.
+ * It validates the {@link Team} entity.
+ */
 @Component
 public class TeamValidator implements Validator {
 
@@ -15,7 +19,6 @@ public class TeamValidator implements Validator {
     private String expectedTeamNamePrefix;
 
     private static final String[] expectedProfileAttributes = new String[]{"centre name"};
-
 
     @Override
     public boolean supports(Class<?> clazz) {
