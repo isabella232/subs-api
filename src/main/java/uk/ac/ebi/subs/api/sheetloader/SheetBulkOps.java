@@ -121,6 +121,8 @@ public class SheetBulkOps {
         ValidationResult validationResult = new ValidationResult();
         validationResult.setEntityUuid(storedSubmittable.getId());
         validationResult.setUuid(UUID.randomUUID().toString());
+        validationResult.setDataTypeId(storedSubmittable.getDataType().getId());
+        validationResult.setEntityType(storedSubmittable.getDataType().getSubmittableClassName());
 
         validationResult.setSubmissionId(storedSubmittable.getSubmission().getId());
 
