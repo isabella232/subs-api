@@ -56,6 +56,8 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     private static final Logger logger = LoggerFactory.getLogger(SubmissionContentsProcessor.class);
 
+    private static final String DATA_TYPE_FILES = "files";
+
     public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
         String subId = resource.getContent().getSubmission().getId();
 
@@ -77,6 +79,10 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
         List<DataType> dataTypesInSubmission;
         List<DataType> allDataTypes = dataTypeRepository.findAll();
+
+        // remove the files data type from the list, because it is not a real data type (we can't create one with this data type)
+        // it is only exists to give a type for the validation result of a file
+        allDataTypes.removeIf(dataType -> dataType.getId().equals(DATA_TYPE_FILES));
 
         if (submissionPlan == null) {
             dataTypesInSubmission = allDataTypes;
