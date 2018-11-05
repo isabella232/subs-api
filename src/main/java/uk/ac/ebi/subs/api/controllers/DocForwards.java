@@ -13,13 +13,10 @@ import org.springframework.web.util.UriComponents;
 
 /**
  * Controller with a few convenience redirects to expose the HAL browser shipped as static content.
- *
- * @author Oliver Gierke
- * @soundtrack Miles Davis - So what (Kind of blue)
+ * It redirects to "/docs/index.html" page.
  */
 @BasePathAwareController
 public class DocForwards {
-
 
     /**
      * Redirects to the actual {@code index.html}.
@@ -47,7 +44,7 @@ public class DocForwards {
      * @param request must not be {@literal null}.
      * @return
      */
-    private View getRedirectView(HttpServletRequest request,String path) {
+    private View getRedirectView(HttpServletRequest request, String path) {
 
         ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromRequest(request);
 

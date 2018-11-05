@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link SubmissionContents} entity used by Spring MVC controller.
+ */
 @Component
 @Data
 public class SubmissionContentsProcessor implements ResourceProcessor<Resource<SubmissionContents>> {
@@ -53,8 +56,9 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     private static final Logger logger = LoggerFactory.getLogger(SubmissionContentsProcessor.class);
 
-    public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
+    private static final String DATA_TYPE_FILES = "files";
 
+    public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
         String subId = resource.getContent().getSubmission().getId();
 
         List<DataType> dataTypesInSubmission = dataTypesInSubmission(resource.getContent().getSubmission());
@@ -73,9 +77,12 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
     private List<DataType> dataTypesInSubmission(Submission submission) {
         SubmissionPlan submissionPlan = submission.getSubmissionPlan();
 
-
         List<DataType> dataTypesInSubmission;
         List<DataType> allDataTypes = dataTypeRepository.findAll();
+
+        // remove the files data type from the list, because it is not a real data type (we can't create one with this data type)
+        // it is only exists to give a type for the validation result of a file
+        allDataTypes.removeIf(dataType -> dataType.getId().equals(DATA_TYPE_FILES));
 
         if (submissionPlan == null) {
             dataTypesInSubmission = allDataTypes;
@@ -83,12 +90,11 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
             Set<String> dataTypeIds = new HashSet<>(submissionPlan.getDataTypeIds());
 
             dataTypesInSubmission = allDataTypes.stream()
-                    .filter(dt -> dataTypeIds.contains(dt.getId()))
-                    .collect(Collectors.toList());
+                .filter(dt -> dataTypeIds.contains(dt.getId()))
+                .collect(Collectors.toList());
         }
         return dataTypesInSubmission;
     }
-
 
     private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
         boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
@@ -100,11 +106,9 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                             .getSubmissionContentsForDataType(
                                     resource.getContent().getSubmission().getId(),
                                     dataType.getId(),
-                                    null,
                                     null
                             )
             ).withRel(dataType.getId());
-
 
             resource.add(collectionLink);
 
@@ -112,7 +116,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
                 Link createLink = linkHelper.submittableCreateLink(dataType,resource.getContent().getSubmission());
                 resource.add(createLink);
             }
-
         }
     }
 

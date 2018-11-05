@@ -22,7 +22,10 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 
-
+/**
+ * Provides a single token for USI. Checks, if the token is set and if it would expire in 5 minutes.
+ * If it would expire, then gets a new token from the {@link TokenService} service.
+ */
 @Component
 @RequiredArgsConstructor
 public class UsiTokenService {

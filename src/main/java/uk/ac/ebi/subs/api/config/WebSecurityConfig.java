@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
+ * This is only used for test.
+ *
  * Created by neilg on 07/08/2017.
  */
 @Configuration

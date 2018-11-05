@@ -10,6 +10,7 @@ import org.springframework.hateoas.core.ControllerEntityLinks;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
+import uk.ac.ebi.subs.api.controllers.SubmissionBlockersSummaryController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsLinksController;
 import uk.ac.ebi.subs.api.controllers.SubmissionStatusController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
@@ -33,7 +34,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
-
+/**
+ * Resource processor for {@link Submission} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SubmissionResourceProcessor implements ResourceProcessor<Resource<Submission>> {
@@ -67,6 +70,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         addStatusLinks(resource);
 
         addStatusSummaryReport(resource);
+        addSubmissionBlockersSummary(resource);
         addTypeStatusSummaryReport(resource);
 
         addReceiptLink(resource);
@@ -148,6 +152,16 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         resource.add(statusSummary);
     }
 
+    private void addSubmissionBlockersSummary(Resource<Submission> resource) {
+        Link blockersSummary =
+                linkTo(
+                        methodOn(SubmissionBlockersSummaryController.class)
+                                .getSubmissionContentsIssuesSummary(resource.getContent().getId())
+                ).withRel("submissionBlockersSummary");
+
+        resource.add(blockersSummary);
+    }
+
     private void addTypeStatusSummaryReport(Resource<Submission> resource) {
         Link typeStatusSummary =
                 linkTo(
@@ -169,12 +183,11 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private void addContentsRels(Resource<Submission> submissionResource) {
 
         submissionResource.add(
-                linkTo(
-                        methodOn(SubmissionContentsLinksController.class)
-                                .submissionContents(submissionResource.getContent().getId())
-                ).withRel("contents")
+            linkTo(
+                    methodOn(SubmissionContentsLinksController.class)
+                            .submissionContents(submissionResource.getContent().getId())
+            ).withRel("contents")
         );
-
     }
 
     private void addValidationResultLinks(Resource<Submission> submissionResource) {
@@ -191,11 +204,9 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         Assert.notNull(contentsLink);
         Assert.notNull(collectionLink);
 
-
         submissionResource.add(
                 contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
         );
-
     }
 
     private void addTeamRel(Resource<Submission> resource) {

@@ -23,6 +23,8 @@ import uk.ac.ebi.tsc.aap.client.security.StatelessAuthenticationFilter;
 import uk.ac.ebi.tsc.aap.client.security.TokenAuthenticationService;
 
 /**
+ * AAP security settings. It defines if the various endpoints/paths accessible with or without a JWT token.
+ *
  * Created by neilg on 24/05/2017.
  */
 @Configuration
@@ -66,7 +68,6 @@ public class SubsAAPWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/health").permitAll()
                 .antMatchers("/health/summary").permitAll()
                 .antMatchers(HttpMethod.GET,"/uiSupportItems/**").permitAll()
-                .antMatchers(HttpMethod.GET,"/templates/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/submissionPlans/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/dataTypes/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/checklists/**").permitAll()

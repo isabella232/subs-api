@@ -209,6 +209,7 @@ public class ChecklistDocumentation {
                                         linkWithRel("checklist").ignored()
                                 ),
                                 responseFields(
+                                        fieldWithPath("id").ignored(),
                                         fieldWithPath("spreadsheetTemplate").description("description of spreadsheet columns and how to convert them to a JSON document"),
                                         fieldWithPath("dataTypeId").description("Data type that this checklist can be used with"),
                                         fieldWithPath("displayName").description("Human friendly name for the checklist"),
@@ -239,8 +240,7 @@ public class ChecklistDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter"),
-                                        paginationBlock()
+                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter")
                                 )
                         )
                 );

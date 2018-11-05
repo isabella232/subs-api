@@ -129,16 +129,16 @@ These relationship natures are available:
 
 === Request
 
-include::{snippets}/create-sample-proxy/curl-request.adoc[]
+include::{snippets}/create-sample/curl-request.adoc[]
 
 
 === Response
 
-include::{snippets}/create-sample-real/http-response.adoc[]
+include::{snippets}/create-sample/http-response.adoc[]
 
 === Links
 
-include::{snippets}/create-sample-real/links.adoc[]
+include::{snippets}/create-sample/links.adoc[]
 
 
 == Update a sample

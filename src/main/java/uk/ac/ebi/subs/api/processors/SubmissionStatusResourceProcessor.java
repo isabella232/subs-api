@@ -20,6 +20,9 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link SubmissionStatus} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SubmissionStatusResourceProcessor implements ResourceProcessor<Resource<SubmissionStatus>> {
@@ -36,7 +39,6 @@ public class SubmissionStatusResourceProcessor implements ResourceProcessor<Reso
     public static final String AVAILABLE_STATUSES_REL = "availableStatuses";
     public static final String STATUS_REL = "submissionStatus";
 
-
     @Override
     public Resource<SubmissionStatus> process(Resource<SubmissionStatus> resource) {
 
@@ -51,10 +53,10 @@ public class SubmissionStatusResourceProcessor implements ResourceProcessor<Reso
 
     private void addStatusDescriptionRel(Resource<SubmissionStatus> resource) {
         resource.add(
-                linkTo(
-                        methodOn(StatusDescriptionController.class)
-                                .submissionStatus(resource.getContent().getStatus())
-                ).withRel("statusDescription")
+            linkTo(
+                    methodOn(StatusDescriptionController.class)
+                            .submissionStatus(resource.getContent().getStatus())
+            ).withRel("statusDescription")
         );
     }
 

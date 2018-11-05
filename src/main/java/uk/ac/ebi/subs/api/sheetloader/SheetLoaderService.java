@@ -25,6 +25,7 @@ import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
+import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +39,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This is a Spring @Service component for {@link Spreadsheet} entity.
+ * It loads the {@link Spreadsheet} entity and saves it into the {@link SpreadsheetRepository}.
+ */
 @Service
 @RequiredArgsConstructor
 public class SheetLoaderService {
@@ -62,7 +67,6 @@ public class SheetLoaderService {
     @NonNull
     private SubmissionRepository submissionRepository;
 
-
     public void loadSheet(Spreadsheet sheet) {
         logger.info("processing sheet {}", sheet.getId());
         StopWatch stopWatch = new StopWatch();
@@ -73,7 +77,6 @@ public class SheetLoaderService {
         Assert.notNull(sheet.getRows());
         Assert.notNull(sheet.getDataTypeId());
         Assert.notNull(sheet.getChecklistId());
-
 
         Checklist checklist = checklistRepository.findOne(sheet.getChecklistId());
         DataType dataType = dataTypeRepository.findOne(checklist.getDataTypeId());
@@ -103,7 +106,6 @@ public class SheetLoaderService {
                 submission,
                 dataType
         );
-
 
         stopWatch.stop();
         stopWatch.start("lookup");
@@ -139,18 +141,13 @@ public class SheetLoaderService {
 
         sheetBulkOps.insertNewSubmittables(freshSubmittables, repository);
 
-
         stopWatch.stop();
         stopWatch.start("validation trigger");
-        Optional<? extends StoredSubmittable> o = submittablesWithRows.stream()
+        submittablesWithRows.stream()
                 .filter(p -> p.getFirst().hasErrors() == false)
                 .map(p -> p.getSecond())
-                .findAny();
+                .forEach(submittable -> submittableValidationDispatcher.validateUpdate(submittable));
 
-        if (o.isPresent()) {
-            //this will trigger validation of everything in the submission
-            submittableValidationDispatcher.validateUpdate(o.get());
-        }
         stopWatch.stop();
         stopWatch.start("save progress");
 
@@ -252,7 +249,6 @@ public class SheetLoaderService {
                     row.getErrors().add(errorMessage);
                 }
             }
-
         }
 
         if (!hasStringAlias(jsonObject)) {
@@ -305,6 +301,14 @@ public class SheetLoaderService {
                 submittable.setSubmission(submission);
                 submittable.setDataType(dataType);
                 submittable.setTeam(submission.getTeam());
+                String teamName = submission.getTeam().getName();
+                submittable.refs()
+                        .filter(ref -> ref.getTeam() == null)
+                        .filter(ref -> ref.getAccession() == null)
+                        .filter(ref -> ref.getAlias() != null)
+                        .forEach(ref -> ref.setTeam(teamName));
+                SubmittableHelperService.fillInReferences(submittable);
+
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);
                 row.getErrors().add("Unrecoverable error while converting row");

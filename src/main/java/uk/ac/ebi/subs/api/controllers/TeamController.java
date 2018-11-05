@@ -37,13 +37,13 @@ import java.util.List;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * It contains endpoints related to {@link Team} entity.
+ */
 @RestController
 @BasePathAwareController
 @RequiredArgsConstructor
 public class TeamController {
-
-    @NonNull
-    private SubmissionRepository submissionRepository;
 
     @NonNull
     private PagedResourcesAssembler<Team> teamPagedResourcesAssembler;
@@ -63,9 +63,14 @@ public class TeamController {
     @NonNull
     private UserTokenService userTokenService;
 
+    /**
+     * Retrieve a pageable list of {@link Team} entities.
+     * @param authorizationHeader the authorization header in string required by AAP.
+     * @param pageable pagination information
+     * @return the list of the teams belongs to the given user
+     */
     @RequestMapping("/user/teams")
     public Resources<Resource<Team>> getTeams(@RequestHeader("Authorization") String authorizationHeader, Pageable pageable) {
-
 
         String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
         List<Team> teamList = userTeamService.userTeams(token);
@@ -74,7 +79,11 @@ public class TeamController {
         return teamPagedResourcesAssembler.toResource(teams);
     }
 
-
+    /**
+     * Retrieve information of a given team.
+     * @param teamName the name of the team to get information of
+     * @return the requested {@link Team} resource
+     */
     @RequestMapping("/teams/{teamName:.+}")
     @PreAuthorizeParamTeamName
     public Resource<Team> getTeam(@PathVariable @P("teamName") String teamName) {
@@ -99,6 +108,13 @@ public class TeamController {
         );
     }
 
+    /**
+     * Creates a new team for the specified user.
+     *
+     * @param teamDto the request payload containing the data of the team to be created
+     * @param result binding result for the validator to populate with the list of errors
+     * @return the created {@link Team} resource
+     */
     @RequestMapping(value = "/user/teams", method = RequestMethod.POST)
     public ResponseEntity<Resource<Team>> createTeam(@RequestBody TeamDto teamDto, BindingResult result) {
 
@@ -117,11 +133,9 @@ public class TeamController {
 
         addSelfLink(team, teamResource);
 
-
         return new ResponseEntity<>(
                 teamResourceProcessor.process(teamResource),
                 HttpStatus.CREATED
         );
     }
-
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.converters.SubmissionDTOConverter;
 import uk.ac.ebi.subs.api.processors.SubmissionResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.data.component.Team;
@@ -58,24 +59,44 @@ public class TeamSubmissionController {
     @NonNull private ProfileService profileService;
     @NonNull private DomainService domainService;
     @NonNull private UserTokenService userTokenService;
+    @NonNull private SubmissionDTOConverter submissionDTOConverter;
 
 
     @PreAuthorizeParamTeamName
     @RequestMapping(value = "/teams/{teamName:.+}/submissions", method = RequestMethod.POST)
     public ResponseEntity<ResourceSupport> createTeamSubmission(
             @PathVariable @P("teamName") String teamName,
-            @RequestBody Submission submission,
+            @RequestBody SubmissionDTO submissionDTO,
             @RequestHeader(value = "Accept", required = false) String acceptHeader,
             @RequestHeader("Authorization") String authorizationHeader
-    ) {
 
+    ) {
+        Team team = getTeamFromAuthHeader(authorizationHeader, teamName);
+
+        if (team == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Submission submission = submissionDTOConverter.convert(submissionDTO);
+        submission.setTeam(team);
+
+        Submission savedSubmission = createSubmission(submission);
+
+        Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
+
+        HttpHeaders httpHeaders = buildHeaders(resource, savedSubmission);
+
+        return buildResponseEntity(acceptHeader, resource, httpHeaders);
+    }
+
+    private Team getTeamFromAuthHeader(String authorizationHeader, String teamName) {
         String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
         Collection<Domain> userDomains = domainService.getMyDomains(token);
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
 
         if (!domainOptional.isPresent()) {
             // possible to reach this if the user does not currently belong to the domain in AAP
-            return new ResponseEntity(HttpStatus.FORBIDDEN);
+            return null;
         }
 
         Domain domain = domainOptional.get();
@@ -89,18 +110,11 @@ public class TeamSubmissionController {
         if (profile != null && profile.getAttributes() != null){
             attributes = profile.getAttributes();
         }
+
         // profile requirements are checked in the team validator
         team.setProfile(attributes);
 
-        submission.setTeam(team);
-
-        Submission savedSubmission = createSubmission(submission);
-
-        Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
-
-        HttpHeaders httpHeaders = buildHeaders(resource, savedSubmission);
-
-        return buildResponseEntity(acceptHeader, resource, httpHeaders);
+        return team;
     }
 
     private Submission createSubmission(@RequestBody Submission submission) {

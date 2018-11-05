@@ -5,6 +5,9 @@ import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.List;
 
+/**
+ * Value object storing the list of data types of a given {@link Submission}.
+ */
 public class SubmissionContents {
     private Submission submission;
 

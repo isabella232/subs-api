@@ -132,32 +132,9 @@ public class CoreValidatorTest {
     }
 
 
-    @Test
-    public void twoCopiesOfSubmittableInSameTeamIsBad_OkScenario() {
-        Sample originalSample = createSampleWithAlias("alias-" + UUID.randomUUID());
-        Errors errors = new BeanPropertyBindingResult(originalSample, "sample");
 
-        coreSubmittableValidationHelper.validateIfDuplicateWithinTeamAsDraft(originalSample, sampleRepository, errors);
-        assertFalse(errors.hasErrors());
-    }
 
-    @Test
-    public void twoCopiesOfSubmittableInSameTeamIsBad_NotOkScenario() {
-        String alias = "alias-" + UUID.randomUUID();
 
-        Sample originalSample = createSampleWithAlias(alias);
-        originalSample.setDataType(sampleDataType);
-        submittableHelperService.uuidAndTeamFromSubmissionSetUp(originalSample);
-        submittableHelperService.processingStatusAndValidationResultSetUp(originalSample);
-        sampleRepository.save(originalSample);
-
-        Sample duplicateSample = createSampleWithAlias(alias);
-        Errors errors = new BeanPropertyBindingResult(duplicateSample, "sample");
-
-        coreSubmittableValidationHelper.validateIfDuplicateWithinTeamAsDraft(duplicateSample, sampleRepository, errors);
-        assertTrue(errors.hasErrors());
-        assertEquals(SubsApiErrors.already_exists_and_not_completed.toString(), errors.getAllErrors().get(0).getDefaultMessage());
-    }
 
     private Sample createSampleWithAlias(String alias) {
         Sample sample = new Sample();

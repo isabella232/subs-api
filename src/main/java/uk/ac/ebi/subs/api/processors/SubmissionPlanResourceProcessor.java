@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Resource processor for {@link SubmissionPlan} entity used by Spring MVC controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SubmissionPlanResourceProcessor implements ResourceProcessor<Resource<SubmissionPlan>> {

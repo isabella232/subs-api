@@ -27,6 +27,9 @@ import java.util.List;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Resource processor for {@link RepositoryLinksResource} entity used by Spring MVC controller.
+ */
 @Component
 @Data
 public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLinksResource> {
@@ -45,6 +48,15 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
     @NonNull
     private TusUploadConfig tusUploadConfig;
 
+    @Override
+    public RepositoryLinksResource process(RepositoryLinksResource resource) {
+        logger.debug("processing resource: {}", resource.getLinks());
+        clearAllLinks(resource);
+
+        addLinks(resource.getLinks());
+
+        return resource;
+    }
 
     private void addLinks(List<Link> links) {
         addStatusDescriptions(links);
@@ -126,16 +138,6 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
                 ).withRel("userSubmissionStatusSummary");
 
         links.add(userSubmissionStatusSummaryLink);
-    }
-
-    @Override
-    public RepositoryLinksResource process(RepositoryLinksResource resource) {
-        logger.debug("processing resource: {}", resource.getLinks());
-        clearAllLinks(resource);
-
-        addLinks(resource.getLinks());
-
-        return resource;
     }
 
     private void clearAllLinks(RepositoryLinksResource resource) {

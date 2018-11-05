@@ -9,6 +9,9 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
+/**
+ * Resource processor for {@link ValidationResult} entity used by Spring MVC controller.
+ */
 @Component
 public class ValidationResultResourceProcessor implements ResourceProcessor<Resource<ValidationResult>> {
     private static final Logger logger = LoggerFactory.getLogger(ValidationResultResourceProcessor.class);
@@ -27,7 +30,6 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
      */
     @Override
     public Resource<ValidationResult> process(Resource<ValidationResult> resource) {
-
         addSubmittableLink(resource);
 
         redactVerboseFields(resource);
@@ -49,8 +51,8 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
 
             if (submittableClass != null) {
                 Link linkToSingleResource = repositoryEntityLinks.linkToSingleResource(
-                        submittableClass,
-                        resource.getContent().getEntityUuid()
+                    submittableClass,
+                    resource.getContent().getEntityUuid()
                 );
 
                 Link submittableLink = linkToSingleResource.withRel("submittable");

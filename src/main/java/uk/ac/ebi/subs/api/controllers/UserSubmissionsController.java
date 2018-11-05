@@ -22,6 +22,9 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * This controller contains endpoints related to the submission of the current user.
+ */
 @RestController
 @BasePathAwareController
 public class UserSubmissionsController {
@@ -32,7 +35,10 @@ public class UserSubmissionsController {
     private SubmissionResourceProcessor submissionResourceProcessor;
     private IdentifiablePageToProjectionPage<Submission,SubmissionWithStatus> identifiablePageToProjectionPage;
 
-    public UserSubmissionsController(UserTeamService userTeamService, SubmissionRepository submissionRepository, SubmissionStatusRepository submissionStatusRepository, SubmissionResourceProcessor submissionResourceProcessor, IdentifiablePageToProjectionPage<Submission, SubmissionWithStatus> identifiablePageToProjectionPage) {
+    public UserSubmissionsController(UserTeamService userTeamService, SubmissionRepository submissionRepository,
+                                     SubmissionStatusRepository submissionStatusRepository,
+                                     SubmissionResourceProcessor submissionResourceProcessor,
+                                     IdentifiablePageToProjectionPage<Submission, SubmissionWithStatus> identifiablePageToProjectionPage) {
         this.userTeamService = userTeamService;
         this.submissionRepository = submissionRepository;
         this.submissionStatusRepository = submissionStatusRepository;
@@ -40,6 +46,11 @@ public class UserSubmissionsController {
         this.identifiablePageToProjectionPage = identifiablePageToProjectionPage;
     }
 
+    /**
+     * Retrieves a pageable list of the submissions of the current user.
+     * @param pageable pagination information
+     * @return a pageable list of the submissions of the current user.
+     */
     @RequestMapping("/user/submissions")
     public PagedResources<Resource<SubmissionWithStatus>> getUserSubmissions(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();

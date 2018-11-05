@@ -27,6 +27,9 @@ import java.util.Map;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+/**
+ * Helper class to gather common utility methods to add {@link Link} to a Spring MVC resource.
+ */
 @Component
 @Data
 public class LinkHelper {
@@ -57,11 +60,11 @@ public class LinkHelper {
                                     )
                     ).withRel("sheetUpload");
         } catch (IOException e) {
-            //method is never invoked, exception cannot occur
+            logger.debug("Error has occurred when uploading a CSV file. The error caused by: ", e.getCause());
         }
+
         return link;
     }
-
 
     public Link submittableCreateLink(DataType dataType, Submission submission){
         String createRel = dataType.getId() + CREATE_REL_SUFFIX;
@@ -71,7 +74,6 @@ public class LinkHelper {
                         .createSubmissionContents(
                                 submission.getId(),
                                 dataType.getId(),
-                                null,
                                 null
                         )
         )
@@ -119,7 +121,6 @@ public class LinkHelper {
         links.add(deleteLink);
     }
 
-
     public void addSearchLink(Collection<Link> links, Class type) {
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
@@ -138,9 +139,6 @@ public class LinkHelper {
             Link searchesLink = new Link(href, rel);
 
             links.add(searchesLink);
-
         }
     }
-
-
 }

@@ -6,7 +6,9 @@ import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.List;
 
-
+/**
+ * A value object for {@link Submission} resource storing the list of data types belongs to the specific submission.
+ */
 public class SubmissionResource extends Resource<Submission> {
 
     public SubmissionResource(Resource<Submission> resource) {

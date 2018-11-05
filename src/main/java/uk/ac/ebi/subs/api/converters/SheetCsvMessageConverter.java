@@ -26,6 +26,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class adds support for reading and writing CSV media types messages through the HTTP protocol.
+ */
 @Component
 public class SheetCsvMessageConverter extends AbstractHttpMessageConverter<Spreadsheet> {
 

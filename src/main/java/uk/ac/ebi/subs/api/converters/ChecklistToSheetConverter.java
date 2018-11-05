@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.api.services;
+package uk.ac.ebi.subs.api.converters;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Helper class to convert a {@link Checklist} entity to a {@link Spreadsheet} entity.
+ */
 @Component
 public class ChecklistToSheetConverter implements Converter<Checklist, Spreadsheet> {
 
@@ -27,7 +30,7 @@ public class ChecklistToSheetConverter implements Converter<Checklist, Spreadshe
                         .stream()
                         .flatMap(entry -> Stream.concat(
                                 Stream.of(entry.getKey()),
-                                entry.getValue().expectedColumnHeaders().stream()
+                                entry.getValue().additionalExpectedColumnHeaders().stream()
                         ))
                         .collect(Collectors.toList())
         );

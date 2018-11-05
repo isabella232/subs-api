@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
 import uk.ac.ebi.subs.repository.repos.SpreadsheetRepository;
 
+/**
+ * This is a listener class triggered by a {@link Spreadsheet} message is published in the SHEET_SUBMITTED_QUEUE queue.
+ */
 @Component
 @RequiredArgsConstructor
 public class SheetLoaderRabbitBridge {

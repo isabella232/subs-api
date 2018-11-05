@@ -134,6 +134,7 @@ public class SubmissionPlanDocumentation {
                                 linkWithRel("submissionPlan").ignored()
                         ),
                         responseFields(
+                                fieldWithPath("id").ignored(),
                                 fieldWithPath("displayName").description("display name for the submission plan"),
                                 fieldWithPath("description").description("description of the submission plan"),
                                 fieldWithPath("dataTypeIds").description("IDs for the data types used in this plan"),

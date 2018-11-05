@@ -17,13 +17,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class respresents a custom exception handling for REST method calls.
+ * It overrides some of the default behaviours and adds new ones.
+ */
 @ControllerAdvice
 public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final String API_ERRORS = "/api/docs/submission_api.html#_errors";
 
     /**
-     * This method handles the HttpRequestMethodNotSupportedException and returns a useful body response
+     * This method handles the {@link HttpRequestMethodNotSupportedException} and returns a useful body response
      * of type {@link ApiError}
      *
      * @param ex
@@ -44,7 +48,7 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * This method handles the HttpMessageNotReadableException (exception for malformed json) and returns
+     * This method handles the {@link HttpMessageNotReadableException} (exception for malformed json) and returns
      * a useful body response of type {@link ApiError}
      *
      * @param ex
