@@ -4,12 +4,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.api.services.UserAuthoritiesService;
-import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
@@ -45,8 +43,6 @@ public class CoreSubmittableValidationHelper {
     private static final String DATA_MIGRATION_DOMAIN_NAME = "embl-ebi-subs-data-migrator";
 
 
-
-
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
         logger.debug("validating {}", target);
         StoredSubmittable storedVersion = null;
@@ -76,7 +72,7 @@ public class CoreSubmittableValidationHelper {
     /**
      * If an accession is provided, it should already be recorded in the database. If it is known, the team name,
      * alias and data type, must match.
-     *
+     * <p>
      * If the user is has the data migrator role, they can use an accession, even if USI don't know it
      *
      * @param target
@@ -102,16 +98,16 @@ public class CoreSubmittableValidationHelper {
             SubsApiErrors.inconsistent_with_previous_records.addError(errors, "alias");
         }
 
-        if (!accessionedRecord.getTeam().getName().equals(target.getTeam().getName())){
+        if (!accessionedRecord.getTeam().getName().equals(target.getTeam().getName())) {
             SubsApiErrors.inconsistent_with_previous_records.addError(errors, "team.name");
         }
 
-        if (!accessionedRecord.getDataType().equals(target.getDataType())){
+        if (!accessionedRecord.getDataType().equals(target.getDataType())) {
             SubsApiErrors.inconsistent_with_previous_records.addError(errors, "dataType");
         }
     }
 
-    private boolean userIsDataMigrator(){
+    private boolean userIsDataMigrator() {
         return userAuthoritiesService.userAuthoritiesStream().anyMatch(DATA_MIGRATION_DOMAIN_NAME::equals);
     }
 

@@ -14,7 +14,7 @@ public class UserAuthoritiesService {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
-            return Stream.of();
+            return Stream.empty();
         }
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
