@@ -14,12 +14,14 @@ import org.springframework.validation.ValidationUtils;
 public enum SubsApiErrors {
 
     not_a_subs_team("Submissions must be owned by a 'subs.' team"),
-    missing_alias("Each entry must have an alias/unique name filled in"),
+    missing_alias("Each entry must have an alias"),
     missing_field("This required field has not been set"),
+    unknown_accession("You have provided an accession, but we do not have a record of it."),
+    inconsistent_with_previous_records("The value of this field conflicts with earlier submissions"),
     invalid("The formatting of this field is invalid"),
     resource_locked("The resource cannot be changed"),
     already_exists("Another resource with the same value already exists"),
-    already_exists_and_not_completed("Another resource with the same alias already exists within the team and is not 'Completed'."),
+
     file_is_not_in_deletable_status("The file is currently not in a deletable status."),
     missing_profile_attribute("The team profile is missing a required attribute.");
 

@@ -1,21 +1,16 @@
 package uk.ac.ebi.subs.api.validators;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import uk.ac.ebi.subs.api.services.OperationControlService;
-import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.api.services.UserAuthoritiesService;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
-import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.model.Study;
-import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.Arrays;
@@ -35,22 +30,25 @@ import java.util.stream.Stream;
  * status code instead of a 400 (bad request)
  */
 @Component
+@RequiredArgsConstructor
 public class CoreSubmittableValidationHelper {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @NonNull
     private OperationControlService operationControlService;
 
-    @Autowired
-    public CoreSubmittableValidationHelper(OperationControlService operationControlService) {
-        this.operationControlService = operationControlService;
-    }
+    @NonNull
+    private UserAuthoritiesService userAuthoritiesService;
+
+    private static final String DATA_MIGRATION_DOMAIN_NAME = "embl-ebi-subs-data-migrator";
+
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
         logger.debug("validating {}", target);
         StoredSubmittable storedVersion = null;
 
-        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"submission");
-        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"dataType");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors, "submission");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors, "dataType");
 
         ensureChecklistIsForSameDataTypeAsSubmittable(target, errors);
 
@@ -62,11 +60,55 @@ public class CoreSubmittableValidationHelper {
             storedVersion = repository.findOne(target.getId());
         }
 
-        this.validateAlias(target,repository,errors);
+        this.validateAlias(target, repository, errors);
 
         this.validate(target, storedVersion, errors);
 
-        this.validateAliasIsLockedToDataType(target,repository,errors);
+        this.validateAliasIsLockedToDataType(target, repository, errors);
+
+        this.validateAccessionIsKnown(target, repository, errors);
+    }
+
+    /**
+     * If an accession is provided, it should already be recorded in the database. If it is known, the team name,
+     * alias and data type, must match.
+     * <p>
+     * If the user is has the data migrator role, they can use an accession, even if USI don't know it
+     *
+     * @param target
+     * @param repository
+     * @param errors
+     */
+    private void validateAccessionIsKnown(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+
+        if (target.getAccession() == null) {
+            return;
+        }
+
+        StoredSubmittable accessionedRecord = repository.findFirstByAccessionOrderByCreatedDateDesc(target.getAccession());
+
+        if (accessionedRecord == null) {
+            if (!userIsDataMigrator()) {
+                SubsApiErrors.unknown_accession.addError(errors, "accession");
+            }
+            return;
+        }
+
+        if (!accessionedRecord.getAlias().equals(target.getAlias())) {
+            SubsApiErrors.inconsistent_with_previous_records.addError(errors, "alias");
+        }
+
+        if (!accessionedRecord.getTeam().getName().equals(target.getTeam().getName())) {
+            SubsApiErrors.inconsistent_with_previous_records.addError(errors, "team.name");
+        }
+
+        if (!accessionedRecord.getDataType().equals(target.getDataType())) {
+            SubsApiErrors.inconsistent_with_previous_records.addError(errors, "dataType");
+        }
+    }
+
+    private boolean userIsDataMigrator() {
+        return userAuthoritiesService.userAuthoritiesStream().anyMatch(DATA_MIGRATION_DOMAIN_NAME::equals);
     }
 
     private void ensureChecklistIsForSameDataTypeAsSubmittable(StoredSubmittable target, Errors errors) {
@@ -74,14 +116,14 @@ public class CoreSubmittableValidationHelper {
         Checklist checklist = target.getChecklist();
 
         if (dataType != null && checklist != null
-                && !dataType.getId().equals( checklist.getDataTypeId())){
-            SubsApiErrors.invalid.addError(errors,"checklist");
+                && !dataType.getId().equals(checklist.getDataTypeId())) {
+            SubsApiErrors.invalid.addError(errors, "checklist");
         }
     }
 
     public void validateAlias(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
 
-        SubsApiErrors.rejectIfEmptyOrWhitespace(errors,"alias");
+        SubsApiErrors.rejectIfEmptyOrWhitespace(errors, "alias");
         validateOnlyUseOfAliasInSubmission(target, repository, errors);
     }
 
