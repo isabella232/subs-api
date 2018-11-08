@@ -255,6 +255,11 @@ public class SheetLoaderService {
             row.getErrors().add("Please provide an alias");
         }
 
+        if (hasAccession(jsonObject)) {
+            row.getErrors().add("Please do no provide an accession");
+        }
+
+
         if (row.getErrors().isEmpty()) {
             row.setProcessed(true);
         }
@@ -283,6 +288,16 @@ public class SheetLoaderService {
         return false;
     }
 
+    /**
+     * submittables should not have an accession at this stage
+     *
+     * @param json
+     * @return
+     */
+    private static boolean hasAccession(JSONObject json) {
+        return json.has("accession");
+    }
+
 
     private StoredSubmittable rowToSubmittable(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow, DataType dataType) {
         JSONObject json = rowToDocument(row, columnMappings, headerRow);
@@ -298,16 +313,23 @@ public class SheetLoaderService {
         if (row.getErrors().isEmpty()) {
             try {
                 submittable = objectMapper.readValue(json.toString(), targetTypeClass);
+
                 submittable.setSubmission(submission);
                 submittable.setDataType(dataType);
                 submittable.setTeam(submission.getTeam());
+
+                // provide default team name for references
                 String teamName = submission.getTeam().getName();
+
                 submittable.refs()
                         .filter(ref -> ref.getTeam() == null)
                         .filter(ref -> ref.getAccession() == null)
                         .filter(ref -> ref.getAlias() != null)
                         .forEach(ref -> ref.setTeam(teamName));
+
+                // create the denormalised references needed to chain validation
                 SubmittableHelperService.fillInReferences(submittable);
+
 
             } catch (IOException e) {
                 logger.error("IO exception while converting json to submittable class {}. JSON: {} ", targetTypeClass.getName(), json);

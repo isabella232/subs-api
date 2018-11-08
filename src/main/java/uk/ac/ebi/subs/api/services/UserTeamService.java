@@ -43,6 +43,9 @@ public class UserTeamService {
     @NonNull
     private ProfileService profileService;
 
+    @NonNull
+    private UserAuthoritiesService userAuthoritiesService;
+
     public List<Team> userTeams(String userToken) {
         // this collection of teams can contain teams that could already been deleted or created after the token created
         Collection<Domain> domains = domainService.getMyDomains(userToken);
@@ -83,14 +86,9 @@ public class UserTeamService {
     }
 
     public Stream<String> userTeamNamesStream() {
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            return Stream.of();
-        }
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(a -> a.replaceFirst("ROLE_", ""))
+        return userAuthoritiesService.userAuthoritiesStream()
                 .filter(a -> a.startsWith(teamNamePrefix));
     }
+
+
 }

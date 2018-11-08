@@ -131,11 +131,6 @@ public class CoreValidatorTest {
         assertThat(error.getDefaultMessage(),is(equalTo(SubsApiErrors.already_exists.name())));
     }
 
-
-
-
-
-
     private Sample createSampleWithAlias(String alias) {
         Sample sample = new Sample();
         sample.setAlias(alias);

@@ -37,11 +37,14 @@ public class UserTeamServiceTest {
     @MockBean
     private ProfileService profileService;
 
+    @MockBean
+    private UserAuthoritiesService userAuthoritiesService;
+
     private static final String USER_TOKEN = "JWT.ABC.123";
 
     @Before
     public void setup() {
-        userTeamService = new UserTeamService(domainService, profileService);
+        userTeamService = new UserTeamService(domainService, profileService, userAuthoritiesService);
         userTeamService.setTeamNamePrefix("subs.");
     }
 
