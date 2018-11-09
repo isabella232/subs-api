@@ -195,8 +195,9 @@ public class SheetLoaderService {
 
     protected List<Capture> mapColumns(Row headerRow, Map<String, Capture> columnCaptures, Optional<Capture> optionalDefaultCapture) {
         logger.debug("Mapping by headers {} to captures {}, with default {}", headerRow, columnCaptures, optionalDefaultCapture);
+        Map<String, Capture> columnCapturesWithLowerCaseKeys = lowerCasedColumnCaptures(columnCaptures);
 
-        columnCaptures.entrySet().stream().forEach(entry ->
+        columnCapturesWithLowerCaseKeys.entrySet().stream().forEach(entry ->
                 entry.getValue().setDisplayName(entry.getKey())
         );
 
@@ -210,8 +211,8 @@ public class SheetLoaderService {
             String currentHeader = headerRowCells.get(position);
             currentHeader = currentHeader.trim().toLowerCase();
 
-            if (columnCaptures.containsKey(currentHeader)) {
-                Capture capture = columnCaptures.get(currentHeader);
+            if (columnCapturesWithLowerCaseKeys.containsKey(currentHeader)) {
+                Capture capture = columnCapturesWithLowerCaseKeys.get(currentHeader);
 
                 position = capture.map(position, capturePositions, headerRowCells);
             } else if (optionalDefaultCapture.isPresent()) {
@@ -228,6 +229,11 @@ public class SheetLoaderService {
         );
 
         return capturePositions;
+    }
+
+    private Map<String, Capture> lowerCasedColumnCaptures(Map<String, Capture> columnCaptures) {
+        return columnCaptures.entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Map.Entry::getValue));
     }
 
     protected JSONObject rowToDocument(Row row, List<Capture> mappings, List<String> headers) {
