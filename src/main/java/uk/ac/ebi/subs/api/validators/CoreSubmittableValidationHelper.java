@@ -40,7 +40,7 @@ public class CoreSubmittableValidationHelper {
     @NonNull
     private UserAuthoritiesService userAuthoritiesService;
 
-    private static final String DATA_MIGRATION_DOMAIN_NAME = "embl-ebi-subs-data-migrator";
+    private static final String DATA_MIGRATION_DOMAIN_NAME = "self.embl-ebi-subs-data-migrator";
 
 
     public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
