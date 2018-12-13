@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.api.services.IdentifiablePageToProjectionPage;
 import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.projections.SubmittableWithStatus;
+import uk.ac.ebi.subs.repository.projections.UserProjectProjection;
 import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.util.List;
@@ -26,9 +27,9 @@ public class UserProjectsController {
     private UserTeamService userTeamService;
     private ProjectRepository projectRepository;
     private StoredSubmittableResourceProcessor<Project> storedSubmittableResourceProcessor;
-    private IdentifiablePageToProjectionPage<Project, SubmittableWithStatus> identifiablePageToProjectionPage;
+    private IdentifiablePageToProjectionPage<Project, UserProjectProjection> identifiablePageToProjectionPage;
 
-    public UserProjectsController(UserTeamService userTeamService, ProjectRepository projectRepository, StoredSubmittableResourceProcessor<Project> storedSubmittableResourceProcessor, IdentifiablePageToProjectionPage<Project, SubmittableWithStatus> identifiablePageToProjectionPage) {
+    public UserProjectsController(UserTeamService userTeamService, ProjectRepository projectRepository, StoredSubmittableResourceProcessor<Project> storedSubmittableResourceProcessor, IdentifiablePageToProjectionPage<Project, UserProjectProjection> identifiablePageToProjectionPage) {
         this.userTeamService = userTeamService;
         this.projectRepository = projectRepository;
         this.storedSubmittableResourceProcessor = storedSubmittableResourceProcessor;
@@ -41,7 +42,7 @@ public class UserProjectsController {
      * @return a pageable list of the projects of the current user.
      */
     @RequestMapping("/user/projects")
-    public PagedResources<Resource<SubmittableWithStatus>> getUserProjects(Pageable pageable) {
+    public PagedResources<Resource<UserProjectProjection>> getUserProjects(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();
 
         Page<Project> page = projectRepository.submittablesInTeams(userTeamNames, pageable);
@@ -50,7 +51,7 @@ public class UserProjectsController {
                 page,
                 pageable,
                 storedSubmittableResourceProcessor,
-                SubmittableWithStatus.class
+                UserProjectProjection.class
         );
     }
 }
