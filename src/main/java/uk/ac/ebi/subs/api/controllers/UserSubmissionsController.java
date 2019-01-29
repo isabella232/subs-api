@@ -55,7 +55,7 @@ public class UserSubmissionsController {
     public PagedResources<Resource<SubmissionWithStatus>> getUserSubmissions(Pageable pageable) {
         List<String> userTeamNames = userTeamService.userTeamNames();
 
-        Page<Submission> page = submissionRepository.findByTeamNameInOrderByCreatedByDesc(userTeamNames, pageable);
+        Page<Submission> page = submissionRepository.findByTeamNameInOrderByCreatedDateDesc(userTeamNames, pageable);
 
         return identifiablePageToProjectionPage.convert(
                 page,
