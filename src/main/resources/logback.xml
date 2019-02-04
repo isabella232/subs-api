@@ -29,7 +29,7 @@
         <layout class="de.siegmar.logbackgelf.GelfLayout">
             <staticField>application:subs-api</staticField>
             <staticField>project:USI</staticField>
-            <staticField>environment:dev</staticField>
+            <staticField>environment:${SPRING_PROFILE}</staticField>
         </layout>
     </appender>
 
