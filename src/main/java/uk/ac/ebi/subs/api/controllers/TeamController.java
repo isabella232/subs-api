@@ -2,10 +2,12 @@ package uk.ac.ebi.subs.api.controllers;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
@@ -28,7 +30,6 @@ import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.api.validators.TeamDtoValidator;
 import uk.ac.ebi.subs.data.component.Team;
-import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
@@ -63,6 +64,8 @@ public class TeamController {
     @NonNull
     private UserTokenService userTokenService;
 
+    private static final int DEFAULT_PAGE_SIZE = 20;
+
     /**
      * Retrieve a pageable list of {@link Team} entities.
      * @param authorizationHeader the authorization header in string required by AAP.
@@ -70,12 +73,19 @@ public class TeamController {
      * @return the list of the teams belongs to the given user
      */
     @RequestMapping("/user/teams")
-    public Resources<Resource<Team>> getTeams(@RequestHeader("Authorization") String authorizationHeader, Pageable pageable) {
+    public Resources<Resource<Team>> getTeams(@RequestHeader("Authorization") String authorizationHeader,
+                                              @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable) {
 
         String token = userTokenService.authorizationHeaderValueToToken(authorizationHeader);
         List<Team> teamList = userTeamService.userTeams(token);
 
-        final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, teamList.size());
+        // this is a workaround to make paging to work, because TSC/AAP not providing us a pageable Team collection
+        // otherwise it would be: final PageImpl<Team> teams = new PageImpl<>(teamList, pageable, teamList.size());
+        int start = pageable.getOffset();
+        final int initialEndValue = start + pageable.getPageSize();
+        int end = initialEndValue > teamList.size() ? teamList.size() : initialEndValue;
+        final Page<Team> teams = new PageImpl<>(teamList.subList(start, end), pageable, teamList.size());
+
         return teamPagedResourcesAssembler.toResource(teams);
     }
 
