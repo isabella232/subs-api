@@ -1,6 +1,7 @@
 = File upload
 :docinfo: shared
 :toc: auto
+:nofooter:
 :markup-in-source: attributes+
 
 == How to upload a file

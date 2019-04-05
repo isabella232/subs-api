@@ -1,6 +1,7 @@
 = Submission plans
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == List all submission plans
 

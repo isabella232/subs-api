@@ -1,6 +1,7 @@
 = Samples
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == What are samples?
 

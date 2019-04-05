@@ -1,6 +1,7 @@
 = Data types
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == List all data types
 

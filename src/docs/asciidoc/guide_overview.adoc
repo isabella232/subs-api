@@ -1,5 +1,6 @@
 = Developer guides
 :docinfo: shared
+:nofooter:
 
 This section of the documentation is intended to get you started writing applications to work with the submissions API.
 We'll cover everything you need to know, from authentication, to submission and validation.

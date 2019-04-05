@@ -1,6 +1,7 @@
 = Spreadsheets and templates
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == Checklists
 
