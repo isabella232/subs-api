@@ -1,6 +1,7 @@
 = Getting started
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 This guide describes how to start submitting data.
 

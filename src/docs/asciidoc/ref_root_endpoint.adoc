@@ -1,6 +1,7 @@
 = API root
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 You can issue a `GET` request to the root endpoint to get all the entry points into the API.
 

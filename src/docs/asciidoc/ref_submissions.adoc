@@ -1,6 +1,7 @@
 = Submissions
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == List submissions available to user
 

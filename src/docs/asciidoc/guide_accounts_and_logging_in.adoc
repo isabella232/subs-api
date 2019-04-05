@@ -1,6 +1,7 @@
 = Setting up a user account and logging in
 :docinfo: shared
 :toc: auto
+:nofooter:
 :markup-in-source: attributes+
 
 This page describes how to create a user account and log in to use the API.

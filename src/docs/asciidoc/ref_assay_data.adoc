@@ -1,3 +1,4 @@
 = Assay data
 :docinfo: shared
 :toc: auto
+:nofooter:

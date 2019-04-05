@@ -1,6 +1,7 @@
 = Validation results
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == Overview
 

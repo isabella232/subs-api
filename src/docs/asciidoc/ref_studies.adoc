@@ -1,6 +1,7 @@
 = Studies
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 TODO
 
