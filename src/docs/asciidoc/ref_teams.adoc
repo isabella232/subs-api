@@ -1,6 +1,7 @@
 = Teams
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 == Finding teams of which you are a member
 

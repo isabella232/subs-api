@@ -1,6 +1,7 @@
 = Project
 :docinfo: shared
 :toc: auto
+:nofooter:
 
 A submission can contain one project.
 

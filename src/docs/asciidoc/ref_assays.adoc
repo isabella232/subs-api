@@ -1,3 +1,4 @@
 = Assays
 :docinfo: shared
 :toc: auto
+:nofooter:

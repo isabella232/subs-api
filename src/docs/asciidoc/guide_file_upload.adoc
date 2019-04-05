@@ -1,6 +1,7 @@
 = Getting started with file uploads
 :docinfo: shared
 :toc: auto
+:nofooter:
 :markup-in-source: attributes+
 
 This guide describes how to upload files to our submission system. It is intended for people submitting data programatically.
