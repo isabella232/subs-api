@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -25,15 +23,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.services.SubmissionEventService;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Submission;
-
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +66,8 @@ public class DocumentationHelper {
             }
 
             @Override
-            public void submissionSubmitted(Submission submission) {
+            public void submissionSubmitted(SubmissionEnvelope submissionEnvelope
+            ) {
 
             }
         };
