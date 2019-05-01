@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.services;
 
 
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 /**
@@ -14,6 +15,6 @@ public interface SubmissionEventService {
 
     void submissionDeleted(Submission submission);
 
-    void submissionSubmitted(Submission submission);
+    void submissionSubmitted(SubmissionEnvelope submissionEnvelope);
 
 }

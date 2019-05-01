@@ -8,6 +8,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 /**
@@ -37,15 +38,16 @@ public class SubmissionEventServiceImpl implements SubmissionEventService {
     }
 
     @Override
-    public void submissionSubmitted(Submission submission) {
+    public void submissionSubmitted(SubmissionEnvelope submissionEnvelope) {
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 Topics.EVENT_SUBMISSION_SUBMITTED,
-                submission
+                submissionEnvelope
         );
 
-        logger.warn("sent submission {}", submission.getId());
+        logger.info("Sent submission {} to message broker with '{}' routing key.",
+                submissionEnvelope.getSubmission().getId(), Topics.EVENT_SUBMISSION_SUBMITTED);
     }
 
     @Override
