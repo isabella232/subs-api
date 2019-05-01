@@ -34,7 +34,6 @@ import uk.ac.ebi.subs.data.component.Attribute;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.AssayData;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -89,6 +88,8 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.AUTHORIZATION_HEADER_NAME;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.AUTHORIZATION_HEADER_VALUE;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
 /**
@@ -201,7 +202,7 @@ public class SubmissionApiDocumentation {
                 post("/api/teams/" + Helpers.TEAM_NAME + "/submissions").content(jsonRepresentation)
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
-                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME, DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
+                        .header(AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isCreated())
                 .andDo(
@@ -306,11 +307,12 @@ public class SubmissionApiDocumentation {
                 put("/api/submissions/{id}/submissionStatus", sub.getId()).content("{\"status\": \"Submitted\"}")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
+                        .header(AUTHORIZATION_HEADER_NAME,AUTHORIZATION_HEADER_VALUE)
 
         ).andExpect(status().isOk())
                 .andDo(
                         document("change-submission-status",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("_links").description("Links"),
