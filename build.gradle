@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.27.0-SNAPSHOT'
+version '2.27.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -48,6 +48,7 @@ dependencies {
     compile("com.fasterxml.jackson.module:jackson-module-afterburner:2.7.1")
     compile("org.apache.commons:commons-csv:1.5")
     compile("de.siegmar:logback-gelf:1.1.0")
+    compile("org.springframework.boot:spring-boot-devtools")
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test"){
