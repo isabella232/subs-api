@@ -16,9 +16,12 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+
+import java.util.Map;
 
 /**
  * This class responsible for handling Spring framework specific events
@@ -40,6 +43,9 @@ public class CoreSubmittableEventHandler {
 
     @NonNull
     private ProcessingStatusRepository processingStatusRepository;
+
+    @NonNull
+    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
 
     public final static String STORED_SUBMITTABLE_DELETION_ROUTING_KEY = "usi.submittable.deletion";
 
@@ -65,6 +71,10 @@ public class CoreSubmittableEventHandler {
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
         /* Actions here should be also made in SheetLoader Service */
         submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
+
+        SubmittableRepository repository = submittableRepositoryMap.get(storedSubmittable.getClass());
+        repository.save(storedSubmittable);
+
         submittableValidationDispatcher.validateCreate(storedSubmittable);
     }
 
