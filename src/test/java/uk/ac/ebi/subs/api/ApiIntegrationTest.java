@@ -408,7 +408,7 @@ public abstract class ApiIntegrationTest {
                 sample.setSubmission(submission);
                 sample.setDataType(sampleDataType);
                 submittableHelperService.uuidAndTeamFromSubmissionSetUp(sample);
-                submittableHelperService.processingStatusAndValidationResultSetUp(sample);
+                submittableHelperService.processingStatusAndValidationResultSetUpForSubmittable(sample);
                 sampleRepository.save(sample);
 
                 HttpResponse<JsonNode> sampleResponse = Unirest.get(rootUri + "/samples/" + sample.getId())
