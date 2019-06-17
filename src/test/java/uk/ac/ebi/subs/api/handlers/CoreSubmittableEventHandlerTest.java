@@ -11,9 +11,13 @@ import uk.ac.ebi.subs.api.services.SubmittableValidationDispatcher;
 import uk.ac.ebi.subs.api.utils.SubmittableHelper;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.repository.model.AssayData;
+import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
+
+import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -36,7 +40,8 @@ public class CoreSubmittableEventHandlerTest {
     private SubmittableValidationDispatcher submittableValidationDispatcher;
     @MockBean
     private ProcessingStatusRepository processingStatusRepository;
-
+    @MockBean
+    private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
 
     @Before
     public void buildUp() {
@@ -45,7 +50,8 @@ public class CoreSubmittableEventHandlerTest {
                 submittableHelperService,
                 submittableValidationDispatcher,
                 validationResultRepository,
-                processingStatusRepository
+                processingStatusRepository,
+                submittableRepositoryMap
         );
     }
 
