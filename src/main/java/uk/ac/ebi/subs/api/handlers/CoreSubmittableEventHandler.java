@@ -70,10 +70,7 @@ public class CoreSubmittableEventHandler {
     @HandleAfterCreate
     public void validateOnCreate(StoredSubmittable storedSubmittable) {
         /* Actions here should be also made in SheetLoader Service */
-        submittableHelperService.processingStatusAndValidationResultSetUp(storedSubmittable);
-
-        SubmittableRepository repository = submittableRepositoryMap.get(storedSubmittable.getClass());
-        repository.save(storedSubmittable);
+        submittableHelperService.processingStatusAndValidationResultSetUpForSubmittable(storedSubmittable);
 
         submittableValidationDispatcher.validateCreate(storedSubmittable);
     }
