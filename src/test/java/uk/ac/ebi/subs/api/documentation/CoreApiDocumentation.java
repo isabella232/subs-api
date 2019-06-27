@@ -159,6 +159,7 @@ public class CoreApiDocumentation {
                                         linkWithRel("team").description("Templated link for finding one team"),
                                         //ref data
                                         linkWithRel("dataTypes").description("Collection resource for data types"),
+                                        linkWithRel("dataTypes:search").description("Search resource for data types"),
                                         linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
                                         linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
                                         linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),

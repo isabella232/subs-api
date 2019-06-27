@@ -83,7 +83,8 @@ public class DataTypeDocumentation {
                         links(
                                 halLinks(),
                                 linkWithRel("profile").ignored(),
-                                linkWithRel("self").ignored()
+                                linkWithRel("self").ignored(),
+                                linkWithRel("search").ignored()
                         ),
                         responseFields(
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
