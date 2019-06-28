@@ -122,7 +122,7 @@ public class StatusConfiguration {
 
                 StatusDescription.build(ProcessingStatusEnum.Rejected, "Archive agent has rejected a document"),
 
-                StatusDescription.build(ProcessingStatusEnum.ArchiveDisabled, "Dispatching submission has been disabled to this archive"),
+                StatusDescription.build(ProcessingStatusEnum.ArchiveDisabled, "Dispatching submission has been disabled to this archive")
         );
 
 
