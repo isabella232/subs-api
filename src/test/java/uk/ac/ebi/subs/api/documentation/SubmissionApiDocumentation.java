@@ -546,6 +546,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
                                         fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
+                                        fieldWithPath("protocolUses").description("Protocols used to generate Assay Data"),
 
                                         fieldWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
