@@ -98,8 +98,7 @@ documents change, the process is the same across all types of document.
 === Naming samples (and everything else)
 
 Samples, like all the documents that you add to a submission need to have an _alias_. This field is the name used for
-the record within the submission system. Each alias should be unique within the records of that type owned by a team.
-Using an alias for a second time in another submission will cause the record to be overwritten.
+the record within the submission system. It is a best practice to use unique alias within the records of that type owned by a team.
 
 === Requirements for sample documents
 
