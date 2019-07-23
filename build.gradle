@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.28.7-SNAPSHOT'
+version '2.28.8-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -50,6 +50,8 @@ dependencies {
     compile("org.apache.commons:commons-csv:1.5")
     compile("de.siegmar:logback-gelf:1.1.0")
     compile("org.springframework.boot:spring-boot-devtools")
+
+    compile 'de.codecentric:spring-boot-admin-starter-client:2.1.5'
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test"){
