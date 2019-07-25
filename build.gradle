@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.28.10-SNAPSHOT'
+version '2.28.11-SNAPSHOT'
 
 
 apply plugin: 'java'
@@ -77,6 +77,11 @@ ext.gradle_env = hasProperty('env') ? env : 'dev'
 
 ext {
     snippetsDir = file('build/generated-snippets')
+}
+
+springBoot {
+    executable = true
+    buildInfo()
 }
 
 test {
@@ -168,11 +173,6 @@ processResources{
 
 publish {
     dependsOn assemble
-}
-
-springBoot {
-    executable = true
-    buildInfo()
 }
 
 mongo {
