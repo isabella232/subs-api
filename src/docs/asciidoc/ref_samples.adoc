@@ -145,6 +145,9 @@ include::{snippets}/create-sample/links.adoc[]
 == Update a sample
 === Request
 
+The user need to add the `accession` field to the request body, if the sample already exists in the archive.
+If it only exists within the user's current draft submission, then the request body does not need it.
+
 include::{snippets}/update-sample/curl-request.adoc[]
 
 === Response
@@ -157,6 +160,9 @@ include::{snippets}/update-sample/links.adoc[]
 
 == Patch a sample
 === Request
+
+The user need to add the `accession` field to the request body, if the sample already exists in the archive.
+If it only exists within the user's current draft submission, then the request body does not need it.
 
 include::{snippets}/patch-sample/curl-request.adoc[]
 

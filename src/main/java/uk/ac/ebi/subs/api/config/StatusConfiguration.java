@@ -51,7 +51,9 @@ public class StatusConfiguration {
                 StatusDescription.build(SubmissionStatusEnum.Processing, "Submission system is processing the submission")
                         .addSystemTransition(SubmissionStatusEnum.Completed),
 
-                StatusDescription.build(SubmissionStatusEnum.Completed, "Submission has been stored in the archives")
+                StatusDescription.build(SubmissionStatusEnum.Completed, "Submission has been stored in the archives"),
+
+                StatusDescription.build(SubmissionStatusEnum.Failed, "Processing of the user's submission has been failed.")
         );
 
         return Collections.unmodifiableList(statuses);

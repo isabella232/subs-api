@@ -546,6 +546,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
 
                                         fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
+                                        fieldWithPath("protocolUses").description("Protocols used to generate Assay Data"),
 
                                         fieldWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
@@ -812,14 +813,19 @@ public class SubmissionApiDocumentation {
                 );
 
         String sampleId = sampleRepository.findAll().get(0).getId();
+
+        Sample sampleWithAccession = sampleRepository.findOne(sampleId);
+        sampleWithAccession.setAccession("SAMEA12345678");
+        sampleRepository.save(sampleWithAccession);
+
         SampleRelationship sampleRelationship = new SampleRelationship();
         sampleRelationship.setAlias("D0");
         sampleRelationship.setRelationshipNature("Child of");
 
-        sample.getSampleRelationships().add(sampleRelationship);
+        sampleWithAccession.getSampleRelationships().add(sampleRelationship);
 
         this.mockMvc.perform(
-                put("/api/samples/{id}", sampleId).content(objectMapper.writeValueAsString(sample))
+                put("/api/samples/{id}", sampleId).content(objectMapper.writeValueAsString(sampleWithAccession))
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(RestMediaTypes.HAL_JSON)
 
@@ -832,6 +838,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("accession").description("The BioSamples archive accession ID of the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
@@ -879,6 +886,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("accession").description("The BioSamples archive accession ID of the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
                                         fieldWithPath("attributes").description("A list of attributes for the sample"),
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
