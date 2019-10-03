@@ -11,7 +11,7 @@
 
 [source,bash,subs={markup-in-source}]
 ----
-tus-upload --chunk-size 1024000 --metadata name <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' <source_test_filename> {file_upload_server_url}
+tus-upload --chunk-size 1024000 --metadata name <destination_file_name.cram> --metadata submissionID '<your_submission_id>' --metadata jwtToken ‘<your_jwt_token>' '<source_test_filename>' {file_upload_server_url}
 ----
 
 Where the parameters are:
