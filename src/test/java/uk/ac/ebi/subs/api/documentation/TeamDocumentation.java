@@ -6,7 +6,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,6 @@ import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.aap.TeamCreationService;
 import uk.ac.ebi.subs.api.aap.TeamDto;
-import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
@@ -48,8 +46,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
-import static org.mockito.Mockito.when;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
 @Category(DocumentationProducer.class)
@@ -65,9 +61,6 @@ public class TeamDocumentation {
     private int port;
     @Value("${usi.docs.scheme:http}")
     private String scheme;
-
-    private final String fakeToken = "TOKEN";
-    private final String fakeAuthHeader = "Bearer "+fakeToken;
 
     @Autowired
     private WebApplicationContext context;
@@ -198,7 +191,7 @@ public class TeamDocumentation {
 
         this.mockMvc.perform(
                 get("/api/user/teams")
-                        .header("Authorization",this.fakeAuthHeader)
+                        .header(DocumentationHelper.AUTHORIZATION_HEADER_NAME, DocumentationHelper.AUTHORIZATION_HEADER_VALUE)
                         .accept(RestMediaTypes.HAL_JSON)
         ).andExpect(status().isOk())
                 .andDo(
