@@ -24,6 +24,7 @@ import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -72,6 +73,9 @@ public class SubmissionContentsControllerTest {
     private ValidationResultRepository validationResultRepository;
 
     @MockBean
+    private ChecklistRepository checklistRepository;
+
+    @MockBean
     private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
 
     @MockBean
@@ -87,7 +91,6 @@ public class SubmissionContentsControllerTest {
 
     @MockBean
     private LinkHelper linkHelper;
-
 
     @Autowired
     private WebApplicationContext context;

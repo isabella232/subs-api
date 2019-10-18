@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +100,16 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest request) {
         ApiError apiError = new ApiError(API_ERRORS, HttpStatus.NOT_FOUND, request.getDescription(false), exception.getMessage());
         return new ResponseEntity<>(apiError, getContentTypeHeaders(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ChecklistNotFoundException.class)
+    public ResponseEntity<CustomErrorResponse> handleChecklistNotFoundException(Exception ex, WebRequest request) {
+        CustomErrorResponse errors = new CustomErrorResponse();
+        errors.setTimestamp(LocalDateTime.now());
+        errors.setError(ex.getMessage());
+        errors.setStatus(HttpStatus.NOT_FOUND.value());
+
+        return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
     }
 
     private HttpHeaders getContentTypeHeaders() {
