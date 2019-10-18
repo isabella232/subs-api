@@ -1,8 +1,8 @@
 package uk.ac.ebi.subs.api.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mashape.unirest.http.HttpResponse;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.subs.api.error.ChecklistNotFoundException;
 import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
@@ -39,6 +40,7 @@ import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.sheets.Spreadsheet;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -46,16 +48,10 @@ import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.data.structures.SingleValidationResultStatus;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -74,6 +70,8 @@ public class SubmissionContentsController {
 
     @NonNull
     private DataTypeRepository dataTypeRepository;
+    @NonNull
+    private ChecklistRepository checklistRepository;
     @NonNull
     private ValidationResultRepository validationResultRepository;
     @NonNull
@@ -203,56 +201,78 @@ public class SubmissionContentsController {
             @PathVariable @P("dataTypeId") String dataTypeId,
             @RequestBody ObjectNode payload
     ) {
-
-        //is it a real data type
         DataType dataType = dataTypeRepository.findOne(dataTypeId);
-
         if (dataType == null) {
             throw new ResourceNotFoundException();
         }
 
+        removeUnneededPayLoadElements(payload);
+
         Class<? extends StoredSubmittable> submittableClass = submittableClassForDataType(dataType);
         SubmittableRepository submittableRepository = submittableRepositoryMap.get(submittableClass);
+        StoredSubmittable storedSubmittable = handleDataType(payload, dataType, submittableClass);
 
-        // is it a real submission
-        Submission submission = submissionRepository.findOne(submissionId);
+        handleChecklist(payload, storedSubmittable);
+        handleSubmission(payload, submissionId, storedSubmittable);
 
-        if (submission == null) {
-            throw new ResourceNotFoundException();
-        }
+        publisher.publishEvent(new BeforeCreateEvent(storedSubmittable));
+        storedSubmittable = submittableRepository.insert(storedSubmittable);
+        publisher.publishEvent(new AfterCreateEvent(storedSubmittable));
 
-        payload.remove("submission");
-        payload.remove("dataType");
+        Link selfLink = repositoryEntityLinks.linkToSingleResource(storedSubmittable);
 
-        //create the submittable
-        StoredSubmittable item = null;
-        try {
-            item = objectMapper.treeToValue(payload, submittableClass);
-        } catch (IOException e) {
-            throw new RuntimeException(e); //refactor to validation error
-        }
-
-        item.setDataType(dataType);
-        item.setSubmission(submission);
-
-
-        publisher.publishEvent(new BeforeCreateEvent(item));
-        item = submittableRepository.insert(item);
-        publisher.publishEvent(new AfterCreateEvent(item));
-
-        Link selfLink = repositoryEntityLinks.linkToSingleResource(item);
-
-        Resource<StoredSubmittable> resource = storedSubmittableAssembler.toResource(item);
+        Resource<StoredSubmittable> resource = storedSubmittableAssembler.toResource(storedSubmittable);
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.LOCATION, selfLink.getHref());
-        headers.add(HttpHeaders.ETAG, item.getVersion().toString());
+        headers.add(HttpHeaders.ETAG, storedSubmittable.getVersion().toString());
 
         return new ResponseEntity<>(
                 resource,
                 headers,
                 HttpStatus.CREATED
         );
+    }
+
+    private void removeUnneededPayLoadElements(@RequestBody ObjectNode payload) {
+        payload.remove("submission");
+        payload.remove("dataType");
+    }
+
+    private void handleSubmission(@RequestBody ObjectNode payload, String submissionId, StoredSubmittable item) {
+        Submission submission = submissionRepository.findOne(submissionId);
+        if (submission == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        item.setSubmission(submission);
+    }
+
+    private StoredSubmittable handleDataType(@RequestBody ObjectNode payload, DataType dataType,
+                                             Class<? extends StoredSubmittable> submittableClass) {
+        StoredSubmittable storedSubmittable;
+        try {
+            storedSubmittable = objectMapper.treeToValue(payload, submittableClass);
+            storedSubmittable.setDataType(dataType);
+        } catch (IOException e) {
+            throw new RuntimeException(e); //refactor to validation error
+        }
+
+        return storedSubmittable;
+    }
+
+    private void handleChecklist(@RequestBody ObjectNode payload, StoredSubmittable storedSubmittable) {
+        JsonNode checkListIdNode = payload.remove("checklistId");
+        if (checkListIdNode == null) {
+            return;
+        }
+
+        Checklist checklist = checklistRepository.findOne(checkListIdNode.asText());
+        if (checklist == null) {
+            throw new ChecklistNotFoundException(checkListIdNode.asText());
+        }
+
+        storedSubmittable.setChecklist(checklist);
     }
 
     private Class<? extends StoredSubmittable> submittableClassForDataType(DataType dataType) {
