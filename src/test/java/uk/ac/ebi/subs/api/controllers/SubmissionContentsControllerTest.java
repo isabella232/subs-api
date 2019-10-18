@@ -58,6 +58,7 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidation
 @WebMvcTest(SubmissionContentsController.class)
 @MockBeans({
         @MockBean(DataTypeRepository.class),
+        @MockBean(ChecklistRepository.class),
         @MockBean(RepositoryEntityLinks.class),
         @MockBean(StoredSubmittableAssembler.class),
         @MockBean(StoredSubmittableResourceProcessor.class),
@@ -71,9 +72,6 @@ public class SubmissionContentsControllerTest {
 
     @MockBean
     private ValidationResultRepository validationResultRepository;
-
-    @MockBean
-    private ChecklistRepository checklistRepository;
 
     @MockBean
     private Map<Class<? extends StoredSubmittable>, SubmittableRepository<? extends StoredSubmittable>> submittableRepositoryMap;
