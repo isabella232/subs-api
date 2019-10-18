@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.utils.SubmittableHelper;
@@ -49,6 +51,7 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.SUBMISSION_ID;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@Category(RabbitMQDependentTest.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionContentsControllerWithChecklistTest {
 
