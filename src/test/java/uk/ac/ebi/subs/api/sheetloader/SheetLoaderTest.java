@@ -38,6 +38,7 @@ import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -206,26 +208,32 @@ public class SheetLoaderTest {
         Sample expectedSample = sample("s1");
         expectedSample.setSubmission(submission);
         expectedSample.setTeam(submission.getTeam());
+        expectedSample.setChecklist(checklist);
+        expectedSample.setDataType(dataType);
 
         Sample actualSample = (Sample) sheetLoaderService.documentToSubmittable(
                 Sample.class,
                 submission,
                 sheet.getRows().get(0),
                 json,
-                dataType
+                dataType,
+                checklist
         );
 
-        Assert.assertEquals(expectedSample, actualSample);
-
+        assertThat(actualSample, samePropertyValuesAs(expectedSample));
     }
 
     @Test
     public void convert_sheet_to_submittables() {
-        List<Pair<Row, ? extends StoredSubmittable>> expected = submittablesWithPairs();
+        List<Pair<Row, ? extends StoredSubmittable>> expected = new ArrayList<>(submittablesWithPairs());
 
-        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType);
+        List<Pair<Row, ? extends StoredSubmittable>> actual = new ArrayList<>(
+                sheetLoaderService.convertToSubmittables(
+                    sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType, checklist));
 
-        Assert.assertEquals(expected, actual);
+        for (int i = 0; i < expected.size(); i++) {
+            assertThat(actual.get(i).getSecond(), samePropertyValuesAs(expected.get(i).getSecond()));
+        }
     }
 
     @Test
@@ -234,7 +242,8 @@ public class SheetLoaderTest {
         //clear all alias fields, should not get converted to submittables
         sheet.getRows().forEach(r -> r.getCells().set(0, ""));
 
-        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType);
+        List<Pair<Row, ? extends StoredSubmittable>> actual = sheetLoaderService.convertToSubmittables(
+                sheet, Sample.class, checklist.getSpreadsheetTemplate(), submission, dataType, checklist);
 
         Assert.assertTrue(actual.isEmpty());
 
@@ -254,6 +263,8 @@ public class SheetLoaderTest {
         for (Pair<Row, ? extends StoredSubmittable> p : pairs) {
             p.getSecond().setTeam(submission.getTeam());
             p.getSecond().setSubmission(submission);
+            p.getSecond().setChecklist(checklist);
+            p.getSecond().setDataType(dataType);
         }
         return pairs;
     }
@@ -289,7 +300,6 @@ public class SheetLoaderTest {
 
         verify(spreadsheetRepository, times(2)).save(sheet);
         assertEquals(SheetStatusEnum.Completed, sheet.getStatus());
-
     }
 
 
@@ -306,8 +316,6 @@ public class SheetLoaderTest {
         sampleAfterPropertyMerge.setAlias("test1");
         sampleAfterPropertyMerge.setTaxonId(7L);
         sampleAfterPropertyMerge.setId("1");
-
-
     }
 
 
@@ -343,6 +351,7 @@ public class SheetLoaderTest {
         heightAttribute.setUnits("meters");
         sample.getAttributes().put("height", Arrays.asList(heightAttribute));
         sample.setReleaseDate(LocalDate.of(2018, 10, 4));
+        sample.setReferences(new HashMap());
         return sample;
     }
 

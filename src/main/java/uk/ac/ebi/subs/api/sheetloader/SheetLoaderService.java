@@ -104,7 +104,8 @@ public class SheetLoaderService {
                 targetTypeClass,
                 template,
                 submission,
-                dataType
+                dataType,
+                checklist
         );
 
         stopWatch.stop();
@@ -161,11 +162,8 @@ public class SheetLoaderService {
     }
 
     protected List<Pair<Row, ? extends StoredSubmittable>> convertToSubmittables(
-            Spreadsheet sheet,
-            Class<? extends StoredSubmittable> targetTypeClass,
-            Template template,
-            Submission submission,
-            DataType dataType) {
+            Spreadsheet sheet, Class<? extends StoredSubmittable> targetTypeClass, Template template,
+            Submission submission, DataType dataType, Checklist checklist) {
         List<Capture> columnMappings = mapColumns(
                 sheet.getHeaderRow(),
                 template.getColumnCaptures(),
@@ -181,7 +179,8 @@ public class SheetLoaderService {
                     submission,
                     row,
                     sheet.getHeaderRow().getCells(),
-                    dataType
+                    dataType,
+                    checklist
             );
 
             if (storedSubmittable != null) {
@@ -305,15 +304,20 @@ public class SheetLoaderService {
     }
 
 
-    private StoredSubmittable rowToSubmittable(List<Capture> columnMappings, Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, List<String> headerRow, DataType dataType) {
+    private StoredSubmittable rowToSubmittable(List<Capture> columnMappings,
+                                               Class<? extends StoredSubmittable> targetTypeClass,
+                                               Submission submission, Row row, List<String> headerRow,
+                                               DataType dataType, Checklist checklist) {
         JSONObject json = rowToDocument(row, columnMappings, headerRow);
 
         logger.debug("mapping row to doc {} {}", row, json);
 
-        return documentToSubmittable(targetTypeClass, submission, row, json, dataType);
+        return documentToSubmittable(targetTypeClass, submission, row, json, dataType, checklist);
     }
 
-    protected StoredSubmittable documentToSubmittable(Class<? extends StoredSubmittable> targetTypeClass, Submission submission, Row row, JSONObject json, DataType dataType) {
+    protected StoredSubmittable documentToSubmittable(Class<? extends StoredSubmittable> targetTypeClass,
+                                                      Submission submission, Row row, JSONObject json, DataType dataType,
+                                                      Checklist checklist) {
         StoredSubmittable submittable = null;
 
         if (row.getErrors().isEmpty()) {
@@ -322,6 +326,7 @@ public class SheetLoaderService {
 
                 submittable.setSubmission(submission);
                 submittable.setDataType(dataType);
+                submittable.setChecklist(checklist);
                 submittable.setTeam(submission.getTeam());
 
                 // provide default team name for references
