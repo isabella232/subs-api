@@ -20,8 +20,14 @@ import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
 import uk.ac.ebi.subs.data.client.Sample;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
+import uk.ac.ebi.subs.repository.model.templates.AttributeCapture;
+import uk.ac.ebi.subs.repository.model.templates.FieldCapture;
+import uk.ac.ebi.subs.repository.model.templates.JsonFieldType;
+import uk.ac.ebi.subs.repository.model.templates.Template;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.Profile;
@@ -30,6 +36,7 @@ import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -265,9 +272,7 @@ public class ApiIntegrationTestHelper {
         Profile profile = new Profile(domain.getDomainReference(), null, domain, attributes);
 
         Mockito.when(domainService.getMyDomains(Mockito.anyString()))
-                .thenReturn(Arrays.asList(
-                        domain
-                ));
+                .thenReturn(Collections.singletonList(domain));
 
         Mockito.when(profileRepositoryRest.getDomainProfile(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(profile);
@@ -294,12 +299,50 @@ public class ApiIntegrationTestHelper {
         dt.setDisplayNamePlural(pluralName);
         dt.setDisplayNameSingular(singularName);
 
+        dt.setValidationSchema(buildValidationSchema());
+        return dt;
+    }
+
+    public static void initialiseChecklists(ChecklistRepository checklistRepository) {
+        List<Checklist> checklists = Arrays.asList(
+                buildChecklist("ERC000021", "samples", "Genomic Standards for mouse sample", "GS Mouse X 1234"),
+                buildChecklist("ERC000022", "samples", "Genomic Standards for seal sample", "GS Seal Y 9999")
+        );
+
+        checklistRepository.save(checklists);
+    }
+
+    private static Checklist buildChecklist(String id, String dataTypeId, String description, String displayName) {
+        Checklist checklist = new Checklist();
+        checklist.setId(id);
+        checklist.setDescription(description);
+        checklist.setDisplayName(displayName);
+        checklist.setDataTypeId(dataTypeId);
+        checklist.setSpreadsheetTemplate(buildSpreadsheetTemplate());
+        checklist.setValidationSchema(buildValidationSchema());
+
+        return checklist;
+    }
+
+    private static com.fasterxml.jackson.databind.JsonNode buildValidationSchema() {
         Map<String,String> schemaMap = new HashMap<>();
         schemaMap.put("$schema","http://json-schema.org/draft-07/schema#");
         schemaMap.put("description","<<JSON schema used to validate this data type>>");
         ObjectMapper om = new ObjectMapper();
-        dt.setValidationSchema(om.valueToTree(schemaMap));
-        return dt;
+
+        return om.valueToTree(schemaMap);
     }
 
+    private static Template buildSpreadsheetTemplate() {
+        Template template = new Template();
+        template
+                .add("alias", FieldCapture.builder().fieldName("alias").build())
+                .add("taxon id", FieldCapture.builder().fieldName("taxonId").
+                        fieldType(JsonFieldType.IntegerNumber).build())
+                .add("taxon", FieldCapture.builder().fieldName("taxon").build());
+
+        template.setDefaultCapture(AttributeCapture.builder().build());
+
+        return template;
+    }
 }

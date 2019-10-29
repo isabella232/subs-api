@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,6 +45,7 @@ import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionPlanRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
@@ -141,6 +143,8 @@ public class SubmissionApiDocumentation {
     private StudyRepository studyRepository;
     @Autowired
     private DataTypeRepository dataTypeRepository;
+    @Autowired
+    private ChecklistRepository checklistRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -180,6 +184,7 @@ public class SubmissionApiDocumentation {
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
         ApiIntegrationTestHelper.initialiseDataTypes(dataTypeRepository);
+        ApiIntegrationTestHelper.initialiseChecklists(checklistRepository);
 
         Mockito.when(submissionStatusService.isSubmissionStatusChangeable(Mockito.any(Submission.class)))
                 .thenReturn(Boolean.TRUE);
@@ -948,6 +953,64 @@ public class SubmissionApiDocumentation {
                 );
     }
 
+    @Test
+    public void createSampleWithChecklistId() throws Exception {
+        Submission sub = storeSubmission();
+        uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
+        ObjectNode jsonObject = objectMapper.readValue(this.objectMapper.writeValueAsString(sample), ObjectNode.class);
+        jsonObject.put("checklistId", "ERC000022");
+        String sampleWithChecklistId = this.objectMapper.writeValueAsString(jsonObject);
+
+        this.mockMvc.perform(
+                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(sampleWithChecklistId)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(
+                status().isCreated())
+                .andDo(
+                        document("create-sample-with-checklistId",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the team"),
+                                        fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("description").description("Description for the sample"),
+                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
+                                        fieldWithPath("taxon").description("Scientific name for this taxon"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        fieldWithPath("_embedded.checklist").description("Validation checklist this samples should comply with"),
+                                        fieldWithPath("team").description("Team this sample belongs to"),
+
+                                        fieldWithPath("releaseDate").description("Date at which this sample will be released"),
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        validationresultLink(),
+                                        submissionLink(),
+                                        processingStatusLink(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("sample").description("This resource"),
+                                        linkWithRel("self:update").description("This resource can be updated"),
+                                        linkWithRel("self:delete").description("This resource can be deleted"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("Resource describing the specified validation checklist")
+                                )
+                        )
+                );
+    }
 
     @Test
     public void sampleList() throws Exception {
