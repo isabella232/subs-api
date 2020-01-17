@@ -227,6 +227,7 @@ public class ApiIntegrationTestHelper {
 
             Object linkJson = links.get(key.toString());
             Link link = objectMapper.readValue(linkJson.toString(), Link.class);
+//            Link link = new Link(linkJson.get("href").toString());
 
             rels.put((String) key, link.getHref());
 
@@ -309,7 +310,7 @@ public class ApiIntegrationTestHelper {
                 buildChecklist("ERC000022", "samples", "Genomic Standards for seal sample", "GS Seal Y 9999")
         );
 
-        checklistRepository.save(checklists);
+        checklistRepository.saveAll(checklists);
     }
 
     private static Checklist buildChecklist(String id, String dataTypeId, String description, String displayName) {

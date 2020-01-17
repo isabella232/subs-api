@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.aap.TeamCreationService;
+import uk.ac.ebi.subs.api.converters.SubmissionDTOConverter;
 import uk.ac.ebi.subs.api.processors.TeamResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTeamService;
 import uk.ac.ebi.subs.api.services.UserTokenService;
@@ -43,7 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         @MockBean(TeamCreationService.class),
         @MockBean(TeamResourceProcessor.class),
         @MockBean(TeamDtoValidator.class),
-        @MockBean(UserTokenService.class)
+        @MockBean(UserTokenService.class),
+        @MockBean(SubmissionDTOConverter.class)
 })
 @EnableSpringDataWebSupport
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})

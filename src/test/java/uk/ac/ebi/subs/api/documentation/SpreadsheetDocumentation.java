@@ -49,6 +49,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
@@ -195,9 +196,9 @@ public class SpreadsheetDocumentation {
                                 responseFields(
                                         linksResponseField(),
                                         fieldWithPath("status").description("Current status of the batch of documents"),
-                                        fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
-                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        subsectionWithPath("team").description("The team that owns this upload"),
+                                        subsectionWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        subsectionWithPath("rows").description("The content of the spreadsheet"),
                                         fieldWithPath("totalRowCount").description("Number of documents in this batch"),
                                         fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
                                         fieldWithPath("createdDate").ignored(),
@@ -276,9 +277,9 @@ public class SpreadsheetDocumentation {
                                 responseFields(
                                         linksResponseField(),
                                         fieldWithPath("status").description("Current status of the batch of documents"),
-                                        fieldWithPath("team").description("The team that owns this upload"),
-                                        fieldWithPath("headerRow").description("The header row of this spreadsheet"),
-                                        fieldWithPath("rows").description("The content of the spreadsheet"),
+                                        subsectionWithPath("team").description("The team that owns this upload"),
+                                        subsectionWithPath("headerRow").description("The header row of this spreadsheet"),
+                                        subsectionWithPath("rows").description("The content of the spreadsheet"),
                                         fieldWithPath("totalRowCount").description("Number of documents in this batch"),
                                         fieldWithPath("processedRowCount").description("Number of documetns in this batch that have been loaded"),
                                         fieldWithPath("createdDate").ignored(),

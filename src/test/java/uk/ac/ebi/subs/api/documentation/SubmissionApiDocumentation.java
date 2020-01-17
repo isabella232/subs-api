@@ -89,6 +89,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.AUTHORIZATION_HEADER_NAME;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.AUTHORIZATION_HEADER_VALUE;
@@ -216,7 +217,7 @@ public class SubmissionApiDocumentation {
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
                                         fieldWithPath("id").ignored(),
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("submitter").description("Submitter who is responsible for this submission"),
                                         fieldWithPath("team").description("Team this submission belongs to"),
 
@@ -360,8 +361,8 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("last").description("The last page in the resource list")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded").description("The list of resources"),
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded").description("The list of resources"),
                                 fieldWithPath("page.size").description("The number of resources in this page"),
                                 fieldWithPath("page.totalElements").description("The total number of resources"),
                                 fieldWithPath("page.totalPages").description("The total number of pages"),
@@ -433,17 +434,17 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
                                         fieldWithPath("attributes").description("A list of attributes for the study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
                                         fieldWithPath("projectRef").description("References to the overall project that this study is part of"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this study."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
-                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this study is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this study."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this study."),
+                                        subsectionWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -461,7 +462,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type")
                                 )
                         )
                 );
@@ -491,7 +492,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
@@ -499,12 +500,12 @@ public class SubmissionApiDocumentation {
 
                                         fieldWithPath("studyRef").description("Reference to the study that this assay is part of"),
                                         fieldWithPath("sampleUses").description("Samples used in this assay"),
-                                        fieldWithPath("sampleUses[0].sampleRef").description("Reference to the sample used in this assay"),
+                                        subsectionWithPath("sampleUses[0].sampleRef").description("Reference to the sample used in this assay"),
                                         fieldWithPath("protocolUses").description("Protocols used in this study"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this assay."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this assay."),
-                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this study is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this assay."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this assay."),
+                                        subsectionWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -522,7 +523,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type")
                                 )
                         )
                 );
@@ -544,7 +545,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
@@ -553,15 +554,15 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
                                         fieldWithPath("protocolUses").description("Protocols used to generate Assay Data"),
 
-                                        fieldWithPath("files").description("Files used in this submission"),
+                                        subsectionWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
                                         fieldWithPath("files[0].checksum").description("File checksum using md5"),
                                         fieldWithPath("files[0].type").description("File type"),
 
-                                        fieldWithPath("_embedded.submission").description("Submission that this study is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this study."),
-                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this study is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this study."),
+                                        subsectionWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -579,7 +580,7 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type")
                                 )
                         )
                 );
@@ -600,7 +601,7 @@ public class SubmissionApiDocumentation {
                         preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
-                                fieldWithPath("_links").description("Links"),
+                                subsectionWithPath("_links").description("Links"),
                                 fieldWithPath("alias").description("Unique name for the project within the team"),
                                 fieldWithPath("title").description("Title for the project"),
                                 fieldWithPath("description").description("Description for the project"),
@@ -608,10 +609,10 @@ public class SubmissionApiDocumentation {
                                 fieldWithPath("publications").description("Publications related to this project"),
                                 fieldWithPath("fundings").description("Fundings related to this project"),
                                 //fieldWithPath("attributes").description("A list of attributes for the project"),
-                                fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
-                                fieldWithPath("_embedded.dataType").description("Data type description."),
+                                subsectionWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                subsectionWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                subsectionWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                subsectionWithPath("_embedded.dataType").description("Data type description."),
                                 fieldWithPath("team").description("Team this project belongs to"),
                                 fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                 fieldWithPath("createdDate").description("Date this resource was created"),
@@ -630,7 +631,7 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("self:delete").description("This resource can be deleted"),
                                 linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                 linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                linkWithRel("dataType").description("EntityModel describing the requirements for this data type")
 
                         )
                 ));
@@ -680,8 +681,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -731,8 +732,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -781,7 +782,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
@@ -789,10 +790,10 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
-                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        subsectionWithPath("_embedded.dataType").description("Data type description."),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this sample will be released"),
@@ -812,14 +813,14 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type")
                                 )
                         )
                 );
 
         String sampleId = sampleRepository.findAll().get(0).getId();
 
-        Sample sampleWithAccession = sampleRepository.findOne(sampleId);
+        Sample sampleWithAccession = sampleRepository.findById(sampleId).orElse(null);
         sampleWithAccession.setAccession("SAMEA12345678");
         sampleRepository.save(sampleWithAccession);
 
@@ -871,8 +872,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing opt-in data requirements for this document")
                                 )
                         )
                 );
@@ -919,8 +920,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing opt-in data requirements for this document")
 
                                 )
                         )
@@ -973,7 +974,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
@@ -981,11 +982,11 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
-                                        fieldWithPath("_embedded.dataType").description("Data type description."),
-                                        fieldWithPath("_embedded.checklist").description("Validation checklist this samples should comply with"),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        subsectionWithPath("_embedded.dataType").description("Data type description."),
+                                        subsectionWithPath("_embedded.checklist").description("Validation checklist this samples should comply with"),
                                         fieldWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this sample will be released"),
@@ -1005,8 +1006,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This resource can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing the specified validation checklist")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing the specified validation checklist")
                                 )
                         )
                 );
@@ -1042,7 +1043,7 @@ public class SubmissionApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.samples").description("Samples within the submission"),
+                                        subsectionWithPath("_embedded.samples").description("Samples within the submission"),
                                         DocumentationHelper.paginationBlock()
                                 )
                         )
@@ -1067,8 +1068,8 @@ public class SubmissionApiDocumentation {
                                         linkWithRel("self:delete").description("This sample can be deleted"),
                                         linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
                                         linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
-                                        linkWithRel("dataType").description("Resource describing the requirements for this data type"),
-                                        linkWithRel("checklist").description("Resource describing opt-in data requirements for this document")
+                                        linkWithRel("dataType").description("EntityModel describing the requirements for this data type"),
+                                        linkWithRel("checklist").description("EntityModel describing opt-in data requirements for this document")
                                 ),
                                 responseFields( //TODO fill out the descriptions
                                         DocumentationHelper.linksResponseField(),
@@ -1141,7 +1142,7 @@ public class SubmissionApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.submissions").description("Submissions matching the team name"),
+                                        subsectionWithPath("_embedded.submissions").description("Submissions matching the team name"),
                                         DocumentationHelper.paginationBlock()
                                 )
                         )
@@ -1169,7 +1170,7 @@ public class SubmissionApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.projects").description("Projects available to current user"),
+                                        subsectionWithPath("_embedded.projects").description("Projects available to current user"),
                                         DocumentationHelper.paginationBlock()
                                 )
                         )
@@ -1196,7 +1197,7 @@ public class SubmissionApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("content").description("Number of submissions for each status")
+                                        subsectionWithPath("content").description("Number of submissions for each status")
                                 )
                         )
                 );
@@ -1223,7 +1224,7 @@ public class SubmissionApiDocumentation {
                                 ),
                                 responseFields(
                                         DocumentationHelper.linksResponseField(),
-                                        fieldWithPath("_embedded.submissions").description("Submissions available to current user"),
+                                        subsectionWithPath("_embedded.submissions").description("Submissions available to current user"),
                                         DocumentationHelper.paginationBlock()
                                 )
                         )
@@ -1325,7 +1326,7 @@ public class SubmissionApiDocumentation {
 
     private List<Sample> storeSamples(Submission sub, int numberRequired) {
         List<Sample> samples = Helpers.generateTestSamples(numberRequired);
-        DataType samplesDataType = dataTypeRepository.findOne("samples");
+        DataType samplesDataType = dataTypeRepository.findById("samples").orElse(null);
         for (Sample s : samples) {
             s.setCreatedDate(new Date());
             s.setSubmission(sub);

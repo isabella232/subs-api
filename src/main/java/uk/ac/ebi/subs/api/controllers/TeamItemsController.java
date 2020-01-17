@@ -1,7 +1,7 @@
 package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,15 +27,17 @@ public class TeamItemsController {
 
     @PreAuthorizeParamTeamName
     @RequestMapping("/teams/{teamName:.+}/items")
-    public Resource<TeamItems> teamItems(@PathVariable @P("teamName") String teamName) {
+    public EntityModel<TeamItems> teamItems(@PathVariable @P("teamName") String teamName) {
 
         Team team = Team.build(teamName);
 
-        return this.process(new Resource<>(new TeamItems(team)));
+        return this.process(new EntityModel<>(new TeamItems(team)));
     }
 
-    public Resource<TeamItems> process(Resource<TeamItems> resource) {
-        linkHelper.addSubmittablesInTeamLinks(resource.getLinks(), resource.getContent().getTeam().getName());
+    public EntityModel<TeamItems> process(EntityModel<TeamItems> resource) {
+        resource.add(
+            linkHelper.addSubmittablesInTeamLinks(resource.getLinks().toList(), resource.getContent().getTeam().getName())
+        );
 
         resource.getContent().setTeam(null);
 

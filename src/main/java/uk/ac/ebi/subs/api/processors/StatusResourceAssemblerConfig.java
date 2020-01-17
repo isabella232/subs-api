@@ -2,13 +2,13 @@ package uk.ac.ebi.subs.api.processors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * This configuration class contains resource assembler Spring beans for
@@ -21,9 +21,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class StatusResourceAssemblerConfig {
 
     @Bean
-    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler() {
+    public RepresentationModelAssembler<StatusDescription, EntityModel<StatusDescription>> submissionStatusResourceAssembler() {
         return entity -> {
-            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
+            EntityModel<StatusDescription> res = new EntityModel<StatusDescription>(entity);
 
             res.add(
                     linkTo(
@@ -37,9 +37,9 @@ public class StatusResourceAssemblerConfig {
     }
 
     @Bean
-    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> processingStatusResourceAssembler() {
+    public RepresentationModelAssembler<StatusDescription, EntityModel<StatusDescription>> processingStatusResourceAssembler() {
         return entity -> {
-            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
+            EntityModel<StatusDescription> res = new EntityModel<StatusDescription>(entity);
 
             res.add(
                     linkTo(
@@ -52,9 +52,9 @@ public class StatusResourceAssemblerConfig {
     }
 
     @Bean
-    public ResourceAssembler<StatusDescription, Resource<StatusDescription>> releaseStatusResourceAssembler() {
+    public RepresentationModelAssembler<StatusDescription, EntityModel<StatusDescription>> releaseStatusResourceAssembler() {
         return entity -> {
-            Resource<StatusDescription> res = new Resource<StatusDescription>(entity);
+            EntityModel<StatusDescription> res = new EntityModel<StatusDescription>(entity);
 
             res.add(
                     linkTo(

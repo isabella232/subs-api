@@ -135,9 +135,9 @@ public class SheetLoaderTest {
         );
 
 
-        Mockito.when(dataTypeRepository.findOne(dataType.getId())).thenReturn(dataType);
-        Mockito.when(checklistRepository.findOne(checklist.getId())).thenReturn(checklist);
-        Mockito.when(submissionRepository.findOne(submission.getId())).thenReturn(submission);
+        Mockito.when(dataTypeRepository.findById(dataType.getId())).thenReturn(Optional.ofNullable(dataType));
+        Mockito.when(checklistRepository.findById(checklist.getId())).thenReturn(Optional.ofNullable(checklist));
+        Mockito.when(submissionRepository.findById(submission.getId())).thenReturn(Optional.ofNullable(submission));
     }
 
     private Spreadsheet sheet;

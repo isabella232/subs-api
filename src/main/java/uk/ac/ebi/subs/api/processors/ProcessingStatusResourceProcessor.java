@@ -1,22 +1,22 @@
 package uk.ac.ebi.subs.api.processors;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Resource processor for {@link ProcessingStatus} entity used by Spring MVC controller.
+ * EntityModel processor for {@link ProcessingStatus} entity used by Spring MVC controller.
  */
 @Component
-public class ProcessingStatusResourceProcessor implements ResourceProcessor<Resource<ProcessingStatus>> {
+public class ProcessingStatusResourceProcessor implements RepresentationModelProcessor<EntityModel<ProcessingStatus>> {
 
     @Override
-    public Resource<ProcessingStatus> process(Resource<ProcessingStatus> resource) {
+    public EntityModel<ProcessingStatus> process(EntityModel<ProcessingStatus> resource) {
 
         addStatusDescriptionRel(resource);
 
@@ -25,12 +25,12 @@ public class ProcessingStatusResourceProcessor implements ResourceProcessor<Reso
         return resource;
     }
 
-    private void redactIds(Resource<ProcessingStatus> resource) {
+    private void redactIds(EntityModel<ProcessingStatus> resource) {
         resource.getContent().setSubmissionId(null);
         resource.getContent().setSubmittableId(null);
     }
 
-    private void addStatusDescriptionRel(Resource<ProcessingStatus> resource) {
+    private void addStatusDescriptionRel(EntityModel<ProcessingStatus> resource) {
         resource.add(
                 linkTo(
                         methodOn(StatusDescriptionController.class)

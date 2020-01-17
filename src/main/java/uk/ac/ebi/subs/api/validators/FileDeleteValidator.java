@@ -50,7 +50,7 @@ public class FileDeleteValidator implements Validator {
             SubsApiErrors.file_is_not_in_deletable_status.addError(errors, "status");
         }
 
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         if (!operationControlService.isUpdateable(submission)) {
             SubsApiErrors.resource_locked.addError(errors);

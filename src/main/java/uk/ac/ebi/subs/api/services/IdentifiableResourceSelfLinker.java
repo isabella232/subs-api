@@ -1,9 +1,9 @@
 package uk.ac.ebi.subs.api.services;
 
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.Identifiable;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.subs.repository.model.Identifiable;
 
 /**
  * This functions to add self links to Identifiable items wrapped as resources
@@ -19,9 +19,9 @@ public class IdentifiableResourceSelfLinker<T extends Identifiable> {
         this.repositoryEntityLinks = repositoryEntityLinks;
     }
 
-    public Resource<T> addSelfLink(Resource<T> resource){
+    public EntityModel<T> addSelfLink(EntityModel<T> resource){
         resource.add(
-                repositoryEntityLinks.linkForSingleResource(resource.getContent()).withSelfRel()
+                repositoryEntityLinks.linkForItemResource(resource.getContent().getClass(), resource.getContent().getId()).withSelfRel()
         );
 
         return resource;

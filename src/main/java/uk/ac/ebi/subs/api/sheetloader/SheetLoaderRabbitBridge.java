@@ -32,7 +32,7 @@ public class SheetLoaderRabbitBridge {
 
         adminUserService.injectAdminUserIntoSecurityContext();
 
-        Spreadsheet sheet = spreadsheetRepository.findOne(sheetId);
+        Spreadsheet sheet = spreadsheetRepository.findById(sheetId).orElse(null);
 
         logger.debug("sheet ready for loading {}", sheet.getId());
 

@@ -1,7 +1,5 @@
 package uk.ac.ebi.subs.api;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +25,7 @@ import uk.ac.ebi.subs.repository.security.RoleLookup;
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @Configuration
 @EnableWebSecurity(debug = true)
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Profile("basic_auth")
 @Order(1)
 public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -52,14 +50,14 @@ public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().anyRequest().authenticated();
         httpSecurity.headers().cacheControl();
         httpSecurity.httpBasic();
-
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
+        User.UserBuilder users = User.withDefaultPasswordEncoder();
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(User.withUsername(USI_USER).password(USI_PASSWORD).roles(Helpers.TEAM_NAME).build());
-        manager.createUser(User.withUsername(USI_ADMIN).password(USI_PASSWORD).roles(new RoleLookup().adminRole(),Helpers.TEAM_NAME).build());
+        manager.createUser(users.username(USI_USER).password(USI_PASSWORD).roles(Helpers.TEAM_NAME).build());
+        manager.createUser(users.username(USI_ADMIN).password(USI_PASSWORD).roles(new RoleLookup().adminRole(),Helpers.TEAM_NAME).build());
         return manager;
     }
 

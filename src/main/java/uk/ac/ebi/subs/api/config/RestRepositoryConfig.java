@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.ac.ebi.tsc.aap.client.model.User;
 
+import java.util.Optional;
+
 /**
  * Used by Spring. Tells to Spring the user that is calling the Spring Data REST method.
  */
@@ -25,23 +27,18 @@ public class RestRepositoryConfig {
 
     @Bean
     public AuditorAware<String> auditorProvider() {
-        return new AuditorAware<String>() {
-            @Override
-            public String getCurrentAuditor() {
-                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (authentication != null) {
+        return () -> {
+            final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
 
-                    final Object details = authentication.getDetails();
-                    if (details instanceof User) {
-                        return ((User) details).getUserReference();
-                    } else {
-                        return authentication.getName();
-                    }
-
+                final Object details = authentication.getDetails();
+                if (details instanceof User) {
+                    return Optional.ofNullable(((User) details).getUserReference());
                 } else {
-                    return DEFAULT_USI_USER;
+                    return Optional.ofNullable(authentication.getName());
                 }
-
+            } else {
+                return Optional.of(DEFAULT_USI_USER);
             }
         };
     }

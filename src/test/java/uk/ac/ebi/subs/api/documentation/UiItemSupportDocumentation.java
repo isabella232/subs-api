@@ -41,6 +41,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
@@ -114,7 +115,7 @@ public class UiItemSupportDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.uiSupportItems").description("Support data available"),
+                                        subsectionWithPath("_embedded.uiSupportItems").description("Support data available"),
                                         paginationBlock()
                                 )
 

@@ -9,8 +9,8 @@ import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.webmvc.ControllerUtils;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +26,7 @@ import uk.ac.ebi.subs.api.processors.SubmissionResourceProcessor;
 import uk.ac.ebi.subs.api.services.UserTokenService;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
@@ -64,7 +65,7 @@ public class TeamSubmissionController {
 
     @PreAuthorizeParamTeamName
     @RequestMapping(value = "/teams/{teamName:.+}/submissions", method = RequestMethod.POST)
-    public ResponseEntity<ResourceSupport> createTeamSubmission(
+    public ResponseEntity<RepresentationModel<?>> createTeamSubmission(
             @PathVariable @P("teamName") String teamName,
             @RequestBody SubmissionDTO submissionDTO,
             @RequestHeader(value = "Accept", required = false) String acceptHeader,
@@ -82,7 +83,7 @@ public class TeamSubmissionController {
 
         Submission savedSubmission = createSubmission(submission);
 
-        Resource<Submission> resource = buildSubmissionResource(submission, savedSubmission);
+        EntityModel<Submission> resource = buildSubmissionResource(submission, savedSubmission);
 
         HttpHeaders httpHeaders = buildHeaders(resource, savedSubmission);
 
@@ -94,7 +95,7 @@ public class TeamSubmissionController {
         Collection<Domain> userDomains = domainService.getMyDomains(token);
         Optional<Domain> domainOptional = userDomains.stream().filter(d -> teamName.equals(d.getDomainName())).findAny();
 
-        if (!domainOptional.isPresent()) {
+        if (domainOptional.isEmpty()) {
             // possible to reach this if the user does not currently belong to the domain in AAP
             return null;
         }
@@ -124,7 +125,9 @@ public class TeamSubmissionController {
         return savedSubmission;
     }
 
-    private ResponseEntity<ResourceSupport> buildResponseEntity(@RequestHeader(value = "Accept", required = false) String acceptHeader, Resource<Submission> resource, HttpHeaders httpHeaders) {
+    private ResponseEntity<RepresentationModel<?>> buildResponseEntity(
+            @RequestHeader(value = "Accept", required = false) String acceptHeader,
+            EntityModel<Submission> resource, HttpHeaders httpHeaders) {
         boolean returnBody = config.returnBodyOnCreate(acceptHeader);
 
         if (returnBody) {
@@ -141,31 +144,32 @@ public class TeamSubmissionController {
         }
     }
 
-    private Resource<Submission> buildSubmissionResource(@RequestBody Submission submission, Submission savedSubmission) {
-        Resource<Submission> resource = new Resource<>(savedSubmission);
+    private EntityModel<Submission> buildSubmissionResource(@RequestBody Submission submission, Submission savedSubmission) {
+        EntityModel<Submission> resource = new EntityModel<>(savedSubmission);
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(submission)
+                repositoryEntityLinks.linkToItemResource(submission.getClass(), submission.getId())
         );
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(submission).withSelfRel()
+                repositoryEntityLinks.linkToItemResource(submission.getClass(), submission.getId()).withSelfRel()
         );
+        final SubmissionStatus submissionStatus = submission.getSubmissionStatus();
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(submission.getSubmissionStatus())
+                repositoryEntityLinks.linkToItemResource(submissionStatus.getClass(), submissionStatus.getId())
         );
 
-        resource = submissionResourceProcessor.process(resource);
+//        resource = submissionResourceProcessor.process(resource);
         return resource;
     }
 
-    private HttpHeaders buildHeaders(Resource<Submission> resource, Submission submission) {
+    private HttpHeaders buildHeaders(EntityModel<Submission> resource, Submission submission) {
         HttpHeaders httpHeaders = new HttpHeaders();
 
         ETag.from(submission.getVersion().toString()).addTo(httpHeaders);
 
         httpHeaders.setLastModified(submission.getCreatedDate().getTime());
 
-        if (resource.getLink("self") != null) {
-            URI selfLink = URI.create(resource.getLink("self").expand().getHref());
+        if (resource.getLink("self").isPresent()) {
+            URI selfLink = URI.create(resource.getLink("self").get().expand().getHref());
             httpHeaders.setLocation(selfLink);
         }
 

@@ -32,7 +32,9 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApiApplication.class)
@@ -87,9 +89,9 @@ public class DataTypeDocumentation {
                                 linkWithRel("search").ignored()
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded.dataTypes").description("page of data type descriptions"),
-                                fieldWithPath("page").ignored()
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded.dataTypes").description("page of data type descriptions"),
+                                paginationBlock()
                         )
                 ));
 
@@ -118,9 +120,9 @@ public class DataTypeDocumentation {
                                 fieldWithPath("displayNamePlural").description("plural name for the data type"),
                                 fieldWithPath("description").description("descritpion of the data type"),
                                 fieldWithPath("archive").description("the archive in which this data will be stored"),
-                                fieldWithPath("validationSchema").description("JSON schema used to validate this data typee"),
+                                subsectionWithPath("validationSchema").description("JSON schema used to validate this data typee"),
                                 fieldWithPath("submittableClassName").description("Underlying representation for this data type"),
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources")
 
                         )
                 ));

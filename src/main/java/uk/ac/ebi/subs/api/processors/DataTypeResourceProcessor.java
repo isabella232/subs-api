@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -16,21 +17,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Resource processor for {@link DataType} entity used by Spring MVC controller.
+ * EntityModel processor for {@link DataType} entity used by Spring MVC controller.
  */
 @Component
 @RequiredArgsConstructor
-public class DataTypeResourceProcessor implements ResourceProcessor<Resource<DataType>> {
+public class DataTypeResourceProcessor implements RepresentationModelProcessor<EntityModel<DataType>> {
 
     @NonNull
     RepositoryEntityLinks repositoryEntityLinks;
 
     @Override
-    public Resource<DataType> process(Resource<DataType> resource) {
+    public EntityModel<DataType> process(EntityModel<DataType> resource) {
 
         DataType dataType = resource.getContent();
 
-        Link templatedChecklistsLink = repositoryEntityLinks.linkToSearchResource(Checklist.class, "by-data-type-id");
+        Link templatedChecklistsLink = repositoryEntityLinks.linkToSearchResource(Checklist.class, LinkRelation.of("by-data-type-id"));
 
         Map<String, String> expansionParameters = new HashMap<>();
         expansionParameters.put("dataTypeId", dataType.getId());
@@ -40,7 +41,6 @@ public class DataTypeResourceProcessor implements ResourceProcessor<Resource<Dat
                 .withRel("checklists");
 
         resource.add(checklistLink);
-
 
         // mongo can't store valid schema due to key constraints
         if (dataType.getValidationSchema() != null) {

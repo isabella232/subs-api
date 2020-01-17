@@ -84,7 +84,7 @@ public class SheetBulkOps {
             submittablesToSave.add(pair.getSecond());
         }
 
-        repository.save(submittablesToSave);
+        repository.saveAll(submittablesToSave);
     }
 
     public void insertNewSubmittables(Collection<Pair<Row, ? extends StoredSubmittable>> freshSubmittables,

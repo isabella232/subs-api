@@ -3,17 +3,17 @@ package uk.ac.ebi.subs.api.processors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 /**
- * Resource processor for {@link ValidationResult} entity used by Spring MVC controller.
+ * EntityModel processor for {@link ValidationResult} entity used by Spring MVC controller.
  */
 @Component
-public class ValidationResultResourceProcessor implements ResourceProcessor<Resource<ValidationResult>> {
+public class ValidationResultResourceProcessor implements RepresentationModelProcessor<EntityModel<ValidationResult>> {
     private static final Logger logger = LoggerFactory.getLogger(ValidationResultResourceProcessor.class);
 
     private RepositoryEntityLinks repositoryEntityLinks;
@@ -29,7 +29,7 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
      * @return the processed resource
      */
     @Override
-    public Resource<ValidationResult> process(Resource<ValidationResult> resource) {
+    public EntityModel<ValidationResult> process(EntityModel<ValidationResult> resource) {
         addSubmittableLink(resource);
 
         redactVerboseFields(resource);
@@ -37,7 +37,7 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
         return resource;
     }
 
-    private void addSubmittableLink(Resource<ValidationResult> resource) {
+    private void addSubmittableLink(EntityModel<ValidationResult> resource) {
         String submittableType = resource.getContent().getEntityType();
 
         if (submittableType != null) {
@@ -50,18 +50,18 @@ public class ValidationResultResourceProcessor implements ResourceProcessor<Reso
             }
 
             if (submittableClass != null) {
-                Link linkToSingleResource = repositoryEntityLinks.linkToSingleResource(
+                Link linkToItemResource = repositoryEntityLinks.linkToItemResource(
                     submittableClass,
                     resource.getContent().getEntityUuid()
                 );
 
-                Link submittableLink = linkToSingleResource.withRel("submittable");
+                Link submittableLink = linkToItemResource.withRel("submittable");
                 resource.add(submittableLink);
             }
         }
     }
 
-    private void redactVerboseFields(Resource<ValidationResult> resource) {
+    private void redactVerboseFields(EntityModel<ValidationResult> resource) {
         resource.getContent().setEntityType(null);
         resource.getContent().setEntityUuid(null);
         resource.getContent().setSubmissionId(null);

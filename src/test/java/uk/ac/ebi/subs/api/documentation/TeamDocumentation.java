@@ -43,6 +43,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
@@ -202,13 +203,13 @@ public class TeamDocumentation {
                                         linkWithRel("self").description("This resource list")
                                 ),
                                 responseFields(
-                                        fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                        fieldWithPath("_embedded").description("The list of resources"),
-                                        fieldWithPath("_embedded.teams[].name").description("Name of this team"),
-                                        fieldWithPath("page.size").description("The number of resources in this page"),
-                                        fieldWithPath("page.totalElements").description("The total number of resources"),
-                                        fieldWithPath("page.totalPages").description("The total number of pages"),
-                                        fieldWithPath("page.number").description("The page number")
+                                        subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                        subsectionWithPath("_embedded").description("The list of resources"),
+                                        subsectionWithPath("_embedded.teams[].name").description("Name of this team"),
+                                        subsectionWithPath("page.size").description("The number of resources in this page"),
+                                        subsectionWithPath("page.totalElements").description("The total number of resources"),
+                                        subsectionWithPath("page.totalPages").description("The total number of pages"),
+                                        subsectionWithPath("page.number").description("The page number")
                                 )
                         )
                 );

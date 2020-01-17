@@ -7,7 +7,7 @@ import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
@@ -42,7 +42,6 @@ import java.io.InputStream;
 @CrossOrigin
 public class SpreadsheetController {
 
-
     @NonNull
     private ApplicationEventPublisher publisher;
 
@@ -69,19 +68,19 @@ public class SpreadsheetController {
 
     @PreAuthorizeSubmissionIdTeamName
     @RequestMapping(path = "/submissions/{submissionId}/spreadsheet", method = RequestMethod.POST, consumes = {"text/csv", "text/csv;charset=UTF-8"})
-    public ResponseEntity<Resource<Spreadsheet>> uploadCsv(
+    public ResponseEntity<EntityModel<Spreadsheet>> uploadCsv(
             @PathVariable @P("submissionId") String submissionId,
             @RequestParam @P("checklistId") String checklistId,
             InputStream inputStream) throws IOException {
 
 
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
         }
 
-        Checklist checklist = checklistRepository.findOne(checklistId);
+        Checklist checklist = checklistRepository.findById(checklistId).orElse(null);
 
         if (checklist == null) {
             throw new ResourceNotFoundException();
@@ -101,17 +100,17 @@ public class SpreadsheetController {
         sheet = spreadsheetRepository.insert(sheet);
         publisher.publishEvent(new AfterCreateEvent(sheet));
 
-        Resource<Spreadsheet> resource = new Resource<>(sheet);
+        EntityModel<Spreadsheet> resource = new EntityModel<>(sheet);
 
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId()).withSelfRel(),
-                repositoryEntityLinks.linkToSingleResource(Spreadsheet.class, sheet.getId())
+                repositoryEntityLinks.linkToItemResource(Spreadsheet.class, sheet.getId()).withSelfRel(),
+                repositoryEntityLinks.linkToItemResource(Spreadsheet.class, sheet.getId())
         );
 
         resource = spreadsheetResourceProcessor.process(resource);
 
 
-        ResponseEntity<Resource<Spreadsheet>> resourceSupportResponseEntity = new ResponseEntity<>(
+        ResponseEntity<EntityModel<Spreadsheet>> resourceSupportResponseEntity = new ResponseEntity<>(
                 resource,
                 HttpStatus.CREATED
         );

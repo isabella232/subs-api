@@ -36,6 +36,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -110,9 +111,9 @@ public class SubmissionPlanDocumentation {
                                 linkWithRel("self").ignored()
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded.submissionPlans").description("page of submission plan descriptions"),
-                                fieldWithPath("page").ignored()
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded.submissionPlans").description("page of submission plan descriptions"),
+                                subsectionWithPath("page").description("paging information of submission plan resource")
                         )
                 ));
 
@@ -138,8 +139,8 @@ public class SubmissionPlanDocumentation {
                                 fieldWithPath("displayName").description("display name for the submission plan"),
                                 fieldWithPath("description").description("description of the submission plan"),
                                 fieldWithPath("dataTypeIds").description("IDs for the data types used in this plan"),
-                                fieldWithPath("dataTypes").description("The data types used in this plan"),
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
+                                subsectionWithPath("dataTypes").description("The data types used in this plan"),
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources")
 
                         )
                 ));

@@ -44,6 +44,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
@@ -159,7 +160,7 @@ public class ChecklistDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.checklists").description("Checklists available"),
+                                        subsectionWithPath("_embedded.checklists").description("Checklists available"),
                                         paginationBlock()
                                 )
 
@@ -210,11 +211,11 @@ public class ChecklistDocumentation {
                                 ),
                                 responseFields(
                                         fieldWithPath("id").ignored(),
-                                        fieldWithPath("spreadsheetTemplate").description("description of spreadsheet columns and how to convert them to a JSON document"),
+                                        subsectionWithPath("spreadsheetTemplate").description("description of spreadsheet columns and how to convert them to a JSON document"),
                                         fieldWithPath("dataTypeId").description("Data type that this checklist can be used with"),
                                         fieldWithPath("displayName").description("Human friendly name for the checklist"),
                                         fieldWithPath("description").description("Description of the checklist"),
-                                        fieldWithPath("validationSchema").description("A JSON schema that will be applied to any documents using this checklist"),
+                                        subsectionWithPath("validationSchema").description("A JSON schema that will be applied to any documents using this checklist"),
                                         linksResponseField()
                                 )
 
@@ -240,7 +241,7 @@ public class ChecklistDocumentation {
                                 ),
                                 responseFields(
                                         linksResponseField(),
-                                        fieldWithPath("_embedded.checklists").description("Checklists matching the query parameter")
+                                        subsectionWithPath("_embedded.checklists").description("Checklists matching the query parameter")
                                 )
                         )
                 );

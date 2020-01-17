@@ -8,9 +8,9 @@ import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * This REST controller contains endpoints related to the status of a given submission.
@@ -52,7 +52,7 @@ public class SubmissionStatusController {
     @NonNull
     private SubmissionStatusService submissionStatusService;
     @NonNull
-    private ResourceAssembler<StatusDescription, Resource<StatusDescription>> submissionStatusResourceAssembler;
+    private RepresentationModelAssembler<StatusDescription, EntityModel<StatusDescription>> submissionStatusResourceAssembler;
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
 
@@ -71,11 +71,11 @@ public class SubmissionStatusController {
      */
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.PUT,RequestMethod.PATCH})
     @PreAuthorizeSubmissionIdTeamName
-    public Resource<SubmissionStatus> updateStatus(
+    public EntityModel<SubmissionStatus> updateStatus(
             @PathVariable @P("submissionId") String submissionId,
             @RequestBody SubmissionStatusDto submissionStatusDto) {
 
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
@@ -83,7 +83,7 @@ public class SubmissionStatusController {
 
         SubmissionStatus status = updateStatus(submissionStatusDto, submission);
 
-        Resource<SubmissionStatus> resource = buildSubmissionStatusResource(status);
+        EntityModel<SubmissionStatus> resource = buildSubmissionStatusResource(status);
 
         return resource;
     }
@@ -96,10 +96,10 @@ public class SubmissionStatusController {
      */
     @RequestMapping(value = "/submissionStatus",method = {RequestMethod.GET})
     @PreAuthorizeSubmissionIdTeamName
-    public Resource<SubmissionStatus> getStatus(
+    public EntityModel<SubmissionStatus> getStatus(
             @PathVariable @P("submissionId") String submissionId) {
 
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
@@ -107,19 +107,19 @@ public class SubmissionStatusController {
 
         SubmissionStatus status = submission.getSubmissionStatus();
 
-        Resource<SubmissionStatus> resource = buildSubmissionStatusResource(status);
+        EntityModel<SubmissionStatus> resource = buildSubmissionStatusResource(status);
 
         return resource;
     }
 
-    private Resource<SubmissionStatus> buildSubmissionStatusResource(SubmissionStatus status) {
-        Resource<SubmissionStatus> resource = new Resource<>(status);
+    private EntityModel<SubmissionStatus> buildSubmissionStatusResource(SubmissionStatus status) {
+        EntityModel<SubmissionStatus> resource = new EntityModel<>(status);
 
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(status)
+                repositoryEntityLinks.linkToItemResource(status.getClass(), status.getId())
         );
         resource.add(
-                repositoryEntityLinks.linkToSingleResource(status).withSelfRel()
+                repositoryEntityLinks.linkToItemResource(status.getClass(), status.getId()).withSelfRel()
         );
 
         return resource;
@@ -144,20 +144,20 @@ public class SubmissionStatusController {
      */
     @RequestMapping(value = "/availableSubmissionStatuses")
     @PreAuthorizeSubmissionIdTeamName
-    public Resources<Resource<StatusDescription>> availableSubmissionStatuses(@PathVariable String submissionId) {
-        Submission currentSubmission = submissionRepository.findOne(submissionId);
+    public CollectionModel<EntityModel<StatusDescription>> availableSubmissionStatuses(@PathVariable String submissionId) {
+        Submission currentSubmission = submissionRepository.findById(submissionId).orElse(null);
 
         Collection<String> statusNames =
                 submissionStatusService.getAvailableStatusNames(currentSubmission, submissionStatusDescriptionMap);
 
-        List<Resource<StatusDescription>> statusResources = statusNames
+        List<EntityModel<StatusDescription>> statusResources = statusNames
                 .stream()
                 .map(statusName -> submissionStatusDescriptionMap.get(statusName))
                 .filter(Objects::nonNull)
-                .map(statusDescription -> submissionStatusResourceAssembler.toResource(statusDescription))
+                .map(statusDescription -> submissionStatusResourceAssembler.toModel(statusDescription))
                 .collect(Collectors.toList());
 
-        Resources<Resource<StatusDescription>> resources = new Resources<>(statusResources);
+        CollectionModel<EntityModel<StatusDescription>> resources = new CollectionModel<>(statusResources);
 
         resources.add(
                 linkTo(
@@ -167,7 +167,7 @@ public class SubmissionStatusController {
         );
 
         resources.add(
-                repositoryEntityLinks.linkToSingleResource(Submission.class, submissionId)
+                repositoryEntityLinks.linkToItemResource(Submission.class, submissionId)
         );
 
         return resources;

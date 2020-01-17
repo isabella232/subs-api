@@ -23,7 +23,7 @@ import uk.ac.ebi.tsc.aap.client.model.User;
  * Send submissions off to rabbit after storing a submission with the 'Submitted' status.
  */
 @Component
-@RepositoryEventHandler(Submission.class)
+@RepositoryEventHandler
 public class SubmissionEventHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -79,7 +79,7 @@ public class SubmissionEventHandler {
      */
     @HandleBeforeSave
     public void handleBeforeSave(Submission submission) {
-        Submission storedSubmission = submissionRepository.findOne(submission.getId());
+        Submission storedSubmission = submissionRepository.findById(submission.getId()).orElse(null);
         submission.setSubmissionStatus(storedSubmission.getSubmissionStatus());
 
         submissionEventService.submissionUpdated(submission);

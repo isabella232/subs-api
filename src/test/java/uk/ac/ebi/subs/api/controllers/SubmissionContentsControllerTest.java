@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.converters.SubmissionDTOConverter;
 import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
@@ -62,7 +63,8 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidation
         @MockBean(RepositoryEntityLinks.class),
         @MockBean(StoredSubmittableAssembler.class),
         @MockBean(StoredSubmittableResourceProcessor.class),
-        @MockBean(PagedResourcesAssembler.class)
+        @MockBean(PagedResourcesAssembler.class),
+        @MockBean(SubmissionDTOConverter.class)
 })
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionContentsControllerTest {

@@ -78,8 +78,8 @@ public class SheetLoaderService {
         Assert.notNull(sheet.getDataTypeId());
         Assert.notNull(sheet.getChecklistId());
 
-        Checklist checklist = checklistRepository.findOne(sheet.getChecklistId());
-        DataType dataType = dataTypeRepository.findOne(checklist.getDataTypeId());
+        Checklist checklist = checklistRepository.findById(sheet.getChecklistId()).orElse(null);
+        DataType dataType = dataTypeRepository.findById(checklist.getDataTypeId()).orElse(null);
 
         Template template = checklist.getSpreadsheetTemplate();
 
@@ -92,7 +92,7 @@ public class SheetLoaderService {
 
         SubmittableRepository repository = this.submittableRepositoryMap.get(targetTypeClass);
         String submissionId = sheet.getSubmissionId();
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         logger.debug("mapping {} for submission {} from sheet {}", targetType, submissionId, sheet.getId());
 

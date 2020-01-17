@@ -1,9 +1,10 @@
 package uk.ac.ebi.subs.api.processors;
 
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.TeamItemsController;
@@ -14,14 +15,14 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Resource processor for {@link Team} entity used by Spring MVC controller.
+ * EntityModel processor for {@link Team} entity used by Spring MVC controller.
  */
 @Component
-public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> {
+public class TeamResourceProcessor implements RepresentationModelProcessor<EntityModel<Team>> {
 
     public TeamResourceProcessor(RepositoryEntityLinks repositoryEntityLinks, LinkHelper linkHelper) {
         this.repositoryEntityLinks = repositoryEntityLinks;
@@ -32,7 +33,7 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
     private LinkHelper linkHelper;
 
     @Override
-    public Resource<Team> process(Resource<Team> resource) {
+    public EntityModel<Team> process(EntityModel<Team> resource) {
         addSubmissionsRel(resource);
 
         addItemsRel(resource);
@@ -40,24 +41,24 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
         return resource;
     }
 
-    private void addItemsRel(Resource<Team> resource) {
-        if (resource.getLink("items") == null) {
-            resource.getLinks().add(
+    private void addItemsRel(EntityModel<Team> resource) {
+        if (resource.getLink("items").isEmpty()) {
+            resource.add(
                 linkTo(methodOn(TeamItemsController.class).teamItems(resource.getContent().getName())
                 ).withRel("items")
             );
         }
     }
 
-    private void addSubmissionsRel(Resource<Team> resource) {
+    private void addSubmissionsRel(EntityModel<Team> resource) {
         addGetSubmissionsRel(resource);
         addCreateSubmissionRel(resource);
     }
 
-    private void addCreateSubmissionRel(Resource<Team> resource) {
+    private void addCreateSubmissionRel(EntityModel<Team> resource) {
         String submissionsRel = "submissions" + LinkHelper.CREATE_REL_SUFFIX;
 
-        if (resource.getLink(submissionsRel) != null) {
+        if (resource.getLink(submissionsRel).isPresent()) {
             return;
         }
 
@@ -78,21 +79,21 @@ public class TeamResourceProcessor implements ResourceProcessor<Resource<Team>> 
         resource.add(submissionCreateLink);
     }
 
-    private void addGetSubmissionsRel(Resource<Team> resource) {
+    private void addGetSubmissionsRel(EntityModel<Team> resource) {
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("teamName", resource.getContent().getName());
 
         addRelWithCollectionRelName(resource, expansionParams, Submission.class);
     }
 
-    private void addRelWithCollectionRelName(Resource<Team> resource, Map<String, String> expansionParams, Class<?> classWithByTeamRel) {
-        Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByTeamRel, "by-team");
+    private void addRelWithCollectionRelName(EntityModel<Team> resource, Map<String, String> expansionParams, Class<?> classWithByTeamRel) {
+        Link contentsLink = repositoryEntityLinks.linkToSearchResource(classWithByTeamRel, LinkRelation.of("by-team"));
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(classWithByTeamRel);
 
         Assert.notNull(contentsLink);
         Assert.notNull(collectionLink);
 
-        if (resource.getLink(collectionLink.getRel()) == null) {
+        if (resource.getLink(collectionLink.getRel()).isEmpty()) {
             resource.add(
                 contentsLink.expand(expansionParams).withRel(collectionLink.getRel())
             );

@@ -1,18 +1,12 @@
 package uk.ac.ebi.subs.api.controllers;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.actuate.endpoint.mvc.HealthMvcEndpoint;
-import org.springframework.boot.actuate.health.CompositeHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthAggregator;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.amqp.RabbitHealthIndicator;
+import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.actuate.mongo.MongoHealthIndicator;
+import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 /**
  * Simplified health reporting for the load balancer - return UP or DOWN only.
@@ -21,27 +15,22 @@ import java.util.Map;
 @RestController
 public class HealthStatusSummaryController {
 
-    private HealthIndicator healthIndicator;
-
-    public HealthStatusSummaryController(HealthAggregator healthAggregator,
-                          Map<String, HealthIndicator> healthIndicators) {
-
-        Assert.notNull(healthAggregator, "HealthAggregator must not be null");
-        Assert.notNull(healthIndicators, "HealthIndicators must not be null");
-        CompositeHealthIndicator healthIndicator = new CompositeHealthIndicator(
-                healthAggregator);
-
-        for (Map.Entry<String, HealthIndicator> entry : healthIndicators.entrySet()) {
-            healthIndicator.addHealthIndicator(entry.getKey(), entry.getValue());
-        }
-        this.healthIndicator = healthIndicator;
-    }
-
+    private MongoHealthIndicator mongoHealthIndicator;
+    private RabbitHealthIndicator rabbitHealthIndicator;
+    private DiskSpaceHealthIndicator diskSpaceHealthIndicator;
 
     @RequestMapping(value = "/health/summary", produces = {MediaType.TEXT_PLAIN_VALUE})
     public String healthStatusSummary() {
-        return healthIndicator.health().getStatus().toString();
+
+        Status status = Status.DOWN;
+
+        if (mongoHealthIndicator.getHealth(false).getStatus() == Status.UP
+                && rabbitHealthIndicator.getHealth(false).getStatus() == Status.UP
+                && diskSpaceHealthIndicator.getHealth(false).getStatus() == Status.UP
+        ) {
+            status = Status.UP;
+        }
+
+        return status.toString();
     }
-
-
 }

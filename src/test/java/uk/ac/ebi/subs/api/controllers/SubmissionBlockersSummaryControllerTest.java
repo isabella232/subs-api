@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
+import uk.ac.ebi.subs.api.converters.SubmissionDTOConverter;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
@@ -52,6 +54,9 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidation
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SubmissionBlockersSummaryController.class)
+@MockBeans(
+        @MockBean(SubmissionDTOConverter.class)
+)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionBlockersSummaryControllerTest {
 
@@ -138,10 +143,10 @@ public class SubmissionBlockersSummaryControllerTest {
         studyDataType.setId(studiesDataTypeId);
         studyDataType.setDisplayNamePlural(studiesDisplayName);
 
-        given(dataTypeRepository.findOne(samplesDataTypeId))
-                .willReturn(sampleDataType);
-        given(dataTypeRepository.findOne(studiesDataTypeId))
-                .willReturn(studyDataType);
+        given(dataTypeRepository.findById(samplesDataTypeId))
+                .willReturn(java.util.Optional.of(sampleDataType));
+        given(dataTypeRepository.findById(studiesDataTypeId))
+                .willReturn(java.util.Optional.of(studyDataType));
 
         mvc.perform(get(String.format("/api/submissions/%s/submissionBlockersSummary", SUBMISSION_ID))
                 .contentType(MediaType.APPLICATION_JSON))

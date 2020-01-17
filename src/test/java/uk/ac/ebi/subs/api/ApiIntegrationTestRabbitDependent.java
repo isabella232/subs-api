@@ -14,9 +14,9 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -88,7 +88,7 @@ public class ApiIntegrationTestRabbitDependent {
     public void buildUp() throws URISyntaxException {
         this.tearDown();
 
-        rootUri = "http://localhost:" + port + "/api";
+        rootUri = "http://localhost:" + port;
         final Map<String, String> standardGetContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
         standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER, TestWebSecurityConfig.USI_PASSWORD));
         final Map<String, String> standardPostContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();

@@ -16,9 +16,10 @@ import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,8 +55,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * This controller contains 3 endpoints related to submission elements.
@@ -112,13 +113,13 @@ public class SubmissionContentsController {
      * @return all the given elements by the submission Id and data type Id.
      */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.GET)
-    public PagedResources<Resource<StoredSubmittable>> getSubmissionContentsForDataType(
+    public PagedModel<EntityModel<StoredSubmittable>> getSubmissionContentsForDataType(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             Pageable pageable) {
 
-        Submission submission = submissionRepository.findOne(submissionId);
-        DataType dataType = dataTypeRepository.findOne(dataTypeId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
+        DataType dataType = dataTypeRepository.findById(dataTypeId).orElse(null);
 
         if (dataType == null || submission == null) {
             throw new ResourceNotFoundException();
@@ -130,7 +131,7 @@ public class SubmissionContentsController {
         Page<StoredSubmittable> page = repository.findBySubmissionIdAndDataTypeId(submissionId, dataTypeId, pageable);
 
 
-        PagedResources pagedResources = pagedResourcesAssembler.toResource(
+        PagedModel pagedResources = pagedResourcesAssembler.toModel(
                 page,
                 storedSubmittableAssembler
         );
@@ -142,7 +143,7 @@ public class SubmissionContentsController {
         return pagedResources;
     }
 
-    private void addContentListPageLinks(Pageable pageable, Submission submission, DataType dataType, Class submittableClass, PagedResources<Resource<StoredSubmittable>> pagedResources) {
+    private void addContentListPageLinks(Pageable pageable, Submission submission, DataType dataType, Class submittableClass, PagedModel<EntityModel<StoredSubmittable>> pagedResources) {
         Map<String, String> params = new HashMap<>();
         params.put("submissionId", submission.getId());
         params.put("dataTypeId", dataType.getId());
@@ -151,22 +152,22 @@ public class SubmissionContentsController {
                 .withRel("validationSummaryCounts");
 
         Link checklistLink = repositoryEntityLinks
-                .linkToSearchResource(Checklist.class, "by-data-type-id")
+                .linkToSearchResource(Checklist.class, LinkRelation.of("by-data-type-id"))
                 .expand(params)
                 .withRel("checklists");
 
         Link spreadsheetLink = repositoryEntityLinks
-                .linkToSearchResource(Spreadsheet.class, "by-submission-and-data-type")
+                .linkToSearchResource(Spreadsheet.class, LinkRelation.of("by-submission-and-data-type"))
                 .expand(params)
                 .withRel("spreadsheets");
 
-        Link dataTypeLink = repositoryEntityLinks.linkToSingleResource(dataType);
+        Link dataTypeLink = repositoryEntityLinks.linkToItemResource(dataType.getClass(), dataType.getId());
 
-        Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-errors")
+        Link withErrorsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, LinkRelation.of("by-submission-and-data-type-with-errors"))
                 .expand(params)
                 .withRel("documents-with-errors");
 
-        Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, "by-submission-and-data-type-with-warnings")
+        Link withWarningsLink = repositoryEntityLinks.linkToSearchResource(submittableClass, LinkRelation.of("by-submission-and-data-type-with-warnings"))
                 .expand(params)
                 .withRel("documents-with-warnings");
 
@@ -196,12 +197,12 @@ public class SubmissionContentsController {
      * @return a new elements for the given submission by the given data type Id.
      */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.POST)
-    public ResponseEntity<Resource<StoredSubmittable>> createSubmissionContents(
+    public ResponseEntity<EntityModel<StoredSubmittable>> createSubmissionContents(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
             @RequestBody ObjectNode payload
     ) {
-        DataType dataType = dataTypeRepository.findOne(dataTypeId);
+        DataType dataType = dataTypeRepository.findById(dataTypeId).orElse(null);
         if (dataType == null) {
             throw new ResourceNotFoundException();
         }
@@ -219,9 +220,9 @@ public class SubmissionContentsController {
         storedSubmittable = submittableRepository.insert(storedSubmittable);
         publisher.publishEvent(new AfterCreateEvent(storedSubmittable));
 
-        Link selfLink = repositoryEntityLinks.linkToSingleResource(storedSubmittable);
+        Link selfLink = repositoryEntityLinks.linkToItemResource(storedSubmittable.getClass(), storedSubmittable.getId());
 
-        Resource<StoredSubmittable> resource = storedSubmittableAssembler.toResource(storedSubmittable);
+        EntityModel<StoredSubmittable> resource = storedSubmittableAssembler.toModel(storedSubmittable);
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.LOCATION, selfLink.getHref());
@@ -240,7 +241,7 @@ public class SubmissionContentsController {
     }
 
     private void handleSubmission(@RequestBody ObjectNode payload, String submissionId, StoredSubmittable item) {
-        Submission submission = submissionRepository.findOne(submissionId);
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
         if (submission == null) {
             throw new ResourceNotFoundException();
         }
@@ -267,7 +268,7 @@ public class SubmissionContentsController {
             return;
         }
 
-        Checklist checklist = checklistRepository.findOne(checkListIdNode.asText());
+        Checklist checklist = checklistRepository.findById(checkListIdNode.asText()).orElse(null);
         if (checklist == null) {
             throw new ChecklistNotFoundException(checkListIdNode.asText());
         }

@@ -38,6 +38,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 
 public class DocumentationHelper {
 
@@ -112,7 +113,7 @@ public class DocumentationHelper {
     }
 
     protected static FieldDescriptor linksResponseField() {
-        return fieldWithPath("_links").description("Links to other resources");
+        return subsectionWithPath("_links").description("Links to other resources");
     }
 
     protected static LinkDescriptor selfRelLink() {
@@ -120,7 +121,7 @@ public class DocumentationHelper {
     }
 
     protected static FieldDescriptor paginationBlock(){
-        return fieldWithPath("page").description("Pagination information including current page number, size of page, total elements and total pages availablee");
+        return subsectionWithPath("page").description("Pagination information including current page number, size of page, total elements and total pages availablee");
     }
 
     protected static LinkDescriptor nextRelLink() {

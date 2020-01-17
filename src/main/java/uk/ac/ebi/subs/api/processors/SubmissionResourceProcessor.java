@@ -3,10 +3,11 @@ package uk.ac.ebi.subs.api.processors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.core.ControllerEntityLinks;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.core.ControllerEntityLinks;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.ProcessingStatusController;
@@ -23,23 +24,22 @@ import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Resource processor for {@link Submission} entity used by Spring MVC controller.
+ * EntityModel processor for {@link Submission} entity used by Spring MVC controller.
  */
 @Component
 @RequiredArgsConstructor
-public class SubmissionResourceProcessor implements ResourceProcessor<Resource<Submission>> {
+public class SubmissionResourceProcessor implements RepresentationModelProcessor<EntityModel<Submission>> {
 
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
@@ -60,7 +60,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private DataTypeRepository dataTypeRepository;
 
     @Override
-    public Resource<Submission> process(Resource<Submission> resource) {
+    public EntityModel<Submission> process(EntityModel<Submission> resource) {
         addTeamRel(resource);
         addContentsRels(resource);
         addValidationResultLinks(resource);
@@ -91,14 +91,14 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
         List<DataType> dataTypes = submission.getSubmissionPlan().getDataTypeIds()
                 .stream()
-                .map(id -> dataTypeRepository.findOne(id))
+                .map(id -> dataTypeRepository.findById(id).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         resource.setDataTypes(dataTypes);
     }
 
-    private void addStatusLinks(Resource<Submission> resource) {
+    private void addStatusLinks(EntityModel<Submission> resource) {
         Submission submission = resource.getContent();
 
         if (submissionStatusService.isSubmissionStatusChangeable(submission)) {
@@ -110,7 +110,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
             resource.add(updateLink);
         }
 
-        if (resource.getLink(SubmissionStatusResourceProcessor.STATUS_REL) == null) {
+        if (resource.getLink(SubmissionStatusResourceProcessor.STATUS_REL).isEmpty()) {
             Link statusLink = linkTo(
                     methodOn(SubmissionStatusController.class)
                             .getStatus(submission.getId())
@@ -128,8 +128,8 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
 
     }
 
-    private void addReceiptLink(Resource<Submission> resource) {
-        Link searchLink = repositoryEntityLinks.linkToSearchResource(ProcessingStatus.class, "by-submission");
+    private void addReceiptLink(EntityModel<Submission> resource) {
+        Link searchLink = repositoryEntityLinks.linkToSearchResource(ProcessingStatus.class, LinkRelation.of("by-submission"));
         Assert.notNull(searchLink);
 
         Map<String, String> params = new HashMap<>();
@@ -140,7 +140,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         resource.add(link);
     }
 
-    private void addStatusSummaryReport(Resource<Submission> resource) {
+    private void addStatusSummaryReport(EntityModel<Submission> resource) {
         Link statusSummary =
                 linkTo(
                         methodOn(ProcessingStatusController.class)
@@ -152,7 +152,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         resource.add(statusSummary);
     }
 
-    private void addSubmissionBlockersSummary(Resource<Submission> resource) {
+    private void addSubmissionBlockersSummary(EntityModel<Submission> resource) {
         Link blockersSummary =
                 linkTo(
                         methodOn(SubmissionBlockersSummaryController.class)
@@ -162,7 +162,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         resource.add(blockersSummary);
     }
 
-    private void addTypeStatusSummaryReport(Resource<Submission> resource) {
+    private void addTypeStatusSummaryReport(EntityModel<Submission> resource) {
         Link typeStatusSummary =
                 linkTo(
                         methodOn(ProcessingStatusController.class)
@@ -173,14 +173,16 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         resource.add(typeStatusSummary);
     }
 
-    private void ifUpdateableAddLinks(Resource<Submission> submissionResource) {
+    private void ifUpdateableAddLinks(EntityModel<Submission> submissionResource) {
         if (operationControlService.isUpdateable(submissionResource.getContent())) {
 
-            linkHelper.addSelfUpdateLink(submissionResource.getLinks(), submissionResource.getContent());
+            submissionResource.add(
+                    linkHelper.addSelfUpdateLink(new ArrayList<>(), submissionResource.getContent())
+            );
         }
     }
 
-    private void addContentsRels(Resource<Submission> submissionResource) {
+    private void addContentsRels(EntityModel<Submission> submissionResource) {
 
         submissionResource.add(
             linkTo(
@@ -190,15 +192,15 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         );
     }
 
-    private void addValidationResultLinks(Resource<Submission> submissionResource) {
+    private void addValidationResultLinks(EntityModel<Submission> submissionResource) {
         Map<String, String> expansionParams = new HashMap<>();
         expansionParams.put("submissionId", submissionResource.getContent().getId());
 
         addObjectToSubmissionAsLink(ValidationResult.class, submissionResource, expansionParams);
     }
 
-    private void addObjectToSubmissionAsLink(Class<?> linkToBeAdded, Resource<Submission> submissionResource, Map<String, String> expansionParams) {
-        Link contentsLink = repositoryEntityLinks.linkToSearchResource(linkToBeAdded, "by-submission");
+    private void addObjectToSubmissionAsLink(Class<?> linkToBeAdded, EntityModel<Submission> submissionResource, Map<String, String> expansionParams) {
+        Link contentsLink = repositoryEntityLinks.linkToSearchResource(linkToBeAdded, LinkRelation.of("by-submission"));
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(linkToBeAdded);
 
         Assert.notNull(contentsLink);
@@ -209,7 +211,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         );
     }
 
-    private void addTeamRel(Resource<Submission> resource) {
+    private void addTeamRel(EntityModel<Submission> resource) {
         if (resource.getContent().getTeam() != null && resource.getContent().getTeam().getName() != null) {
             resource.add(
                     linkTo(

@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST endpoint that gathers information about the issues, that blocks submitting a submission.
@@ -54,7 +54,7 @@ public class SubmissionBlockersSummaryController {
     private DataTypeRepository dataTypeRepository;
 
     @GetMapping(value = "/submissions/{submissionId}/submissionBlockersSummary")
-    public Resource<SubmissionBlockersSummary> getSubmissionContentsIssuesSummary(@PathVariable @P("submissionId") String submissionId) {
+    public EntityModel<SubmissionBlockersSummary> getSubmissionContentsIssuesSummary(@PathVariable @P("submissionId") String submissionId) {
         SubmissionBlockersSummary submissionBlockersSummary = new SubmissionBlockersSummary();
 
         getFileIssues(submissionId, submissionBlockersSummary);
@@ -62,7 +62,7 @@ public class SubmissionBlockersSummaryController {
         checkSubmissionEmptiness(submissionId, submissionBlockersSummary);
         checkPendingValidationResults(submissionId, submissionBlockersSummary);
 
-        Resource<SubmissionBlockersSummary> submissionIssuesSummaryResource = new Resource<>(submissionBlockersSummary);
+        EntityModel<SubmissionBlockersSummary> submissionIssuesSummaryResource = new EntityModel<>(submissionBlockersSummary);
 
         Link selfLink = linkTo(methodOn(
                 this.getClass()).getSubmissionContentsIssuesSummary(submissionId)
@@ -83,7 +83,7 @@ public class SubmissionBlockersSummaryController {
         Map<String, Map<String, Object>> validationBlockersByDataTypeId = new HashMap<>();
 
         validationIssuesPerDataTypeId.forEach((dataTypeId, count) -> {
-            DataType dataType = dataTypeRepository.findOne(dataTypeId);
+            DataType dataType = dataTypeRepository.findById(dataTypeId).orElse(null);
 
             if (dataType == null) {
                 throw new ResourceNotFoundException();

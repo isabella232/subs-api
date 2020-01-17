@@ -35,9 +35,9 @@ public class SpreadsheetTemplateController {
                     "text/csv;charset=UTF-8",
                     "text/csv"
             })
-    public Spreadsheet templateAsSheet(@PathVariable String checklistId) throws IOException {
+    public Spreadsheet templateAsSheet(@PathVariable String checklistId) {
 
-        Checklist checklist = checklistRepository.findOne(checklistId);
+        Checklist checklist = checklistRepository.findById(checklistId).orElse(null);
 
         if (checklist == null) {
             throw new ResourceNotFoundException();

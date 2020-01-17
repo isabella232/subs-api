@@ -43,7 +43,7 @@ public class CoreSubmittableValidationHelper {
     private static final String DATA_MIGRATION_DOMAIN_NAME = "self.embl-ebi-subs-data-migrator";
 
 
-    public void validate(StoredSubmittable target, SubmittableRepository repository, Errors errors) {
+    public void validate(StoredSubmittable target, SubmittableRepository<?> repository, Errors errors) {
         logger.debug("validating {}", target);
         StoredSubmittable storedVersion = null;
 
@@ -57,7 +57,7 @@ public class CoreSubmittableValidationHelper {
         }
 
         if (target.getId() != null) {
-            storedVersion = repository.findOne(target.getId());
+            storedVersion = repository.findById(target.getId()).orElse(null);
         }
 
         this.validateAlias(target, repository, errors);

@@ -18,6 +18,7 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -64,11 +65,18 @@ public class ProjectValidationTest {
         dt = dataTypes.get(0);
 
         sub = submissionHelperService.createSubmission(team,submitter);
+        sub.setTeam(team);
+        SubmissionStatus submissionStatus = sub.getSubmissionStatus();
+        submissionStatus.setTeam(team);
+        submissionStatusRepository.save(submissionStatus);
+        sub.setSubmissionStatus(submissionStatus);
+        submissionRepository.save(sub);
 
         p = new Project();
         p.setAlias("victor");
         p.setSubmission(sub);
         p.setDataType(dt);
+        p.setTeam(team);
         submittableHelperService.setupNewSubmittable(p);
 
         projectRepository.save(p);
@@ -89,6 +97,7 @@ public class ProjectValidationTest {
         freshProject.setAlias("bob");
         freshProject.setSubmission(sub);
         freshProject.setDataType(dt);
+        freshProject.setTeam(team);
         Errors errors = new BeanPropertyBindingResult(freshProject, "project");
         projectValidator.validate(freshProject, errors);
 
@@ -102,6 +111,7 @@ public class ProjectValidationTest {
         freshProject.setSubmission(sub);
         freshProject.setId(p.getId());
         freshProject.setDataType(dt);
+        freshProject.setTeam(team);
         Errors errors = new BeanPropertyBindingResult(freshProject, "project");
         projectValidator.validate(freshProject, errors);
 
@@ -117,6 +127,7 @@ public class ProjectValidationTest {
         freshProject.setSubmission(sub);
         freshProject.setId(p.getId());
         freshProject.setDataType(dt);
+        freshProject.setTeam(team);
         Errors errors = new BeanPropertyBindingResult(freshProject, "project");
         projectValidator.validate(freshProject, errors);
 

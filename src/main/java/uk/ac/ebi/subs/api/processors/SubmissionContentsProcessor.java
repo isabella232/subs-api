@@ -5,9 +5,10 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.api.model.SubmissionContents;
@@ -28,15 +29,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Resource processor for {@link SubmissionContents} entity used by Spring MVC controller.
+ * EntityModel processor for {@link SubmissionContents} entity used by Spring MVC controller.
  */
 @Component
 @Data
-public class SubmissionContentsProcessor implements ResourceProcessor<Resource<SubmissionContents>> {
+public class SubmissionContentsProcessor implements RepresentationModelProcessor<EntityModel<SubmissionContents>> {
 
     @NonNull
     private LinkHelper linkHelper;
@@ -58,7 +59,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     private static final String DATA_TYPE_FILES = "files";
 
-    public Resource<SubmissionContents> process(Resource<SubmissionContents> resource) {
+    public EntityModel<SubmissionContents> process(EntityModel<SubmissionContents> resource) {
         String subId = resource.getContent().getSubmission().getId();
 
         List<DataType> dataTypesInSubmission = dataTypesInSubmission(resource.getContent().getSubmission());
@@ -96,7 +97,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         return dataTypesInSubmission;
     }
 
-    private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, Resource<SubmissionContents> resource) {
+    private void addSubmittablesInSubmission(List<DataType> dataTypesInSubmission, EntityModel<SubmissionContents> resource) {
         boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
 
         for (DataType dataType : dataTypesInSubmission) {
@@ -119,14 +120,14 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         }
     }
 
-    private void addProjectLink(Resource<SubmissionContents> resource, String submissionId) {
+    private void addProjectLink(EntityModel<SubmissionContents> resource, String submissionId) {
         if (projectRepository.findOneBySubmissionId(submissionId) != null) {
             resource.add(createResourceLink(Project.class, "project-by-submission",
                     paramWithSubmissionID(submissionId), "project"));
         }
     }
 
-    private void addFilesLink(Resource<SubmissionContents> resource, String submissionId) {
+    private void addFilesLink(EntityModel<SubmissionContents> resource, String submissionId) {
         resource.add(createResourceLink(File.class, "by-submission",
                 paramWithSubmissionID(submissionId), "files"));
     }
@@ -140,7 +141,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
 
     private Link createResourceLink(Class clazzResource, String rel, Map<String, String> params, String withRel) {
         return repositoryEntityLinks
-                .linkToSearchResource(clazzResource, rel)
+                .linkToSearchResource(clazzResource, LinkRelation.of(rel))
                 .expand(params)
                 .withRel(withRel);
     }

@@ -64,6 +64,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
@@ -146,43 +147,44 @@ public class CoreApiDocumentation {
         this.mockMvc.perform(
                 get("/api/")
                         .accept(RestMediaTypes.HAL_JSON)
-        ).andExpect(status().isOk())
-                .andDo(
-                        document("root-endpoint",
-                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()),
-                                links(
+        )
+            .andExpect(status().isOk())
+            .andDo(
+                document("root-endpoint",
+                        preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                        preprocessResponse(prettyPrint()),
+                        links(
 
-                                        halLinks(),
-                                        //team
-                                        linkWithRel("userTeams").description("Collection resource for teams"),
-                                        linkWithRel("team").description("Templated link for finding one team"),
-                                        //ref data
-                                        linkWithRel("dataTypes").description("Collection resource for data types"),
-                                        linkWithRel("dataTypes:search").description("Search resource for data types"),
-                                        linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
-                                        linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
-                                        linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
-                                        linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
-                                        linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
-                                        linkWithRel("checklists").description("Collection of data checklists"),
-                                        linkWithRel("checklists:search").description("Search resource for checklists"),
-                                        linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
-                                        //user projects
-                                        linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
-                                        linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
-                                        linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
-                                        //profile
-                                        linkWithRel("profile").description("Application level details"),
-                                        //related services
-                                        linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
-                                        linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
-                                ),
-                                responseFields(
-                                        DocumentationHelper.linksResponseField()
-                                )
+                                halLinks(),
+                                //team
+                                linkWithRel("userTeams").description("Collection resource for teams"),
+                                linkWithRel("team").description("Templated link for finding one team"),
+                                //ref data
+                                linkWithRel("dataTypes").description("Collection resource for data types"),
+                                linkWithRel("dataTypes:search").description("Search resource for data types"),
+                                linkWithRel("submissionStatusDescriptions").description("Collection resource for submission status descriptions"),
+                                linkWithRel("processingStatusDescriptions").description("Collection resource for processing status descriptions "),
+                                linkWithRel("releaseStatusDescriptions").description("Collection resource for release status descriptions"),
+                                linkWithRel("uiSupportItems").description("Collection of data to populate help and example text in the UI"),
+                                linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
+                                linkWithRel("checklists").description("Collection of data checklists"),
+                                linkWithRel("checklists:search").description("Search resource for checklists"),
+                                linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
+                                //user projects
+                                linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
+                                linkWithRel("userSubmissions").description("Query resource for submissions usable by the logged in user"),
+                                linkWithRel("userSubmissionStatusSummary").description("Query resource for counts of submission statuses for logged in user"),
+                                //profile
+                                linkWithRel("profile").description("Application level details"),
+                                //related services
+                                linkWithRel("aap-api-root").description("Link to the authentication authorisation and profile API"),
+                                linkWithRel("tus-upload").description("Link to the upload server, using the tus.io protocol")
+                        ),
+                        responseFields(
+                                DocumentationHelper.linksResponseField()
                         )
-                );
+                )
+        );
     }
 
     @Test
@@ -391,8 +393,8 @@ public class CoreApiDocumentation {
                                 linkWithRel("last").description("The last page in the resource list")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("_embedded").description("The list of resources"),
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded").description("The list of resources"),
                                 fieldWithPath("page.size").description("The number of resources in this page"),
                                 fieldWithPath("page.totalElements").description("The total number of resources"),
                                 fieldWithPath("page.totalPages").description("The total number of pages"),

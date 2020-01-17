@@ -2,7 +2,7 @@ package uk.ac.ebi.subs.api.controllers;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,14 +30,14 @@ public class SubmissionContentsLinksController {
 
     @PreAuthorizeSubmissionIdTeamName
     @RequestMapping("/submissions/{submissionId}/contents")
-    public Resource<SubmissionContents> submissionContents(@PathVariable @P("submissionId") String submissionId) {
-        Submission submission = submissionRepository.findOne(submissionId);
+    public EntityModel<SubmissionContents> submissionContents(@PathVariable @P("submissionId") String submissionId) {
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
 
         if (submission == null) {
             throw new ResourceNotFoundException();
         }
 
-        Resource<SubmissionContents> submissionContentsResource = new Resource<>(
+        EntityModel<SubmissionContents> submissionContentsResource = new EntityModel<>(
                 new SubmissionContents(submission)
         );
 

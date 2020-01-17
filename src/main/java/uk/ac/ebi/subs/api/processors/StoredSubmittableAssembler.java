@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Resource assembler for {@link StoredSubmittable} for Spring MVC controller.
+ * EntityModel assembler for {@link StoredSubmittable} for Spring MVC controller.
  */
 @Component
 @RequiredArgsConstructor
-public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmittable, Resource<StoredSubmittable>> {
+public class StoredSubmittableAssembler implements RepresentationModelAssembler<StoredSubmittable, EntityModel<StoredSubmittable>> {
 
     @NonNull
     private RepositoryEntityLinks repositoryEntityLinks;
@@ -35,27 +35,31 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
 
 
     @Override
-    public Resource<StoredSubmittable> toResource(StoredSubmittable entity) {
+    public EntityModel<StoredSubmittable> toModel(StoredSubmittable entity) {
 
         EmbeddedWrappingResource resource = new EmbeddedWrappingResource(entity);
 
-        List<Link> links = new ArrayList();
+        List<Link> links = new ArrayList<>();
 
-        links.add(repositoryEntityLinks.linkToSingleResource(entity).withSelfRel());
-        links.add(repositoryEntityLinks.linkToSingleResource(entity));
-        links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.submission));
+        links.add(repositoryEntityLinks.linkToItemResource(entity.getClass(), entity.getId()).withSelfRel());
+        links.add(repositoryEntityLinks.linkToItemResource(entity.getClass(), entity.getId()));
+        final Submission submission = resource.embeddedResources.submission;
+        links.add(repositoryEntityLinks.linkToItemResource(submission.getClass(), submission.getId()));
 
         if (resource.embeddedResources.validationResult != null) {
-            links.add(repositoryEntityLinks.linkToSingleResource(ValidationResult.class, resource.embeddedResources.validationResult.getUuid()));
+            links.add(repositoryEntityLinks.linkToItemResource(ValidationResult.class, resource.embeddedResources.validationResult.getUuid()));
         }
-        if (resource.embeddedResources.processingStatus != null) {
-            links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.processingStatus));
+        final ProcessingStatus processingStatus = resource.embeddedResources.processingStatus;
+        if (processingStatus != null) {
+            links.add(repositoryEntityLinks.linkToItemResource(processingStatus.getClass(), processingStatus.getId()));
         }
-        if (resource.embeddedResources.dataType != null) {
-            links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.dataType));
+        final DataType dataType = resource.embeddedResources.dataType;
+        if (dataType != null) {
+            links.add(repositoryEntityLinks.linkToItemResource(dataType.getClass(), dataType.getId()));
         }
-        if (resource.embeddedResources.checklist != null) {
-            links.add(repositoryEntityLinks.linkToSingleResource(resource.embeddedResources.checklist));
+        final Checklist checklist = resource.embeddedResources.checklist;
+        if (checklist != null) {
+            links.add(repositoryEntityLinks.linkToItemResource(checklist.getClass(), checklist.getId()));
         }
 
         resource.add(
@@ -83,7 +87,7 @@ public class StoredSubmittableAssembler implements ResourceAssembler<StoredSubmi
         }
     }
 
-    static class EmbeddedWrappingResource extends Resource<StoredSubmittable> {
+    static class EmbeddedWrappingResource extends EntityModel<StoredSubmittable> {
         EmbeddedWrappingResource(StoredSubmittable content) {
             super(content);
             wrapEmbeddedData(content);

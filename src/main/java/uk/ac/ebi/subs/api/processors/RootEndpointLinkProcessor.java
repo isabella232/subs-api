@@ -4,11 +4,12 @@ import lombok.Data;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.api.config.AapLinkConfig;
 import uk.ac.ebi.subs.api.config.TusUploadConfig;
@@ -24,15 +25,15 @@ import uk.ac.ebi.subs.repository.model.UiSupportItem;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Resource processor for {@link RepositoryLinksResource} entity used by Spring MVC controller.
+ * EntityModel processor for {@link RepositoryLinksResource} entity used by Spring MVC controller.
  */
 @Component
 @Data
-public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLinksResource> {
+public class RootEndpointLinkProcessor implements RepresentationModelProcessor<RepositoryLinksResource> {
 
     private static final Logger logger = LoggerFactory.getLogger(RootEndpointLinkProcessor.class);
 
@@ -53,12 +54,12 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         logger.debug("processing resource: {}", resource.getLinks());
         clearAllLinks(resource);
 
-        addLinks(resource.getLinks());
+        resource.add(addLinks(resource.getLinks().toList()));
 
         return resource;
     }
 
-    private void addLinks(List<Link> links) {
+    private List<Link> addLinks(List<Link> links) {
         addStatusDescriptions(links);
         addTeams(links);
         addUserProjects(links);
@@ -68,6 +69,8 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addUiSupportLinks(links);
         addTemplatesLinks(links);
         addSubmissionPlanLinks(links);
+
+        return links;
     }
 
     private void addTusUploadLink(List<Link> links) {
@@ -152,7 +155,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
 
         links.add(teamsLink);
 
-        ControllerLinkBuilder linkBuilder = linkTo(methodOn(TeamController.class).getTeam(null));
+        WebMvcLinkBuilder linkBuilder = linkTo(methodOn(TeamController.class).getTeam(null));
         links.add(linkBuilder.withRel("team"));
     }
 

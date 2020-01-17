@@ -47,7 +47,7 @@ public class SubmissionValidator implements Validator {
         }
 
         if (submission.getId() != null) {
-            Submission storedVersion = submissionRepository.findOne(submission.getId());
+            Submission storedVersion = submissionRepository.findById(submission.getId()).orElse(null);
 
             if (storedVersion != null) {
                 if (!operationControlService.isUpdateable(submission)) {

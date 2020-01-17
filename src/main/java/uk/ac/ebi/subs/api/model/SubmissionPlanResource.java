@@ -1,6 +1,6 @@
 package uk.ac.ebi.subs.api.model;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
 
@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * A value object for {@link SubmissionPlan} resource storing the list of data types belongs to the specific submission plan.
  */
-public class SubmissionPlanResource extends Resource<SubmissionPlan> {
+public class SubmissionPlanResource extends EntityModel<SubmissionPlan> {
 
-    public SubmissionPlanResource(Resource<SubmissionPlan> resource) {
+    public SubmissionPlanResource(EntityModel<SubmissionPlan> resource) {
         super(resource.getContent(), resource.getLinks());
     }
 

@@ -28,7 +28,7 @@ public class SheetValidator implements Validator {
     public void validate(Object target, Errors errors) {
         Spreadsheet batch = (Spreadsheet) target;
 
-        if (batch.getId() == null || sheetRepository.findOne(batch.getId()) == null) {
+        if (batch.getId() == null || sheetRepository.findById(batch.getId()).isEmpty()) {
             //create
             if (batch.getSubmissionId() == null) {
                 SubsApiErrors.missing_field.addError(errors, "submissionId");
@@ -46,8 +46,5 @@ public class SheetValidator implements Validator {
             //update
             SubsApiErrors.resource_locked.addError(errors);
         }
-
     }
-
-
 }

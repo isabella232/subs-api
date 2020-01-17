@@ -1,22 +1,26 @@
 package uk.ac.ebi.subs.api.processors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.hateoas.Identifiable;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.controllers.SpreadsheetController;
 import uk.ac.ebi.subs.api.controllers.SubmissionContentsController;
 import uk.ac.ebi.subs.repository.model.DataType;
+import uk.ac.ebi.subs.repository.model.Identifiable;
 import uk.ac.ebi.subs.repository.model.Project;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -24,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Helper class to gather common utility methods to add {@link Link} to a Spring MVC resource.
@@ -69,12 +73,15 @@ public class LinkHelper {
     public Link submittableCreateLink(DataType dataType, Submission submission){
         String createRel = dataType.getId() + CREATE_REL_SUFFIX;
 
+        ObjectNode on = JsonNodeFactory.instance.objectNode();
+        on.put("test", "value");
+
         Link submittablesCreateLink = linkTo(
                 methodOn(SubmissionContentsController.class)
                         .createSubmissionContents(
                                 submission.getId(),
                                 dataType.getId(),
-                                null
+                                on
                         )
         )
                 .withRel(createRel)
@@ -87,28 +94,31 @@ public class LinkHelper {
         links.add(submittableCreateLink(type,submission));
     }
 
-    public void addSubmittablesInTeamLinks(Collection<Link> links, String teamName) {
+    public Collection<Link> addSubmittablesInTeamLinks(Collection<Link> links, String teamName) {
         Map<String, String> params = new HashMap<>();
         params.put("teamName", teamName);
 
-        this.addSubmittablesLinksWithNamedSearchRel(links, "by-team", params);
+        return this.addSubmittablesLinksWithNamedSearchRel(links, "by-team", params);
     }
 
-    private void addSubmittablesLinksWithNamedSearchRel(Collection<Link> links, String relName, Map<String, String> expansionParams) {
+    private Collection<Link> addSubmittablesLinksWithNamedSearchRel(Collection<Link> links, String relName, Map<String, String> expansionParams) {
 
         for (Class type : submittablesClassList) {
             if (!type.equals(Project.class)) {
-                Link searchLink = repositoryEntityLinks.linkToSearchResource(type, relName);
+                Link searchLink = repositoryEntityLinks.linkToSearchResource(type, LinkRelation.of(relName));
                 Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
                 Link submittablesInSubmission = searchLink.expand(expansionParams).withRel(collectionLink.getRel());
                 links.add(submittablesInSubmission);
             }
         }
+
+        return links;
     }
 
-    public void addSelfUpdateLink(Collection<Link> links, Identifiable<?> identifiable) {
-        Link singleResourceLink = repositoryEntityLinks.linkToSingleResource(identifiable).expand();
+    public Collection<Link> addSelfUpdateLink(Collection<Link> links, Identifiable<?> identifiable) {
+        Link singleResourceLink = repositoryEntityLinks.linkToItemResource(
+                identifiable.getClass(), identifiable.getId()).expand();
 
         Assert.notNull(singleResourceLink);
 
@@ -119,13 +129,14 @@ public class LinkHelper {
         Link deleteLink = singleResourceLink.withRel("self" + DELETE_REL_SUFFIX);
 
         links.add(deleteLink);
+
+        return links;
     }
 
     public void addSearchLink(Collection<Link> links, Class type) {
         Link collectionLink = repositoryEntityLinks.linkToCollectionResource(type).expand();
 
-        String relBase = collectionLink.getRel();
-
+        LinkRelation relBase = collectionLink.getRel();
 
         Links searchLinks = repositoryEntityLinks.linksToSearchResources(type);
 
@@ -135,7 +146,7 @@ public class LinkHelper {
             logger.debug("Search links found for class {}: {} ", type, searchLinks);
 
             String href = collectionLink.getHref() + "/search";
-            String rel = relBase + SEARCH_REL_SUFFIX;
+            String rel = relBase.value() + SEARCH_REL_SUFFIX;
             Link searchesLink = new Link(href, rel);
 
             links.add(searchesLink);
