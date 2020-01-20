@@ -42,7 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 @Category(RabbitMQDependentTest.class)

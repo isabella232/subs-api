@@ -41,7 +41,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @WithMockUser(username="core_validator_usi_user",roles={CoreValidatorTest.TEST_TEAM_1})
 public class CoreValidatorTest {
 

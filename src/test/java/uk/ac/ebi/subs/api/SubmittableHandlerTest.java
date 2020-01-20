@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,7 +64,7 @@ public class SubmittableHandlerTest {
     @Autowired
     private SubmissionPlanRepository submissionPlanRepository;
 
-    @Autowired
+    @SpyBean
     private SubmittableValidationDispatcher submittableValidationDispatcher;
 
     @MockBean private RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -74,7 +75,7 @@ public class SubmittableHandlerTest {
     public void buildUp() {
         clearDb();
 
-        rootUri = "http://localhost:" + port + "/api";
+        rootUri = "http://localhost:" + port;
         final Map<String, String> standardGetContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();
         standardGetContentHeader.putAll(ApiIntegrationTestHelper.createBasicAuthheaders(TestWebSecurityConfig.USI_USER,TestWebSecurityConfig.USI_PASSWORD));
         final Map<String, String> standardPostContentHeader = ApiIntegrationTestHelper.createStandardGetHeader();

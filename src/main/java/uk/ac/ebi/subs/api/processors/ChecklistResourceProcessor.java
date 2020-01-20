@@ -29,7 +29,7 @@ public class ChecklistResourceProcessor implements RepresentationModelProcessor<
                 .withRel("placeholder");
         String baseDownloadHref = baseDownloadLink.getHref();
 
-        resource.add(new Link(baseDownloadHref + ".csv", "spreadsheet-csv-download"));
+        resource.add(new Link(baseDownloadHref, "spreadsheet-csv-download"));
 
         // mongo can't store valid schema due to key constraints
         if (checklist.getValidationSchema() != null) {

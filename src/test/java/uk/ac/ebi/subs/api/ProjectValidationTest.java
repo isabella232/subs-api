@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -30,8 +31,9 @@ import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @WithMockUser(username = "project_validation_test_usi_user", roles = {CoreValidatorTest.TEST_TEAM_1,Helpers.ADMIN_TEAM_NAME})
+@ActiveProfiles("basic_auth")
 public class ProjectValidationTest {
 
     @Autowired

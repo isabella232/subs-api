@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "team_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class TeamDocumentation {

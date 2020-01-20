@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.api.utils.SubmittableHelper;
 import uk.ac.ebi.subs.data.status.StatusDescription;
 
@@ -24,7 +25,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SubmissionStatusServiceTest {
 
     private SubmissionStatusService submissionStatusService;

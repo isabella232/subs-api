@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
@@ -49,7 +50,7 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.SAMPLES_DATA_TYPE_
 import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.SUBMISSION_ID;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Category(RabbitMQDependentTest.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME})

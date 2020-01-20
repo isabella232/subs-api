@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.api.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -193,15 +194,22 @@ public class SubmissionContentsController {
      *
      * @param submissionId the Id of the submission
      * @param dataTypeId the Id of the data type
-     * @param payload the object's data
+     * @param originalPayload the object's data
      * @return a new elements for the given submission by the given data type Id.
      */
     @RequestMapping(value = "/submissions/{submissionId}/contents/{dataTypeId}", method = RequestMethod.POST)
     public ResponseEntity<EntityModel<StoredSubmittable>> createSubmissionContents(
             @PathVariable @P("submissionId") String submissionId,
             @PathVariable @P("dataTypeId") String dataTypeId,
-            @RequestBody ObjectNode payload
+            @RequestBody String originalPayload
     ) {
+        ObjectNode payload;
+        try {
+            payload = (ObjectNode) new ObjectMapper().readTree(originalPayload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
         DataType dataType = dataTypeRepository.findById(dataTypeId).orElse(null);
         if (dataType == null) {
             throw new ResourceNotFoundException();

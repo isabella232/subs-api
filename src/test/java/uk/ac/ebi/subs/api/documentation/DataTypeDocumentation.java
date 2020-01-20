@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
 public class DataTypeDocumentation {

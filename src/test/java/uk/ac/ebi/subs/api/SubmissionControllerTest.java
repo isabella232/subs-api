@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.api.controllers.SubmissionController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @WithMockUser(username = "submission_controller_test_usi_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionControllerTest {
 

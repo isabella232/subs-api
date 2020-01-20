@@ -10,6 +10,8 @@ import uk.ac.ebi.subs.api.processors.LinkHelper;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.repository.security.PreAuthorizeParamTeamName;
 
+import java.util.ArrayList;
+
 /**
  * Retrieve the list of items by given team and not filtered by submission.
  *
@@ -36,7 +38,7 @@ public class TeamItemsController {
 
     public EntityModel<TeamItems> process(EntityModel<TeamItems> resource) {
         resource.add(
-            linkHelper.addSubmittablesInTeamLinks(resource.getLinks().toList(), resource.getContent().getTeam().getName())
+            linkHelper.addSubmittablesInTeamLinks(new ArrayList<>(), resource.getContent().getTeam().getName())
         );
 
         resource.getContent().setTeam(null);

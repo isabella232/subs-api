@@ -70,13 +70,13 @@ public class AAPIntegrationTest extends ApiIntegrationTest {
 
     @Test
     public void checkHealthPage() throws IOException, UnirestException {
-        String uri = rootUri + "/health";
+        String uri = rootUri + "/health/summary";
 
 
         //no headers set, we want this to work without a token
-        HttpResponse<JsonNode> healthStatusResponse =
+        HttpResponse<String> healthStatusResponse =
                 Unirest.get(uri)
-                        .asJson();
+                        .asString();
 
         //test environment likely to return 'down', key point is that it isn't a 401 or 403
         assertThat(healthStatusResponse.getStatus(), isIn(

@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.data.fileupload.FileStatus;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class FileServiceTest {
 
     private FileService fileService;

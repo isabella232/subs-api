@@ -73,15 +73,12 @@ public class LinkHelper {
     public Link submittableCreateLink(DataType dataType, Submission submission){
         String createRel = dataType.getId() + CREATE_REL_SUFFIX;
 
-        ObjectNode on = JsonNodeFactory.instance.objectNode();
-        on.put("test", "value");
-
         Link submittablesCreateLink = linkTo(
                 methodOn(SubmissionContentsController.class)
                         .createSubmissionContents(
                                 submission.getId(),
                                 dataType.getId(),
-                                on
+                                null
                         )
         )
                 .withRel(createRel)

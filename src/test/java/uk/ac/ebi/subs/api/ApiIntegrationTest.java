@@ -114,7 +114,7 @@ public abstract class ApiIntegrationTest {
     public void buildUp() throws UnirestException {
         clearDbs();
 
-        rootUri = "http://localhost:" + port + "/api";
+        rootUri = "http://localhost:" + port;
         testHelper = new ApiIntegrationTestHelper(objectMapper, rootUri,
                 Arrays.asList(submissionRepository, sampleRepository, submissionStatusRepository), createGetHeaders(), createPostHeaders());
 

@@ -72,7 +72,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
  * Creates documentation snippets for core API features / behaviour
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class CoreApiDocumentation {

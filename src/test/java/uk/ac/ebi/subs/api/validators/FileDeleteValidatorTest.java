@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @WithMockUser(username = "file_delete_usi_user", roles = {CoreValidatorTest.TEST_TEAM_1, Helpers.ADMIN_TEAM_NAME})
 public class FileDeleteValidatorTest {
 

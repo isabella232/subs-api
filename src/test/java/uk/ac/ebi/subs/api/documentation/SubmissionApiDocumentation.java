@@ -107,7 +107,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenH
  * API documentation should learn from the excellent example at @see <a href="https://developer.github.com/v3/">GitHub</a>
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "api_docs_usi_user", roles = {Helpers.TEAM_NAME})
 public class SubmissionApiDocumentation {
@@ -978,7 +978,7 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
-                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the sample"),
                                         fieldWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
@@ -987,7 +987,7 @@ public class SubmissionApiDocumentation {
                                         subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         subsectionWithPath("_embedded.dataType").description("Data type description."),
                                         subsectionWithPath("_embedded.checklist").description("Validation checklist this samples should comply with"),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this sample will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),

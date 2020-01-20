@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
         addCurrentVersion(resource);
 
         if (operationControlService.isUpdateable(resource.getContent())){
-            resource.add(linkHelper.addSelfUpdateLink(resource.getLinks().toList(), resource.getContent()));
+            resource.add(linkHelper.addSelfUpdateLink(new ArrayList<>(), resource.getContent()));
         }
 
         //redact content for internal use only

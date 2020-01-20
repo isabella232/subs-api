@@ -51,7 +51,7 @@ import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlo
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.selfRelLink;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ApiApplication.class)
+@SpringBootTest(classes = ApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Category(DocumentationProducer.class)
 @WithMockUser(username = "checklist_docs_usi_user", roles = {Helpers.TEAM_NAME, Helpers.ADMIN_TEAM_NAME})
 public class ChecklistDocumentation {
