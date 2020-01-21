@@ -168,11 +168,9 @@ processTestResources {
 }
 
 processResources{
-//    print "HAAAASSSSIIIIIIBBBBB is here"
-//    print project.properties.get("usiCoreAAPUsername")
-//    filesMatching('application.properties') {
+    filesMatching('application.properties') {
         expand(project.properties)
-//    }
+    }
 }
 
 mongo {

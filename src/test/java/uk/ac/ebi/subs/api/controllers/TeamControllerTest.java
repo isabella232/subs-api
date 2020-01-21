@@ -3,11 +3,14 @@ package uk.ac.ebi.subs.api.controllers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -34,6 +37,7 @@ import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,7 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TeamController.class)
 @MockBeans({
         @MockBean(TeamCreationService.class),
-        @MockBean(TeamResourceProcessor.class),
         @MockBean(TeamDtoValidator.class),
         @MockBean(UserTokenService.class),
         @MockBean(SubmissionDTOConverter.class)
@@ -65,6 +68,9 @@ public class TeamControllerTest {
     @MockBean
     private UserTeamService userTeamService;
 
+    @MockBean
+    private TeamResourceProcessor teamResourceProcessor;
+
     private final String fakeToken = "TOKEN";
     private final String fakeAuthHeader = "Bearer "+fakeToken;
 
@@ -73,6 +79,8 @@ public class TeamControllerTest {
         this.mvc = MockMvcBuilders.webAppContextSetup(context)
                 .defaultRequest(RestDocumentationRequestBuilders.get("/").contextPath("/api"))
                 .build();
+
+        when(teamResourceProcessor.process(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         ApiIntegrationTestHelper.mockAapProfileAndDomain(domainService, profileRepositoryRest);
     }
