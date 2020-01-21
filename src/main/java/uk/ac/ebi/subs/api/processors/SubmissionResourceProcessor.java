@@ -79,6 +79,8 @@ public class SubmissionResourceProcessor implements RepresentationModelProcessor
 
         addDataType(submissionResource);
 
+        //submissionResource.getContent().setSubmissionStatus(null);
+
         return submissionResource;
     }
 

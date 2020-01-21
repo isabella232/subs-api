@@ -66,8 +66,7 @@ public class StoredSubmittableAssembler implements RepresentationModelAssembler<
                 links.stream().map(link -> link.expand()).collect(Collectors.toList())
         );
 
-        return storedSubmittableResourceProcessor.process(resource);
-
+        return resource;
     }
 
     @Data

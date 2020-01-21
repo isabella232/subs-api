@@ -19,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.snippet.IgnorableDescriptor;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -218,13 +220,15 @@ public class SubmissionApiDocumentation {
                                 responseFields(
                                         fieldWithPath("id").ignored(),
                                         subsectionWithPath("_links").description("Links"),
-                                        fieldWithPath("submitter").description("Submitter who is responsible for this submission"),
-                                        fieldWithPath("team").description("Team this submission belongs to"),
+                                        subsectionWithPath("submitter").description("Submitter who is responsible for this submission"),
+                                        subsectionWithPath("team").description("Team this submission belongs to"),
 
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -272,8 +276,8 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("dataTypes").description("list of data types to be used in this submission")
 
                         )
                 ));
@@ -299,8 +303,8 @@ public class SubmissionApiDocumentation {
                         preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
-                                fieldWithPath("_links").description("Links"),
-                                fieldWithPath("_embedded").description("The list of resources")
+                                subsectionWithPath("_links").description("Links"),
+                                subsectionWithPath("_embedded").description("The list of resources")
                         ),
                         links(
                                 halLinks(),
@@ -393,10 +397,10 @@ public class SubmissionApiDocumentation {
                         links(halLinks()
                         ),
                         responseFields(
-                                fieldWithPath("Assay").description("Counts of statuses for this document type"),
-                                fieldWithPath("AssayData").description("Counts of statuses for this document type"),
-                                fieldWithPath("Study").description("Counts of statuses for this document type"),
-                                fieldWithPath("Sample").description("Counts of statuses for this document type")
+                                subsectionWithPath("Assay").description("Counts of statuses for this document type"),
+                                subsectionWithPath("AssayData").description("Counts of statuses for this document type"),
+                                subsectionWithPath("Study").description("Counts of statuses for this document type"),
+                                subsectionWithPath("Sample").description("Counts of statuses for this document type")
                         )
                 ));
 
@@ -407,7 +411,7 @@ public class SubmissionApiDocumentation {
                         preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                         preprocessResponse(prettyPrint()),
                         responseFields(
-                                fieldWithPath("_links").description("Links")
+                                subsectionWithPath("_links").description("Links")
                         ),
                         links(
                                 halLinks(),
@@ -438,18 +442,20 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
-                                        fieldWithPath("attributes").description("A list of attributes for the study"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the study"),
                                         fieldWithPath("protocolRefs").description("References to protocols used in this study"),
-                                        fieldWithPath("projectRef").description("References to the overall project that this study is part of"),
+                                        subsectionWithPath("projectRef").description("References to the overall project that this study is part of"),
                                         subsectionWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         subsectionWithPath("_embedded.processingStatus").description("Processing status for this study."),
                                         subsectionWithPath("_embedded.validationResult").description("Validation result for this study."),
                                         subsectionWithPath("_embedded.dataType").description("Data type description."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -496,21 +502,23 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
-                                        fieldWithPath("attributes").description("A list of attributes for the study"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the study"),
 
-                                        fieldWithPath("studyRef").description("Reference to the study that this assay is part of"),
-                                        fieldWithPath("sampleUses").description("Samples used in this assay"),
+                                        subsectionWithPath("studyRef").description("Reference to the study that this assay is part of"),
+                                        subsectionWithPath("sampleUses").description("Samples used in this assay"),
                                         subsectionWithPath("sampleUses[0].sampleRef").description("Reference to the sample used in this assay"),
-                                        fieldWithPath("protocolUses").description("Protocols used in this study"),
+                                        subsectionWithPath("protocolUses").description("Protocols used in this study"),
                                         subsectionWithPath("_embedded.submission").description("Submission that this study is part of"),
                                         subsectionWithPath("_embedded.processingStatus").description("Processing status for this assay."),
                                         subsectionWithPath("_embedded.validationResult").description("Validation result for this assay."),
                                         subsectionWithPath("_embedded.dataType").description("Data type description."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -549,10 +557,10 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the study within the team"),
                                         fieldWithPath("title").description("Title for the study"),
                                         fieldWithPath("description").description("Description for the study"),
-                                        fieldWithPath("attributes").description("A list of attributes for the study"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the study"),
 
-                                        fieldWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
-                                        fieldWithPath("protocolUses").description("Protocols used to generate Assay Data"),
+                                        subsectionWithPath("assayRefs").description("Reference to the assays that this data is generated from"),
+                                        subsectionWithPath("protocolUses").description("Protocols used to generate Assay Data"),
 
                                         subsectionWithPath("files").description("Files used in this submission"),
                                         fieldWithPath("files[0].name").description("File name"),
@@ -563,11 +571,13 @@ public class SubmissionApiDocumentation {
                                         subsectionWithPath("_embedded.processingStatus").description("Processing status for this assay data."),
                                         subsectionWithPath("_embedded.validationResult").description("Validation result for this study."),
                                         subsectionWithPath("_embedded.dataType").description("Data type description."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -608,17 +618,19 @@ public class SubmissionApiDocumentation {
                                 fieldWithPath("contacts").description("Contacts for this project"),
                                 fieldWithPath("publications").description("Publications related to this project"),
                                 fieldWithPath("fundings").description("Fundings related to this project"),
-                                //fieldWithPath("attributes").description("A list of attributes for the project"),
+                                subsectionWithPath("attributes").description("A list of attributes for the project"),
                                 subsectionWithPath("_embedded.submission").description("Submission that this project is part of"),
                                 subsectionWithPath("_embedded.processingStatus").description("Processing status for this project."),
                                 subsectionWithPath("_embedded.validationResult").description("Validation result for this project."),
                                 subsectionWithPath("_embedded.dataType").description("Data type description."),
-                                fieldWithPath("team").description("Team this project belongs to"),
+                                subsectionWithPath("team").description("Team this project belongs to"),
                                 fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                 fieldWithPath("createdDate").description("Date this resource was created"),
                                 fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                 fieldWithPath("createdBy").description("User who created this resource"),
-                                fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                idField(),
+                                versionField()
                         ),
                         links(
                                 halLinks(),
@@ -652,7 +664,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the project within the team"),
                                         fieldWithPath("title").description("Title for the project"),
                                         fieldWithPath("description").description("Description for the project"),
@@ -660,10 +672,10 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("publications").description("Publications related to this project"),
                                         fieldWithPath("fundings").description("Fundings related to this project"),
                                         //fieldWithPath("attributes").description("A list of attributes for the project"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
-                                        fieldWithPath("team").description("Team this project belongs to"),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        subsectionWithPath("team").description("Team this project belongs to"),
                                         fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -703,7 +715,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the project within the team"),
                                         fieldWithPath("title").description("Title for the project"),
                                         fieldWithPath("description").description("Description for the project"),
@@ -711,10 +723,10 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("publications").description("Publications related to this project"),
                                         fieldWithPath("fundings").description("Fundings related to this project"),
                                         //fieldWithPath("attributes").description("A list of attributes for the project"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this project is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this project."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this project."),
-                                        fieldWithPath("team").description("Team this project belongs to"),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this project is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this project."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this project."),
+                                        subsectionWithPath("team").description("Team this project belongs to"),
                                         fieldWithPath("releaseDate").description("Date at which this project can be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
@@ -759,8 +771,8 @@ public class SubmissionApiDocumentation {
                                 linkWithRel("samples:create").description("Create a new sample resource")
                         ),
                         responseFields(
-                                fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                                fieldWithPath("dataTypes").description("list of data types to be used in this submission")
+                                subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("dataTypes").description("list of data types to be used in this submission")
                         )
                 ));
     }
@@ -786,21 +798,23 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
-                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
-                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the sample"),
+                                        subsectionWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
                                         subsectionWithPath("_embedded.submission").description("Submission that this sample is part of"),
                                         subsectionWithPath("_embedded.processingStatus").description("Processing status for this sample."),
                                         subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
                                         subsectionWithPath("_embedded.dataType").description("Data type description."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this sample will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -841,19 +855,19 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("accession").description("The BioSamples archive accession ID of the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
-                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
-                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the sample"),
+                                        subsectionWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -889,19 +903,19 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("alias").description("Unique name for the sample within the team"),
                                         fieldWithPath("title").description("Title for the sample"),
                                         fieldWithPath("accession").description("The BioSamples archive accession ID of the sample"),
                                         fieldWithPath("description").description("Description for the sample"),
-                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
-                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        subsectionWithPath("attributes").description("A list of attributes for the sample"),
+                                        subsectionWithPath("sampleRelationships").description("Relationships to other samples"),
                                         fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
                                         fieldWithPath("taxon").description("Scientific name for this taxon"),
-                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
-                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
-                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        subsectionWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        subsectionWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
 
                                         fieldWithPath("releaseDate").description("Date at which this project will be released"),
                                         fieldWithPath("createdDate").description("Date this resource was created"),
@@ -939,7 +953,7 @@ public class SubmissionApiDocumentation {
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
                                 preprocessResponse(prettyPrint()),
                                 responseFields(
-                                        fieldWithPath("_links").description("Links"),
+                                        subsectionWithPath("_links").description("Links"),
                                         fieldWithPath("validationStatus").description("Is validation pending or complete?"),
                                         fieldWithPath("version").description("Version of this resource.")
                                 ),
@@ -993,7 +1007,9 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("createdDate").description("Date this resource was created"),
                                         fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
                                         fieldWithPath("createdBy").description("User who created this resource"),
-                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource"),
+                                        idField(),
+                                        versionField()
                                 ),
                                 links(
                                         halLinks(),
@@ -1079,14 +1095,14 @@ public class SubmissionApiDocumentation {
                                         fieldWithPath("sampleRelationships").description(""),
                                         fieldWithPath("taxonId").description(""),
                                         fieldWithPath("taxon").description(""),
-                                        fieldWithPath("team").description("Team this sample belongs to"),
-                                        fieldWithPath("attributes").description(""),
+                                        subsectionWithPath("team").description("Team this sample belongs to"),
+                                        subsectionWithPath("attributes").description(""),
                                         fieldWithPath("createdDate").description(""),
                                         fieldWithPath("lastModifiedDate").description(""),
                                         fieldWithPath("createdBy").description(""),
                                         fieldWithPath("lastModifiedBy").description(""),
-                                        fieldWithPath("_embedded.submission").description(""),
-                                        fieldWithPath("_embedded.processingStatus").description("")
+                                        subsectionWithPath("_embedded.submission").description(""),
+                                        subsectionWithPath("_embedded.processingStatus").description("")
                                 )
                         ));
     }
@@ -1364,6 +1380,14 @@ public class SubmissionApiDocumentation {
         this.submissionRepository.save(sub);
         this.submissionPlanRepository.insert(sub.getSubmissionPlan());
         return sub;
+    }
+
+    private FieldDescriptor idField() {
+        return fieldWithPath("id").ignored();
+    }
+
+    private FieldDescriptor versionField() {
+        return fieldWithPath("version").ignored();
     }
 
     private LinkDescriptor submissionLink() {

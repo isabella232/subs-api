@@ -285,7 +285,9 @@ public class SpreadsheetDocumentation {
                                         fieldWithPath("createdDate").ignored(),
                                         fieldWithPath("lastModifiedDate").ignored(),
                                         fieldWithPath("createdBy").ignored(),
-                                        fieldWithPath("lastModifiedBy").ignored()
+                                        fieldWithPath("lastModifiedBy").ignored(),
+                                        fieldWithPath("id").ignored(),
+                                        fieldWithPath("version").ignored()
                                 )
                         )
                 );

@@ -49,6 +49,11 @@ public class StoredSubmittableResourceProcessor<T extends StoredSubmittable> imp
 
         //redact content for internal use only
         resource.getContent().setReferences(null);
+        resource.getContent().setValidationResult(null);
+        resource.getContent().setProcessingStatus(null);
+        resource.getContent().setDataType(null);
+        resource.getContent().setChecklist(null);
+        resource.getContent().setSubmission(null);
 
         return resource;
     }

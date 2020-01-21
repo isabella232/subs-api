@@ -6,6 +6,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class IdentifiablePageToProjectionPage<T extends Identifiable, P>  {
         PagedModel<EntityModel<T>> pagedResources = pagedResourcesAssembler.toModel(page);
 
         PagedModel.PageMetadata pageMetadata = pagedResources.getMetadata();
-        Collection<Link> pageLinks = pagedResources.getLinks().toList();
+        Links pageLinks = pagedResources.getLinks();
 
         Collection<EntityModel<P>> submissionWithStatus = pagedResources.getContent().stream()
                 .map(resource -> identifiableResourceSelfLinker.addSelfLink(resource))
