@@ -116,7 +116,7 @@ public class TeamDocumentation {
                         .accept(RestMediaTypes.HAL_JSON)
                         .content(teamDescJson)
         ).andDo(print())
-//                .andExpect(status().isCreated())
+                .andExpect(status().isCreated())
                 .andDo(
                         document("create-team",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
