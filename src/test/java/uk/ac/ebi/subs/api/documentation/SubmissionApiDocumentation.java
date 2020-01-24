@@ -1241,6 +1241,7 @@ public class SubmissionApiDocumentation {
         this.assayDataRepository.deleteAll();
         this.studyRepository.deleteAll();
         this.dataTypeRepository.deleteAll();
+        this.checklistRepository.deleteAll();
     }
 
     /* Test Helper Methods */

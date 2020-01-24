@@ -44,6 +44,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.linksResponseField;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.paginationBlock;
@@ -215,6 +216,10 @@ public class ChecklistDocumentation {
                                         fieldWithPath("displayName").description("Human friendly name for the checklist"),
                                         fieldWithPath("description").description("Description of the checklist"),
                                         fieldWithPath("validationSchema").description("A JSON schema that will be applied to any documents using this checklist"),
+                                        fieldWithPath("version").description("The version information of this checklist"),
+                                        fieldWithPath("createdDate").description("The date this checklist has been created"),
+                                        fieldWithPath("lastModifiedDate").description("The last date this checklist has been modified"),
+                                        fieldWithPath("new").description("A boolean variable storing whether it is a newly created checklist or not"),
                                         linksResponseField()
                                 )
 

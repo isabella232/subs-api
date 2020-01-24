@@ -1,17 +1,30 @@
 package uk.ac.ebi.subs.api.aap;
 
-import lombok.Builder;
-import lombok.Data;
-
 /**
  * This value object contains the description and centre name of a team.
  */
-@Data
-@Builder
 public class TeamDto {
 
     private String description;
 
     private String centreName;
 
+    public TeamDto() {
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCentreName() {
+        return centreName;
+    }
+
+    public void setCentreName(String centreName) {
+        this.centreName = centreName;
+    }
 }
