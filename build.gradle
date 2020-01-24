@@ -86,6 +86,7 @@ ext {
 }
 
 springBoot {
+    executable = true
     buildInfo()
 }
 
