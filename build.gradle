@@ -35,33 +35,33 @@ repositories {
 }
 
 dependencies {
-    implementation("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT")
-    implementation("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
 
-    implementation('uk.ac.ebi.tsc.aap.client:security:1.0.4-SNAPSHOT'){changing = true}
-    implementation('uk.ac.ebi.tsc.aap.client:service:1.0.4-SNAPSHOT'){changing = true}
+    compile('uk.ac.ebi.tsc.aap.client:security:1.0.4-SNAPSHOT'){changing = true}
+    compile('uk.ac.ebi.tsc.aap.client:service:1.0.4-SNAPSHOT'){changing = true}
 
-    implementation("org.springframework.boot:spring-boot-starter-data-rest")
-    implementation( 'org.springframework.data:spring-data-rest-hal-browser')
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    compile("org.springframework.boot:spring-boot-starter-data-rest")
+    compile( 'org.springframework.data:spring-data-rest-hal-browser')
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-amqp")
 
-    implementation("org.springframework.boot:spring-boot-devtools")
-    implementation('de.codecentric:spring-boot-admin-starter-client:1.5.7')
+    compile("org.springframework.boot:spring-boot-devtools")
+    compile('de.codecentric:spring-boot-admin-starter-client:1.5.7')
 
-    implementation("com.mashape.unirest:unirest-java:1.4.9")
-    implementation("com.fasterxml.jackson.module:jackson-module-afterburner")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.0")
-    implementation("org.apache.commons:commons-csv:1.5")
-    implementation("de.siegmar:logback-gelf:1.1.0")
-    implementation('com.auth0:java-jwt:3.3.0')
+    compile("com.mashape.unirest:unirest-java:1.4.9")
+    compile("com.fasterxml.jackson.module:jackson-module-afterburner")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.0")
+    compile("org.apache.commons:commons-csv:1.5")
+    compile("de.siegmar:logback-gelf:1.1.0")
+    compile('com.auth0:java-jwt:3.3.0')
 
-    implementation("javax.xml.bind:jaxb-api:2.3.1")
-    implementation("javax.activation:activation:1.1.1")
-    implementation("com.sun.xml.bind:jaxb-core:2.3.0")
-    implementation("com.sun.xml.bind:jaxb-impl:2.3.0")
+    compile("javax.xml.bind:jaxb-api:2.3.1")
+    compile("javax.activation:activation:1.1.1")
+    compile("com.sun.xml.bind:jaxb-core:2.3.0")
+    compile("com.sun.xml.bind:jaxb-impl:2.3.0")
 
     compileOnly 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
