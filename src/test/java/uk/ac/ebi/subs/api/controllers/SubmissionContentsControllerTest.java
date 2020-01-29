@@ -24,6 +24,7 @@ import uk.ac.ebi.subs.api.processors.StoredSubmittableAssembler;
 import uk.ac.ebi.subs.api.processors.StoredSubmittableResourceProcessor;
 import uk.ac.ebi.subs.api.services.OperationControlService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
+import uk.ac.ebi.subs.repository.repos.ChecklistRepository;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -57,6 +58,7 @@ import static uk.ac.ebi.subs.api.utils.ValidationResultHelper.generateValidation
 @WebMvcTest(SubmissionContentsController.class)
 @MockBeans({
         @MockBean(DataTypeRepository.class),
+        @MockBean(ChecklistRepository.class),
         @MockBean(RepositoryEntityLinks.class),
         @MockBean(StoredSubmittableAssembler.class),
         @MockBean(StoredSubmittableResourceProcessor.class),
@@ -87,7 +89,6 @@ public class SubmissionContentsControllerTest {
 
     @MockBean
     private LinkHelper linkHelper;
-
 
     @Autowired
     private WebApplicationContext context;

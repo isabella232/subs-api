@@ -62,6 +62,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.ac.ebi.subs.api.Helpers.generateTestSamples;
+import static uk.ac.ebi.subs.api.utils.SubmittableHelper.generateTestTeam;
 
 @WithMockUser(username = "usi_admin_user", roles = {Helpers.ADMIN_TEAM_NAME})
 public abstract class ApiIntegrationTest {
@@ -381,7 +382,7 @@ public abstract class ApiIntegrationTest {
     @Test
     public void sampleVersions() throws IOException, UnirestException {
         uk.ac.ebi.subs.repository.model.Submission submission;
-        Team testTeam = Helpers.generateTestTeam();
+        Team testTeam = generateTestTeam();
 
         int numberOfSubmissions = 5;
         int numberOfSamples = 2;

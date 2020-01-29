@@ -39,7 +39,8 @@ These fields are optional:
 
 * description, a text description of the sample
 * attributes, a structured description of the sample
-* sampleRelationships,
+* sampleRelationships, describe how various samples are linked together
+* checklistId, ID of an optional validation checklist to apply on the sample
 
 === Attributes
 
@@ -126,6 +127,21 @@ These relationship natures are available:
 ]
 ----
 
+=== ChecklistId
+
+When submitting samples there is a minimal amount of information that is required (alias, title, release date).
+Depending on the type of sample being described different communities having different requirements.
+We call these additional requirements to checklist.
+
+It is not mandatory to define a checklist to a sample. Currently you can only define one checklist to a sample.
+
+.checklistid.example
+[source,javascript]
+----
+"cheklistId": "ERC000021"
+----
+
+
 == Create a sample
 
 === Request
@@ -141,6 +157,22 @@ include::{snippets}/create-sample/http-response.adoc[]
 
 include::{snippets}/create-sample/links.adoc[]
 
+
+== Create a sample that comply with a given checklist
+
+This is very similar to the default sample creation. It only differs by the added `checklistId` field in the request body.
+
+=== Example Request
+
+include::{snippets}/create-sample-with-checklistId/curl-request.adoc[]
+
+=== Example Response
+
+include::{snippets}/create-sample-with-checklistId/http-response.adoc[]
+
+=== Links
+
+include::{snippets}/create-sample-with-checklistId/links.adoc[]
 
 == Update a sample
 === Request

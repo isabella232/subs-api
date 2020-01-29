@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.api;
 
 import uk.ac.ebi.subs.api.controllers.SubmissionDTO;
+import uk.ac.ebi.subs.api.utils.SubmittableHelper;
 import uk.ac.ebi.subs.data.client.Study;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.Attribute;
@@ -36,6 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+
+import static uk.ac.ebi.subs.api.utils.SubmittableHelper.createId;
+import static uk.ac.ebi.subs.api.utils.SubmittableHelper.generateTestTeam;
 
 public class Helpers {
 
@@ -221,20 +225,8 @@ public class Helpers {
         List<Sample> samples = new ArrayList<>(numberOfSamplesRequired);
 
         for (int i = 1; i <= numberOfSamplesRequired; i++) {
-            Sample s = new Sample();
+            Sample s = SubmittableHelper.createSample(createProcessingStatus, String.valueOf(i));
             samples.add(s);
-
-            s.setId(createId());
-            s.setTeam(generateTestTeam());
-            s.setAlias("D" + i);
-            s.setTitle("Donor " + i);
-            s.setDescription("Human sample donor");
-            s.setTaxon("Homo sapiens");
-            s.setTaxonId(9606L);
-
-            if (createProcessingStatus) {
-                s.setProcessingStatus(new ProcessingStatus(ProcessingStatusEnum.Draft));
-            }
         }
 
         return samples;
@@ -259,12 +251,6 @@ public class Helpers {
         return projects;
     }
 
-    public static Team generateTestTeam() {
-        Team d = new Team();
-        d.setName(TEAM_NAME);
-        return d;
-    }
-
     public static Submission generateTestSubmission() {
         Submission sub = new Submission();
         Team d = generateTestTeam();
@@ -276,10 +262,6 @@ public class Helpers {
         sub.getSubmissionStatus().setTeam(d);
         sub.setSubmissionPlan(generateSubmissionPlan());
         return sub;
-    }
-
-    private static String createId() {
-        return UUID.randomUUID().toString();
     }
 
     public static String getRandomAlias() {
