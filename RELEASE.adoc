@@ -1,0 +1,19 @@
+= [.ebi-color]#Release notes#
+:toc: auto
+
+This pages contains links to release notes for DSP's REST API application.
+
+[[section]]
+== v2.33.0 Release notes
+
+New features:
+----------------
+1. Add the possibility to set an additional checklist on a submittable for schema validation.
+2. Add the possibility to set an additional checklist on a submittable when they uploaded with a spreadsheet.
+3. Document checklist usage in API documentation.
+----------------
+
+Platform upgrades:
+--------------
+1. DSP's REST API application now runs on Java 11 (Open JDK 11).
+--------------
