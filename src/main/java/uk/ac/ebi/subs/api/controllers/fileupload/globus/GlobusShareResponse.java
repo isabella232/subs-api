@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.api.controllers.fileupload.external.globus;
+package uk.ac.ebi.subs.api.controllers.fileupload.globus;
 
 import lombok.Data;
 
