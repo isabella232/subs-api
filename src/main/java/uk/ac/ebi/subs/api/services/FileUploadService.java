@@ -16,7 +16,7 @@ public class FileUploadService {
     @Autowired
     private RabbitMessagingTemplate rabbitMessagingTemplate;
 
-    public String getGlobusShare(String owner, String submissionId) {
+    public String createGlobusShare(String owner, String submissionId) {
         GlobusShareRequest req = new GlobusShareRequest();
         req.setOwner(owner);
         req.setSubmissionId(submissionId);

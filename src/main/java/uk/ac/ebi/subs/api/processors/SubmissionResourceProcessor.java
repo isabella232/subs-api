@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.processors;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -20,7 +21,9 @@ import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
 import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.fileupload.GlobusShare;
 import uk.ac.ebi.subs.repository.repos.DataTypeRepository;
+import uk.ac.ebi.subs.repository.repos.fileupload.GlobusShareRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 import java.util.HashMap;
@@ -59,6 +62,9 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     @NonNull
     private DataTypeRepository dataTypeRepository;
 
+    @Autowired
+    private GlobusShareRepository globusShareRepository;
+
     @Override
     public Resource<Submission> process(Resource<Submission> resource) {
         addTeamRel(resource);
@@ -78,6 +84,8 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
         SubmissionResource submissionResource = new SubmissionResource(resource);
 
         addDataType(submissionResource);
+
+        addGlobusShare(submissionResource);
 
         return submissionResource;
     }
@@ -217,6 +225,13 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
                                     .getTeam(resource.getContent().getTeam().getName())
                     ).withRel("team")
             );
+        }
+    }
+
+    private void addGlobusShare(Resource<Submission> resource) {
+        GlobusShare gs = globusShareRepository.findOne(resource.getContent().getCreatedBy());
+        if (gs != null && !gs.getRegisteredSubmissionIds().stream().noneMatch(regSubId -> regSubId.equals(resource.getContent().getId()))) {
+            resource.add(new Link(gs.getShareLink(), "GlobusShare"));
         }
     }
 }

@@ -5,8 +5,8 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.method.P;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +29,7 @@ public class GlobusFileUploadController {
     @Autowired
     private FileUploadService fileUploadService;
 
-    @GetMapping(value = "/fileupload/globus/{submissionId}/share")
+    @PostMapping(value = "/fileupload/globus/{submissionId}/share")
     public ResponseEntity<GlobusShareResponse> createGlobusShare(@PathVariable @P("submissionId") String submissionId) {
 
         Submission submission = submissionRepository.findOne(submissionId);
@@ -38,7 +38,7 @@ public class GlobusFileUploadController {
         }
 
         GlobusShareResponse resp = new GlobusShareResponse();
-        resp.setShareLink(fileUploadService.getGlobusShare(submission.getCreatedBy(), submissionId));
+        resp.setShareLink(fileUploadService.createGlobusShare(submission.getCreatedBy(), submissionId));
 
         return ResponseEntity.ok(resp);
     }
