@@ -55,9 +55,10 @@ public class SubmissionStatusEventHandler {
             Submission submission = submissionRepository.findBySubmissionStatusId(submissionStatus.getId());
 
             if (submission != null) {
+                submission.setSubmissionDate(new Date());
+
                 submissionEventService.submissionSubmitted(createSubmissionEnvelope(submission));
 
-                submission.setSubmissionDate(new Date());
                 submissionRepository.save(submission);
             }
         }
