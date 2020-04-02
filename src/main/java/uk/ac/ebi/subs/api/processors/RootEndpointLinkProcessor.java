@@ -16,6 +16,7 @@ import uk.ac.ebi.subs.api.controllers.StatusDescriptionController;
 import uk.ac.ebi.subs.api.controllers.TeamController;
 import uk.ac.ebi.subs.api.controllers.UserProjectsController;
 import uk.ac.ebi.subs.api.controllers.UserSubmissionsController;
+import uk.ac.ebi.subs.api.controllers.ValidationSchemaController;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.SubmissionPlan;
@@ -67,6 +68,7 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
         addTusUploadLink(links);
         addUiSupportLinks(links);
         addTemplatesLinks(links);
+        addValidationSchemaLink(links);
         addSubmissionPlanLinks(links);
     }
 
@@ -175,6 +177,14 @@ public class RootEndpointLinkProcessor implements ResourceProcessor<RepositoryLi
                                 .allSubmissionStatus(null))
                         .withRel("submissionStatusDescriptions")
         );
+    }
+
+    private void addValidationSchemaLink(List<Link> links) {
+        Link validationSchemaLink =
+                linkTo(methodOn(ValidationSchemaController.class).getDetailedValidationSchemas(null))
+                        .withRel("validationSchemas");
+
+        links.add(validationSchemaLink);
     }
 }
 
