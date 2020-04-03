@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -91,7 +92,7 @@ public class ValidationSchemaControllerTest {
     }
 
     @Test
-    public void whenUserQuerySpecificValidationSchema_shouldReturnItsJsonSchema() throws Exception {
+    public void whenUserQuerySpecificValidationSchema_shouldReturnItsJsonSchemaWhenItExists() throws Exception {
         int schemaIdIndex = 11;
         given(checklistRepository.findValidationSchemaById(any())).willReturn(validationSchemas.get(schemaIdIndex).getValidationSchema());
 
@@ -102,6 +103,21 @@ public class ValidationSchemaControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(equalTo(expectedSchemaId))));
+    }
+
+    @Test
+    public void whenUserQuerySpecificValidationSchema_shouldReturn404WhenItDoesNotExist() throws Exception {
+        int schemaIdIndex = 9999;
+        given(checklistRepository.findValidationSchemaById(any())).willReturn(null);
+
+        final String expectedSchemaId = "schema_for_dataTypeId_" + ++schemaIdIndex;
+
+        mvc.perform(get(String.format("/api/validationSchemas/%s", expectedSchemaId))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title", is(equalTo("Not Found"))))
+                .andExpect(jsonPath("$.status", is(equalTo(HttpStatus.NOT_FOUND.value()))));
     }
 
     private void generateMockChecklists() {

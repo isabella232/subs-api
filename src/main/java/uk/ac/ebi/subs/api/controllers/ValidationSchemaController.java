@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
@@ -69,6 +70,10 @@ public class ValidationSchemaController {
             @PathVariable @P("schemaId") String schemaId) throws IOException {
 
         String schemaStr = checklistRepository.findValidationSchemaById(schemaId);
+
+        if (schemaStr == null) {
+            throw new ResourceNotFoundException(String.format("Validation Schema with ID: %s not found", schemaId));
+        }
 
         ObjectMapper mapper = new ObjectMapper();
 
