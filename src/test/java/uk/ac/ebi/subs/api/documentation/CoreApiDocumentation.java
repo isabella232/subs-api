@@ -167,6 +167,7 @@ public class CoreApiDocumentation {
                                         linkWithRel("uiSupportItems:search").description("Search resource for UI support items"),
                                         linkWithRel("checklists").description("Collection of data checklists"),
                                         linkWithRel("checklists:search").description("Search resource for checklists"),
+                                        linkWithRel("validationSchemas").description("Collection of validation schemas supported by the Data Submission Portal"),
                                         linkWithRel("submissionPlans").description("Collection of submission plans, describing sets of data types that make sense to be submitted together"),
                                         //user projects
                                         linkWithRel("userProjects").description("Query resource for projects usable by the logged in user"),
