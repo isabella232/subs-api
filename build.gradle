@@ -36,7 +36,7 @@ repositories {
 
 dependencies {
     compile("uk.ac.ebi.subs:subs-processing-model:2.15.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:2.33.3-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:2.34.2-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:0.6.0-SNAPSHOT")
 
     compile('uk.ac.ebi.tsc.aap.client:security:1.0.4-SNAPSHOT'){changing = true}
