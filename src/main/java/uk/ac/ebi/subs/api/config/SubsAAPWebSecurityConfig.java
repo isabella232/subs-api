@@ -80,6 +80,7 @@ public class SubsAAPWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET,"/submissionPlans/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/dataTypes/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/checklists/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/validationSchemas/**").permitAll()
                 .mvcMatchers(HttpMethod.OPTIONS,"/**").permitAll()
                 .mvcMatchers(HttpMethod.HEAD,"/**").permitAll()
                 .anyRequest().authenticated();
