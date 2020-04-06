@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jdk.jfr.ContentType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.Resources;
@@ -40,7 +42,7 @@ public class ValidationSchemaController {
 
     private static final int DEFAULT_PAGE_SIZE = 20;
 
-    @GetMapping(value = "/validationSchemas")
+    @GetMapping(value = "/validationSchemas", produces = MediaTypes.HAL_JSON_VALUE)
     public Resources<Resource<ValidationSchema>> getDetailedValidationSchemas(
             @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable) {
         List<ValidationSchema> validationSchemas;
