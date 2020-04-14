@@ -4,9 +4,19 @@
 This pages contains links to release notes for DSP's REST API application.
 
 [[section]]
+== v2.36.0 Release Notes
+
+Notifications:
+----------------
+1. DSP maintenance is over. DSP's welcome page has been restored to the original one and the maintenence message has been removed.
+----------------
+
+
+
+[[section]]
 == v2.34.0 Release Notes
 
-New feautures:
+Notifications:
 ----------------
 1. DSP is going under maintenance from 8th March to 4th April 2020. For that period on DSP's welcome page displays a message regarding to this maintenance.
 ----------------

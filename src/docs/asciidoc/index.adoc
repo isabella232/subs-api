@@ -2,14 +2,6 @@
 :docinfo: shared
 :nofooter:
 
-++++
-<div class="callout warning">
-    <h3>Planned maintenance</h3>
-
-Due to planned maintenance work, the Data Submissions Portal will be offline between 8th March 2020 and 4th April 2020. We apologise for any inconvenience this may cause. Please contact our <a href ="mailto:submission-help@ebi.ac.uk">help desk</a> for any urgent queries.
-</div>
-++++
-
 This is documentation for the submission service API. You can use it to submit
 your scientific data to the public archives at EMBL-EBI.
 
