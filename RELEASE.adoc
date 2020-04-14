@@ -1,12 +1,30 @@
-= [.ebi-color]#Release notes#
+= [.ebi-color]#Release Notes#
 :toc: auto
 
 This pages contains links to release notes for DSP's REST API application.
 
 [[section]]
-== v2.33.0 Release notes
+== v2.36.0 Release Notes
 
-New features:
+Notifications:
+----------------
+1. DSP maintenance is over. DSP's welcome page has been restored to the original one and the maintenence message has been removed.
+----------------
+
+
+
+[[section]]
+== v2.34.0 Release Notes
+
+Notifications:
+----------------
+1. DSP is going under maintenance from 8th March to 4th April 2020. For that period on DSP's welcome page displays a message regarding to this maintenance.
+----------------
+
+[[section]]
+== v2.33.0 Release Notes
+
+New features: 
 ----------------
 1. Add the possibility to set an additional checklist on a submittable for schema validation.
 2. Add the possibility to set an additional checklist on a submittable when they uploaded with a spreadsheet.
