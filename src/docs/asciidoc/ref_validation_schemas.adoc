@@ -1,0 +1,29 @@
+= Validation schemas
+:docinfo: shared
+:toc: auto
+:nofooter:
+
+== Overview
+
+Validation schemas describes the minimal amount of information required from the user to be able to submit an entity to an archive.
+This depends on the type of submittable being described, with different communities having different requirements/standards.
+The user can select from a list of schema before dispatching submittable (samples, projects, studies... etc) to the various archives.
+
+== List all validation schemas
+=== Request
+
+include::{snippets}/validationSchemas-list/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/validationSchemas-list/http-response.adoc[]
+
+== Get a specific validation schema
+
+=== Request
+
+include::{snippets}/get-specific-validation-schema/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-specific-validation-schema/http-response.adoc[]

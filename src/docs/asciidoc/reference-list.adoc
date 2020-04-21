@@ -2,6 +2,7 @@
 :docinfo: private
 * <<ref_overview.adoc#,Overview>>
 * <<ref_root_endpoint.adoc#,API root>>
+* <<ref_validation_schemas.adoc#,Validation schemas>>
 * <<ref_submissions.adoc#,Submissions>>
 * <<ref_teams.adoc#,Teams>>
 ifdef::project[]
