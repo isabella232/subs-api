@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.api.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -195,6 +196,9 @@ public class SubmissionContentsControllerWithChecklistTest {
                 .content(json)
         )
                 .andDo(print())
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sampleExternalReferences").exists())
+                .andExpect(jsonPath("$.sampleExternalReferences").isArray())
+                .andExpect(jsonPath("$.sampleExternalReferences[0].url", is(Matchers.equalTo(exampleSampleRefUrl))));
     }
 }
