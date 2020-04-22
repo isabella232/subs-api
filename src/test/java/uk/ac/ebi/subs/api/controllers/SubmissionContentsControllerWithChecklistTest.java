@@ -22,6 +22,7 @@ import uk.ac.ebi.subs.api.ApiIntegrationTestHelper;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.utils.SubmittableHelper;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.component.SampleExternalReference;
 import uk.ac.ebi.subs.repository.model.Checklist;
 import uk.ac.ebi.subs.repository.model.DataType;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -33,6 +34,9 @@ import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -134,7 +138,7 @@ public class SubmissionContentsControllerWithChecklistTest {
     @Test
     public void whenCreatingDataTypeWithNonExistingChecklistID_ThenReturnsCheckListNotFoundResult() throws Exception {
         Sample sample = createSample(false, null);
-        final ObjectMapper objectMapper = new ObjectMapper();
+
         ObjectNode jsonObject = objectMapper.readValue(this.objectMapper.writeValueAsString(sample), ObjectNode.class);
         jsonObject.put("checklistId", CHECKLIST_NOT_EXISTS);
         String json = objectMapper.writeValueAsString(jsonObject);
@@ -152,7 +156,7 @@ public class SubmissionContentsControllerWithChecklistTest {
     @Test
     public void whenCreatingDataTypeWithChecklistID_ThenChecklistShouldBePopulatedInSubmittable() throws Exception {
         Sample sample = createSample(false, null);
-        final ObjectMapper objectMapper = new ObjectMapper();
+
         ObjectNode jsonObject = objectMapper.readValue(this.objectMapper.writeValueAsString(sample), ObjectNode.class);
         jsonObject.put("checklistId", CHECKLIST_ERC_000021);
         String json = objectMapper.writeValueAsString(jsonObject);
@@ -167,5 +171,30 @@ public class SubmissionContentsControllerWithChecklistTest {
                 .andExpect(jsonPath("$._embedded").exists())
                 .andExpect(jsonPath("$._embedded.checklist").exists())
                 .andExpect(jsonPath("$._embedded.checklist.id", is(equalTo(CHECKLIST_ERC_000021))));
+    }
+
+    @Test
+    public void whenCreatingSampleWithExternalRelationShip_ThenExternalRelationshipShouldBePersisted() throws Exception {
+        Sample sample = createSample(false, null);
+
+        List<SampleExternalReference> externalReferences = new ArrayList<>();
+
+        SampleExternalReference externalReference = new SampleExternalReference();
+        final String exampleSampleRefUrl = "http://sampleexample.com/ref1";
+        externalReference.setUrl(exampleSampleRefUrl);
+
+        externalReferences.add(externalReference);
+
+        sample.setSampleExternalReferences(externalReferences);
+
+        String json = objectMapper.writeValueAsString(sample);
+
+        mockMvc.perform(post(String.format("/submissions/%s/contents/%s", SUBMISSION_ID, SAMPLES_DATA_TYPE_ID))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        )
+                .andDo(print())
+                .andExpect(status().isCreated());
     }
 }

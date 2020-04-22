@@ -32,6 +32,7 @@ import uk.ac.ebi.subs.api.services.SubmissionEventService;
 import uk.ac.ebi.subs.api.services.SubmissionStatusService;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.Attribute;
+import uk.ac.ebi.subs.data.component.SampleExternalReference;
 import uk.ac.ebi.subs.data.component.SampleRelationship;
 import uk.ac.ebi.subs.data.component.Term;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
@@ -68,6 +69,7 @@ import uk.ac.ebi.tsc.aap.client.repo.ProfileRepositoryRest;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -951,6 +953,74 @@ public class SubmissionApiDocumentation {
                                 )
                         )
                 );
+    }
+
+    @Test
+    public void createSampleWithExternalRelationShip() throws Exception {
+        Submission sub = storeSubmission();
+        uk.ac.ebi.subs.data.client.Sample sample = Helpers.generateTestClientSamples(1).get(0);
+
+        SampleExternalReference externalReference1 = createSampleExternalReference("http://external.reference.com/ref1");
+        SampleExternalReference externalReference2 = createSampleExternalReference("http://another.external.reference.com/ref2");
+
+        List<SampleExternalReference> externalReferences = new ArrayList<>(List.of(externalReference1, externalReference2));
+
+        sample.setSampleExternalReferences(externalReferences);
+
+        this.mockMvc.perform(
+                post("/api/submissions/" + sub.getId() + "/contents/samples/").content(objectMapper.writeValueAsString(sample))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+
+        ).andExpect(status().isCreated())
+                .andDo(
+                        document("create-sample-with-external-relationships",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()),
+                                responseFields(
+                                        fieldWithPath("_links").description("Links"),
+                                        fieldWithPath("alias").description("Unique name for the sample within the team"),
+                                        fieldWithPath("title").description("Title for the sample"),
+                                        fieldWithPath("description").description("Description for the sample"),
+                                        fieldWithPath("attributes").description("A list of attributes for the sample"),
+                                        fieldWithPath("sampleRelationships").description("Relationships to other samples"),
+                                        fieldWithPath("sampleExternalReferences").description("A list of external references of this sample"),
+                                        fieldWithPath("taxonId").description("NCBI Taxon ID for this sample"),
+                                        fieldWithPath("taxon").description("Scientific name for this taxon"),
+                                        fieldWithPath("_embedded.submission").description("Submission that this sample is part of"),
+                                        fieldWithPath("_embedded.processingStatus").description("Processing status for this sample."),
+                                        fieldWithPath("_embedded.validationResult").description("Validation result for this sample."),
+                                        fieldWithPath("_embedded.dataType").description("Data type description."),
+                                        fieldWithPath("team").description("Team this sample belongs to"),
+
+                                        fieldWithPath("releaseDate").description("Date at which this sample will be released"),
+                                        fieldWithPath("createdDate").description("Date this resource was created"),
+                                        fieldWithPath("lastModifiedDate").description("Date this resource was modified"),
+                                        fieldWithPath("createdBy").description("User who created this resource"),
+                                        fieldWithPath("lastModifiedBy").description("User who last modified this resource")
+                                ),
+                                links(
+                                        halLinks(),
+                                        validationresultLink(),
+                                        submissionLink(),
+                                        processingStatusLink(),
+                                        linkWithRel("self").description("This resource"),
+                                        linkWithRel("sample").description("This resource"),
+                                        linkWithRel("self:update").description("This resource can be updated"),
+                                        linkWithRel("self:delete").description("This resource can be deleted"),
+                                        linkWithRel("history").description("Collection of resources for samples with the same team and alias as this resource"),
+                                        linkWithRel("current-version").description("Current version of this sample, as identified by team and alias"),
+                                        linkWithRel("dataType").description("Resource describing the requirements for this data type")
+                                )
+                        )
+                );
+
+    }
+
+    private SampleExternalReference createSampleExternalReference(String externalReferenceUrl) {
+        SampleExternalReference externalReference = new SampleExternalReference();
+        externalReference.setUrl(externalReferenceUrl);
+        return externalReference;
     }
 
     @Test

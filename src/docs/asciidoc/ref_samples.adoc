@@ -40,6 +40,7 @@ These fields are optional:
 * description, a text description of the sample
 * attributes, a structured description of the sample
 * sampleRelationships, describe how various samples are linked together
+* sampleExternalReferences, a list of external references of this sample
 * checklistId, ID of an optional validation checklist to apply on the sample
 
 === Attributes
@@ -126,6 +127,31 @@ These relationship natures are available:
     }
 ]
 ----
+
+=== Sample external references
+
+This part of the sample could contain a list of links to external resources.
+
+.sample external reference example
+[source,javascript]
+----
+  "sampleExternalReferences": [
+    {
+        "url" : "http://external.reference.com/ref1"
+    },
+    {
+        "url" : "http://another.external.reference.com/ref2"
+    }
+]
+----
+
+==== Request
+
+include::{snippets}/create-sample-with-external-relationships/curl-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-sample-with-external-relationships/http-response.adoc[]
 
 === ChecklistId
 

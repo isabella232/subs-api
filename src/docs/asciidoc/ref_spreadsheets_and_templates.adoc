@@ -5,7 +5,7 @@
 
 == Checklists
 
-Templates help users provide bulk data (e.g. sampeles, assays), using familiar tools.
+Templates help users provide bulk data (e.g. samples, assays), using familiar tools.
 Users can download spreadsheets by using the `spreadsheet-csv-download` link in their browser.
 
 === Template search resources
