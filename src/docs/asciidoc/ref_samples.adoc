@@ -22,7 +22,7 @@ These fields must be filled out for all samples:
 * title, title of the sample
 * releaseDate in YYYY-MM-DD format, e.g. `"2017-12-12"`
 
-In addition, most of our data archives also requires organism information in the `taxon` field, to classify the species or sample type. This should
+In addition, most of our data archives also require organism information in the `taxon` field, to classify the species or sample type. This should
 be given as a taxon ID (e.g. for human sample, "taxon:"9606"). The taxon IDs can be found in the
 https://www.ebi.ac.uk/ols/ontologies/ncbitaxon[OLS organism classification], or the
 https://www.ebi.ac.uk/ena/browse/taxonomy-service[ENA taxonomy service].
