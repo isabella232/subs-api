@@ -9,6 +9,8 @@ Validation schemas describes the minimal amount of information required from the
 This depends on the type of submittable being described, with different communities having different requirements/standards.
 The user can select from a list of schema before dispatching submittable (samples, projects, studies... etc) to the various archives.
 
+For sample metadata, the https://www.ebi.ac.uk/ena/submit/checklists[ENA sample checklists] validation schemas are recommended.
+
 == List all validation schemas
 === Request
 
