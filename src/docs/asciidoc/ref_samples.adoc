@@ -12,20 +12,23 @@ In most cases sample entities are self-evident; such as a blood sample, cell cul
 However, a sample can also be an environmental sample (e.g. for meta-genomic analysis), a hybrid between two species,
 parasite infected cell culture, etc.
 
+https://www.ebi.ac.uk/biosamples/[BioSamples] will release your sample information on or after the given release date.
+
 == Minimal requirements
 
 These fields must be filled out for all samples:
 
-* alias
-* title
+* alias, unique name for the sample within the same team
+* title, title of the sample
 * releaseDate in YYYY-MM-DD format, e.g. `"2017-12-12"`
 
-https://www.ebi.ac.uk/biosamples/[BioSamples] will release your sample information on or after the release date.
+In addition, most of our data archives also require organism information in the `taxon` field, to classify the species or sample type. This should
+be given as a taxon ID (e.g. for human sample, "taxon:"9606"). The taxon IDs can be found in the
+https://www.ebi.ac.uk/ols/ontologies/ncbitaxon[OLS organism classification], or the
+https://www.ebi.ac.uk/ena/browse/taxonomy-service[ENA taxonomy service].
 
-In addition, most of our data archives also require a taxonomy entry, to classify the species or sample type. This should
-be given as a taxon ID. You can search for taxon IDs through the
-https://www.ebi.ac.uk/ena/data/search?query=xenograft[ENA web page], or
-https://www.ebi.ac.uk/ena/browse/taxonomy-service[API].
+To search for taxon IDs use OLS-NCBI taxon or the https://www.ebi.ac.uk/ena/browse/taxonomy-service[ENA taxonomy service].
+
 
 * taxonId
 
@@ -40,6 +43,7 @@ These fields are optional:
 * description, a text description of the sample
 * attributes, a structured description of the sample
 * sampleRelationships, describe how various samples are linked together
+* sampleExternalReferences, a list of external references of this sample
 * checklistId, ID of an optional validation checklist to apply on the sample
 
 === Attributes
@@ -64,7 +68,7 @@ The attributes field should be structured like this:
 * value
 * units, should specify the units used for a numeric value, e.g. to clarify if an age is specified in years, months, or
 weeks. The unit should be lowercase and written out in full (e.g. "milimole" instead of "mm")
-* terms, a list of ontology terms to describe the attribute. The url should be for an ontology term, available through
+* terms, a list of ontology term URLs to describe the attribute. The url should be for an ontology term, available through
 the https://www.ebi.ac.uk/ols[ontology lookup service]. E.g. "http://purl.obolibrary.org/obo/UBERON_0002114" for duodenum.
 
 .example.attributes
@@ -127,6 +131,23 @@ These relationship natures are available:
 ]
 ----
 
+=== Sample external references
+
+This part of the sample could contain a list of links to external resources.
+
+.sample external reference example
+[source,javascript]
+----
+  "sampleExternalReferences": [
+    {
+        "url" : "http://external.reference.com/ref1"
+    },
+    {
+        "url" : "http://another.external.reference.com/ref2"
+    }
+]
+----
+
 === ChecklistId
 
 When submitting samples there is a minimal amount of information that is required (alias, title, release date).
@@ -173,6 +194,19 @@ include::{snippets}/create-sample-with-checklistId/http-response.adoc[]
 === Links
 
 include::{snippets}/create-sample-with-checklistId/links.adoc[]
+
+== Create a sample with a sample external reference
+
+This is very similar to the default sample creation. It only differs by the added `sampleExternalReferences` field in the request body.
+
+=== Example request
+
+include::{snippets}/create-sample-with-external-relationships/curl-request.adoc[]
+
+=== Exanple response
+
+include::{snippets}/create-sample-with-external-relationships/http-response.adoc[]
+
 
 == Update a sample
 === Request
