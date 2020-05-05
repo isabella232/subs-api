@@ -114,6 +114,8 @@ public class SheetBulkOps {
         ProcessingStatus processingStatus = ProcessingStatus.createForSubmittable(storedSubmittable);
         processingStatus.setId(UUID.randomUUID().toString());
 
+        storedSubmittable.setProcessingStatus(processingStatus);
+
         return processingStatus;
     }
 

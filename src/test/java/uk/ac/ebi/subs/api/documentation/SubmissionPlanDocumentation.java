@@ -139,6 +139,7 @@ public class SubmissionPlanDocumentation {
                                 fieldWithPath("description").description("description of the submission plan"),
                                 fieldWithPath("dataTypeIds").description("IDs for the data types used in this plan"),
                                 fieldWithPath("dataTypes").description("The data types used in this plan"),
+                                fieldWithPath("enabled").description("A flag to set this submission plan enabled in this environment."),
                                 fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources")
 
                         )
