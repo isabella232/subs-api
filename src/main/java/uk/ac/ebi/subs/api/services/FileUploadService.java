@@ -8,6 +8,7 @@ import uk.ac.ebi.subs.api.model.fileupload.globus.GlobusUploadedFilesNotificatio
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Topics;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -21,13 +22,15 @@ public class FileUploadService {
         req.setOwner(owner);
         req.setSubmissionId(submissionId);
 
-        String share = rabbitMessagingTemplate.convertSendAndReceive(
-                Exchanges.SUBMISSIONS, Topics.GLOBUS_SHARE_REQUEST, req, String.class);
-        if (share == null) {
+        //RabbitMessagingTemplate.convertSendAndReceive() returns null due to unsupported mime type of the response message.
+        //Same method on the underlying RabbitTemplate object is a reasonable workaround for this.
+        Object resp = rabbitMessagingTemplate.getRabbitTemplate().convertSendAndReceive(
+                Exchanges.SUBMISSIONS, Topics.GLOBUS_SHARE_REQUEST, (Object)req);
+        if (resp == null) {
             throw new RuntimeException("Share not returned.");
         }
 
-        return share;
+        return (String)resp;
     }
 
     public void notifyUploadedFiles(String owner, String submissionId, List<String> files) {
