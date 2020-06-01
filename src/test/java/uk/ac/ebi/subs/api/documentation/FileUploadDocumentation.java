@@ -220,6 +220,8 @@ public class FileUploadDocumentation {
 
     @Test
     public void notifyGlobusUploadedFiles() throws Exception {
+        globusShareRepository.deleteAll();
+
         GlobusShare gs = new GlobusShare();
         gs.setOwner(submission.getCreatedBy());
         gs.setRegisteredSubmissionIds(Collections.singletonList(submission.getId()));
