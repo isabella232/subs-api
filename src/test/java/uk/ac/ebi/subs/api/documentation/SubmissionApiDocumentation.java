@@ -166,9 +166,11 @@ public class SubmissionApiDocumentation {
 
     private String urlBase;
 
+    private Submission submission;
+
     @Before
     public void setUp() throws UnirestException, URISyntaxException {
-        storeSubmission();
+        submission = storeSubmission();
         clearDatabases();
 
         URI uri = new URI(
@@ -341,6 +343,19 @@ public class SubmissionApiDocumentation {
                         )
                 );
 
+        this.mockMvc.perform(
+                get("/api/submissions/{submissionId}", sub.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(RestMediaTypes.HAL_JSON)
+                        .header(AUTHORIZATION_HEADER_NAME,AUTHORIZATION_HEADER_VALUE)
+
+        ).andExpect(status().isOk())
+                .andDo(
+                        document("get-submission",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
     }
 
     @Test

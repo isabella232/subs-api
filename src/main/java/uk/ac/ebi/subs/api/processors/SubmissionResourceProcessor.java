@@ -231,7 +231,7 @@ public class SubmissionResourceProcessor implements ResourceProcessor<Resource<S
     private void addGlobusShare(Resource<Submission> resource) {
         GlobusShare gs = globusShareRepository.findOne(resource.getContent().getCreatedBy());
         if (gs != null && !gs.getRegisteredSubmissionIds().stream().noneMatch(regSubId -> regSubId.equals(resource.getContent().getId()))) {
-            resource.add(new Link(gs.getShareLink(), "GlobusShare"));
+            resource.add(new Link(gs.getShareLink(), "globusShare"));
         }
     }
 }

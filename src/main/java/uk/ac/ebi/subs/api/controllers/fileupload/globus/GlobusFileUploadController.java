@@ -38,7 +38,7 @@ public class GlobusFileUploadController {
         }
 
         GlobusShareResponse resp = new GlobusShareResponse();
-        resp.setShareLink(fileUploadService.createGlobusShare(submission.getCreatedBy(), submissionId));
+        resp.setGlobusShare(fileUploadService.createGlobusShare(submission.getCreatedBy(), submissionId));
 
         return ResponseEntity.ok(resp);
     }

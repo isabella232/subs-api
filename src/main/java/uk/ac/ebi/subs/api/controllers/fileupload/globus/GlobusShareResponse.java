@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class GlobusShareResponse {
 
-    private String shareLink;
+    private String globusShare;
 }

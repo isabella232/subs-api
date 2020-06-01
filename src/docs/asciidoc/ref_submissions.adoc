@@ -46,6 +46,16 @@ include::{snippets}/create-submission/http-response.adoc[]
 
 include::{snippets}/create-submission/links.adoc[]
 
+== Get a submission
+
+=== Request
+
+include::{snippets}/get-submission/curl-request.adoc[]
+
+=== Response
+
+include::{snippets}/get-submission/http-response.adoc[]
+
 == Delete a submission
 
 `DELETE`-ing a submission will delete the submission and all resources within it e.g. studies, samples.

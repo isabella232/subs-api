@@ -6,11 +6,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,15 +24,19 @@ import uk.ac.ebi.subs.ApiApplication;
 import uk.ac.ebi.subs.DocumentationProducer;
 import uk.ac.ebi.subs.api.Helpers;
 import uk.ac.ebi.subs.api.handlers.FileDeletionEventHandler;
+import uk.ac.ebi.subs.api.services.FileUploadService;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.fileupload.File;
+import uk.ac.ebi.subs.repository.model.fileupload.GlobusShare;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.fileupload.FileRepository;
+import uk.ac.ebi.subs.repository.repos.fileupload.GlobusShareRepository;
 import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
 import uk.ac.ebi.subs.validator.data.ValidationResult;
 import uk.ac.ebi.subs.validator.repository.ValidationResultRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.halLinks;
@@ -38,6 +45,8 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -73,9 +82,14 @@ public class FileUploadDocumentation {
     private SubmissionStatusRepository submissionStatusRepository;
     @Autowired
     private ValidationResultRepository validationResultRepository;
+    @Autowired
+    private GlobusShareRepository globusShareRepository;
 
     @MockBean
     private FileDeletionEventHandler fileDeletionEventHandler;
+
+    @MockBean
+    private FileUploadService fileUploadService;
 
     private MockMvc mockMvc;
     private Submission submission;
@@ -187,6 +201,40 @@ public class FileUploadDocumentation {
                 preprocessResponse(prettyPrint())
             )
         );
+    }
+
+    @Test
+    public void createGlobusShare() throws Exception {
+        Mockito.when(fileUploadService.createGlobusShare(Mockito.any(), Mockito.any())).thenReturn(
+                "https://app.globus.org/file-manager?origin_id=00000000-0000-0000-0000-000000000000");
+
+        this.mockMvc.perform(
+                post("/api/fileupload/globus/{submissionId}/share", submission.getId()))
+                .andExpect(status().isOk())
+                .andDo(
+                        document( "create-globus-share",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()))
+                );
+    }
+
+    @Test
+    public void notifyGlobusUploadedFiles() throws Exception {
+        GlobusShare gs = new GlobusShare();
+        gs.setOwner(submission.getCreatedBy());
+        gs.setRegisteredSubmissionIds(Collections.singletonList(submission.getId()));
+
+        globusShareRepository.save(gs);
+
+        this.mockMvc.perform(put("/api/fileupload/globus/{submissionId}/uploadedFiles", submission.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"files\": [ \"file1.bam\", \"file2.cram\", \"file3.fastq.gz\" ] }"))
+                .andExpect(status().isOk())
+                .andDo(
+                        document( "notify-globus-uploadedfiles",
+                                preprocessRequest(prettyPrint(), addAuthTokenHeader()),
+                                preprocessResponse(prettyPrint()))
+                );
     }
 
     private void clearDatabases() {
