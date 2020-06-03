@@ -4,7 +4,23 @@
 :nofooter:
 :markup-in-source: attributes+
 
-== How to upload a file
+== Multiple ways to upload files
+
+There are two supported technologies with the help of which files can be uploaded to DSP:
+
+1. tus.io
+2. https://www.globus.org/[Globus]
+
+tus.io had always been the default way of uploading files. Getting started with it is relatively simple and requires
+minimal configuration on users part. But uploading data through tus.io may seem slow, especially with large files.
+This is due to infrastructure limitations which prevent tus uploads from getting high transfer speeds.
+
+If users wish to upload large data sets quickly then they should look into utilizing DSP's Globus file uploading support.
+At EBI, Globus is among a few other supported technologies that allow for high speed file transfers.
+The process for uploading files this way is slightly complicated and may even be impossible for individuals who
+operate under strict organizational policies. For such users, it is advised that they upload their data using the first method.
+
+== Method#1 : How to upload a file
 
 1. Generate a new JWT (API) token to use with the file upload request. See above.
 2. Use the command line interface of the installed python client to send your file upload request.
@@ -76,15 +92,12 @@ include::{snippets}/delete-file/curl-request.adoc[]
 
 include::{snippets}/delete-file/http-response.adoc[]
 
-== Globus file uploading
+== Method#2 : Globus file uploading
 
-It is also possible to upload files to DSP via https://www.globus.org/[Globus]. Due to infrastructure limitations
-file uploading through tus.io may seem slow, especially with large files. At EBI, Globus is among a few other
-supported technologies that allow for high speed file transfers. In order to use this for uploading files to DSP,
-users will need to register an account with Globus. Please see the *For researchers* section in the
+In order to upload data this way, users will need to register an account with Globus. Please see the *For researchers* section in the
 https://www.globus.org/get-started[getting started] guide for more information.
 
-=== Requesting Globus share
+== Requesting Globus share
 
 To begin uploading files, users will first need to request a Globus share. A share is basically a dedicated folder that
 DSP creates for the requesting user that they can upload their files into. The following REST API is used for requesting
@@ -96,8 +109,9 @@ include::{snippets}/create-globus-share/curl-request.adoc[]
 === Response
 include::{snippets}/create-globus-share/http-response.adoc[]
 
-NOTE: 1# Globus shares are a limited resource. In order to keep number of shares small, DSP *reuses* user's existing shares for
-all of their submissions that are still open i.e. that have the status DRAFT.
+NOTE: 1# Globus shares are a limited resource. The upload process has been specifically designed this way so that the shares
+are only created when there is data to be uploaded as part of the submission. In addition to that, to keep number of shares small,
+DSP *reuses* user's existing shares for all of their submissions that are still open i.e. that have the status DRAFT.
 
 NOTE: 2# Users may think that it is ok to request a share just once but that is not the case. This share request REST API not
 only creates a share but also *registers* a submission with the new or a pre-existing share. If a submission is not registered
@@ -105,14 +119,13 @@ with a share then DSP would never look into user's Globus directory for files th
 
 This endpoint returns a web link that can be opened in the browser to access the Globus file manager. This
 https://docs.globus.org/how-to/get-started/#the_file_manager[guide] explains the transfer process in detail. This link then also
-becomes available under <<ref_submissions.adoc#_get_a_submission,submission details>> should the users
-wish to access it again later.
+becomes available under <<ref_submissions.adoc#_get_a_submission,submission details>> should users wish to access it again later.
 
-=== Notifying DSP about uploaded files
+== Notifying DSP about uploaded files
 
-Since Globus is an external third-party system, it is difficult for DSP to know when a file has finished uploading. It is
-therefore the responsibility of the user to let DSP know whenever that happens. The following REST API
-acts as a way of sending notification to DSP about such files:
+Since Globus is an external third-party system, it is difficult for DSP to find out when a particular file has finished uploading.
+It is, therefore, the responsibility of the user to let DSP know whenever that happens. The following REST API
+acts as a way of notifying DSP about such files:
 
 === Request
 include::{snippets}/notify-globus-uploadedfiles/curl-request.adoc[]
@@ -125,13 +138,23 @@ This is a simple endpoint that will just return an empty 200 OK response. After 
 <<ref_file_upload.adoc#_how_to_get_a_list_of_files_by_a_given_submission,files>> APIs to see if DSP was able to locate
 the files or not.
 
-NOTE: Calling the notify endpoint will remove the files from user's Globus directory and move them to an internal staging area.
+NOTE: Calling the notify endpoint will remove the files from user's Globus directory and moves them to an internal staging area.
+This prevents the files from getting deleted by the users from Globus UI during or after data validation.
 Users are hereby advised not to get confused if they notice files disappearing from their Globus directory. If in doubt, use
 DSP's files API to see whether or not it appears in the list of files DSP has identified for a particular submission.
 
-=== Share removal upon completion
+== Share removal upon completion
 
 DSP automatically deletes the share as soon as it's last registered submission gets completed. If there are any files
 present in the directory at that time then they are deleted as well.
 
 NOTE: Users are advised to start uploading files after they have registered their submission by calling the share request endpoint.
+
+== Globus CLI
+
+Globus also offers a https://docs.globus.org/cli/[CLI application] that people can use for managing transfers in
+their automated workflows. This application works with Globus endpoints only. A Globus share is also an endpoint and
+therefore, has an endpoint ID. That ID is present as the value of the query param *origin_id* in the share link that
+is returned by DSP:
+
+\https://app.globus.org/file-manager?*origin_id=<share-endpoint-id>*
