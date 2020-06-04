@@ -105,6 +105,7 @@ a share:
 
 === Request
 include::{snippets}/create-globus-share/curl-request.adoc[]
+include::{snippets}/create-globus-share/path-parameters.adoc[]
 
 === Response
 include::{snippets}/create-globus-share/http-response.adoc[]
@@ -129,6 +130,7 @@ acts as a way of notifying DSP about such files:
 
 === Request
 include::{snippets}/notify-globus-uploadedfiles/curl-request.adoc[]
+include::{snippets}/notify-globus-uploadedfiles/path-parameters.adoc[]
 
 === Response
 include::{snippets}/notify-globus-uploadedfiles/http-response.adoc[]
@@ -145,7 +147,7 @@ DSP's files API to see whether or not it appears in the list of files DSP has id
 
 == Share removal upon completion
 
-DSP automatically deletes the share as soon as it's last registered submission gets completed. If there are any files
+DSP automatically deletes the share as soon as its last registered submission gets completed. If there are any files
 present in the directory at that time then they are deleted as well.
 
 NOTE: Users are advised to start uploading files after they have registered their submission by calling the share request endpoint.

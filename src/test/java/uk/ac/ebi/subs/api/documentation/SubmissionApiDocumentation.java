@@ -170,7 +170,7 @@ public class SubmissionApiDocumentation {
 
     @Before
     public void setUp() throws UnirestException, URISyntaxException {
-        submission = storeSubmission();
+        storeSubmission();
         clearDatabases();
 
         URI uri = new URI(

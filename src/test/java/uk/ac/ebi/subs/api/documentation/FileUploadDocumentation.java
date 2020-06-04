@@ -15,7 +15,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,6 +53,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.ac.ebi.subs.api.documentation.DocumentationHelper.addAuthTokenHeader;
@@ -214,7 +217,10 @@ public class FileUploadDocumentation {
                 .andDo(
                         document( "create-globus-share",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()))
+                                preprocessResponse(prettyPrint()),
+                                RequestDocumentation.pathParameters(
+                                        RequestDocumentation.parameterWithName("submissionId").description("ID of the submission")
+                                ))
                 );
     }
 
@@ -235,7 +241,10 @@ public class FileUploadDocumentation {
                 .andDo(
                         document( "notify-globus-uploadedfiles",
                                 preprocessRequest(prettyPrint(), addAuthTokenHeader()),
-                                preprocessResponse(prettyPrint()))
+                                preprocessResponse(prettyPrint()),
+                                RequestDocumentation.pathParameters(
+                                        RequestDocumentation.parameterWithName("submissionId").description("ID of the submission")
+                                ))
                 );
     }
 
