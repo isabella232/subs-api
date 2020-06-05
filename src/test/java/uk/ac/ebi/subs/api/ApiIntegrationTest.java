@@ -240,7 +240,7 @@ public abstract class ApiIntegrationTest {
 
         assertThat(submissionContentsRels.get("samples:create"), notNullValue());
 
-        sample.setSubmission(submissionLocation);
+        sample.setSubmissionUrl(submissionLocation);
 
         HttpResponse<JsonNode> sampleFirstResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
@@ -485,7 +485,7 @@ public abstract class ApiIntegrationTest {
         Sample sample = Helpers.generateTestClientSamples(1).get(0);
         //add samples to the submission
 
-        sample.setSubmission(submissionLocation);
+        sample.setSubmissionUrl(submissionLocation);
 
         HttpResponse<JsonNode> sampleResponse = Unirest.post(submissionContentsRels.get("samples:create"))
                 .headers(testHelper.getPostHeaders())
@@ -498,7 +498,7 @@ public abstract class ApiIntegrationTest {
         String sampleLocation = sampleResponse.getHeaders().getFirst("Location");
 
         sample.setAlias("bob"); //modify the sample
-        sample.setSubmission(submissionLocation);
+        sample.setSubmissionUrl(submissionLocation);
 
         HttpResponse<JsonNode> samplePutResponse = Unirest.put(sampleLocation)
                 .headers(testHelper.getPostHeaders())
