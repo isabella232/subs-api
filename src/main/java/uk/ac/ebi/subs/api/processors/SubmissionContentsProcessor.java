@@ -96,7 +96,7 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
 
         for (DataType dataType : dataTypesInSubmission) {
-            // files datatype needs another link format
+            // we can not have these type of links as it is not a submittable data type
             if (dataType.getId().equals(DATA_TYPE_FILES)) {
                 continue;
             }
