@@ -80,10 +80,6 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         List<DataType> dataTypesInSubmission;
         List<DataType> allDataTypes = dataTypeRepository.findAll();
 
-        // remove the files data type from the list, because it is not a real data type (we can't create one with this data type)
-        // it is only exists to give a type for the validation result of a file
-        allDataTypes.removeIf(dataType -> dataType.getId().equals(DATA_TYPE_FILES));
-
         if (submissionPlan == null) {
             dataTypesInSubmission = allDataTypes;
         } else {
@@ -100,6 +96,10 @@ public class SubmissionContentsProcessor implements ResourceProcessor<Resource<S
         boolean updateable = operationControlService.isUpdateable(resource.getContent().getSubmission());
 
         for (DataType dataType : dataTypesInSubmission) {
+            // files datatype needs another link format
+            if (dataType.getId().equals(DATA_TYPE_FILES)) {
+                continue;
+            }
 
             Link collectionLink = linkTo(
                     methodOn(SubmissionContentsController.class)
