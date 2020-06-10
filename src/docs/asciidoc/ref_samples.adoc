@@ -186,23 +186,9 @@ The submission field should be structured like this:
             "type": "string",
             "description": "Short title, 50 characters approx."
         },
-        "identifier": {
-            "type": "string",
-            "description": "Assigned by BioSamples Database",
-            "readOnly": "true"
-        },
         "description": {
             "type": "string",
             "description": "Short description, one paragraph."
-        },
-        "version": {
-            "type": "string",
-            "description": "Version of SampleTab specification (currently 1.2)"
-        },
-        "referenceLayer": {
-            "type": "boolean",
-            "description": "If this submission is part of the reference layer, this will be 'true'. Otherwise it will be 'false'.",
-            "readOnly": "true"
         },
         "updateDate": {
             "type": "string",
