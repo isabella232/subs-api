@@ -174,7 +174,7 @@ The submission field should be structured like this:
 
 [source,javascript]
 ----
-"submission": {
+"submissionInfo": {
     "type": "object",
     "description": "The submission block describes overall features of the submission and its associated samples.",
     "required": [
