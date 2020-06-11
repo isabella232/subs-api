@@ -45,6 +45,12 @@ These fields are optional:
 * sampleRelationships, describe how various samples are linked together
 * sampleExternalReferences, a list of external references of this sample
 * checklistId, ID of an optional validation checklist to apply on the sample
+* submission, The submission block describes overall features of the submission and its associated samples.
+* persons, Contains information describing who supplied the sample information.
+* organizations, Information describing who supplied the sample information per-organization basis.
+* publications, Links to papers and other published materials describing these samples, in particular how they were created and treated.
+* databases, Links to other databases that have data associated with this submission. Every combination of Database Name and Database ID must be unique to each entry in the database section.
+* termSources, The Term Source section is used to specify ontologies or controlled vocabularies (i.e. NCBI Taxonomy).
 
 === Attributes
 
@@ -162,6 +168,194 @@ It is not mandatory to define a checklist to a sample. Currently you can only de
 "cheklistId": "ERC000021"
 ----
 
+=== Submission
+
+The submission field should be structured like this:
+
+[source,javascript]
+----
+"submission": {
+    "type": "object",
+    "description": "The submission block describes overall features of the submission and its associated samples.",
+    "required": [
+        "title",
+        "description"
+    ],
+    "properties": {
+        "title": {
+            "type": "string",
+            "description": "Short title, 50 characters approx."
+        },
+        "description": {
+            "type": "string",
+            "description": "Short description, one paragraph."
+        },
+        "updateDate": {
+            "type": "string",
+            "description": "Date this submission was last modified. Must be in a YYYY-MM-DD format."
+        },
+        "releaseDate": {
+            "type": "string",
+            "description": "Date when the submission will be made public on. If blank, it will be public immediately. Must be in a YYYY-MM-DD format."
+        }
+    }
+}
+----
+
+=== Persons
+
+The persons field should be structured like this:
+
+[source,javascript]
+----
+"persons": {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "description": "The Person section contains information describing who supplied the sample information.",
+        "required": [
+            "lastName"
+        ],
+        "properties": {
+            "firstName": {
+                "type": "string"
+            },
+            "lastName": {
+                "type": "string"
+            },
+            "initials": {
+                "type": "string",
+                "description": "Either middle initial or first initial depending if a first name is present."
+            },
+            "email": {
+                "type": "string"
+            },
+            "role": {
+                "type": "string",
+                "description": "Should be a child of role in EFO."
+            }
+        }
+    }
+}
+----
+
+=== Organizations
+
+The organizations field should be structured like this:
+
+[source,javascript]
+----
+"organizations": {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "description": "The Organization section contains information describing who supplied the sample information per-organization basis.",
+        "required": [
+            "name"
+        ],
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "address": {
+                "type": "string",
+                "description": "One line, comma separated."
+            },
+            "uri": {
+                "type": "string",
+                "description": "Web site."
+            },
+            "role": {
+                "type": "string",
+                "description": "Should be a child of role in EFO."
+            }
+        }
+    }
+}
+----
+
+=== Publications
+
+The publications field should be structured like this:
+
+[source,javascript]
+----
+"publications": {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "description": "Publication section links to papers and other published materials describing these samples, in particular how they were created and treated.",
+        "properties": {
+            "pubMedId": {
+                "type": "integer",
+                "description": "Valid PubMed ID, numeric only."
+            },
+            "doi": {
+                "type": "string",
+                "description": "Valid Digital Object Identifier."
+            }
+        }
+    }
+}
+----
+
+=== Databases
+
+The databases field should be structured like this:
+
+[source,javascript]
+----
+"databases": {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "description": "The database section provides links to other databases that have data associated with this submission. Every combination of Database Name and Database ID must be unique to each entry in the database section.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of this database e.g. ArrayExpress"
+            },
+            "id": {
+                "type": "string",
+                "description": "The identifier of this record within the database."
+            },
+            "uri": {
+                "type": "string",
+                "description": "Database URI for this entry, typically a web page."
+            }
+        }
+    }
+}
+----
+
+=== Term Sources
+
+The termSources field should be structured like this:
+
+[source,javascript]
+----
+"termSources": {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "description": "The Term Source section is used to specify ontologies or controlled vocabularies (i.e. NCBI Taxonomy).",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Each value must be unique."
+            },
+            "uri": {
+                "type": "string",
+                "description": "Each value must be unique and an valid URL."
+            },
+            "version": {
+                "type": "string",
+                "description": "If version is unknown, then last access date should be provided. If no date is provided, one will be assigned at submission."
+            }
+        }
+    }
+}
+----
 
 == Create a sample
 

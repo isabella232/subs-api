@@ -639,7 +639,7 @@ public class SubmissionApiDocumentation {
 
 
         String projectId = projectRepository.findAll().get(0).getId();
-        project.setSubmission(null);
+        project.setSubmissionUrl(null);
 
 
         this.mockMvc.perform(
