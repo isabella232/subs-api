@@ -4,11 +4,28 @@
 This pages contains links to release notes for DSP's REST API application.
 
 [[section]]
+
 == v2.40.0 Release Notes
 
 New features:
 ----------------
 1. Support for file uploading via Globus.
+----------------
+
+[[section]]
+== v2.38.1 Release Notes
+
+New features:
+----------------
+1. Validation schema endpoints
+
+We introduced 2 new endpoints related to the validation schema.
+We have the validation schema list endpoint where the user can get a list of validation schema supported by the Data Submission Portal.
+We also implemented an endpoint where the user can get the details of a specified validation schema.
+
+2. Improved API documentation for sample
+
+Sample external reference has been added to the sample's API documentation and some section has been re-worded.
 ----------------
 
 [[section]]
